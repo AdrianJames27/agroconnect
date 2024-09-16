@@ -3,11 +3,11 @@ class Dialog {
     /**
      * State of the Input Dialog OK (1)
      */
-    static OK = 1;
+    static OK_OPTION = 1;
     /**
      * State of the Input Dialog CANCEL (0)
      */
-    static CANCEL = 0;
+    static CANCEL_OPTION = 0;
 
     /**
      * method of Dialog Class that allows user input
