@@ -1,0 +1,184 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Century Gothic', Arial, sans-serif;
+}
+
+body, html {
+    overflow-x: hidden;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #F5F5F5;
+}
+
+/* Custom styles */
+.header {
+    background-color: #008000; /* Dark green background color */
+    color: white; /* Text color */
+    padding: 5px 10px; /* Padding around content */
+}
+.header-logo {
+    height: 60px; /* Adjust logo height */
+}
+
+#appName {
+    font-weight: 600;
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+}
+
+.container-fluid {
+    height: 100%;
+}
+
+.nav-link {
+    color: white; /* Link text color */
+    font-size: 15px;
+    line-height: 0.5rem;
+    align-self: center;
+    padding: 4px 8px; /* Padding top and bottom only */
+    line-height: 30px; /* Adjust this to match the height of your nav links */
+}
+
+.nav-link {
+    position: relative;
+    display: inline-block;
+    text-decoration: none;
+}
+
+.nav-link::after {
+    content: '';
+    display: block;
+    width: 0;
+    height: 3px;
+    bottom: 0;
+    background-color: #fff9c1;
+    transition: width 0.4s ease;
+}
+
+.nav-link:hover::after {
+    width: 100%;
+}
+
+.logout {
+    margin-top: 30vh;
+    padding-left: 5px;
+}
+
+.form-select {
+    padding: 3px;
+    background-color: #B1BA4D;
+    border-radius: 5px;
+    text-align: center;
+    color: #fff;
+}
+
+.btn-custom {
+    width: 100%;
+    padding: 10px;
+    background-color: #008000;
+    border-radius: 3px;
+    color: white;
+    font-weight: 600;
+}
+
+.btn-green {
+    background-color: #B1BA4D;
+    color: white;
+    font-weight: 600;
+}
+
+.table-custom tbody tr:nth-child(odd) {
+    background-color: #D6DEE9;
+  }
+  
+.table-custom tbody tr:nth-child(even) {
+    background-color: #A7BEE0;
+ }
+
+ .tablesorter-bootstrap th {
+    background-color: #2774E9 !important;
+    color: white !important;
+  }
+  
+/* Styles for footer */
+.footer-container {
+    margin-top: auto;
+    bottom: 0;
+    width: 100%;
+    background-color: #008000; /* Light background color */
+    padding: 10px 0;
+    text-align: center;
+}
+
+#pageTitle {
+    background-color: #6FC700;
+    font-weight: bolder;
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+}
+
+/* Add spacing between sections */
+section {
+    margin-bottom: 40px; /* Adjust spacing as needed */
+}
+
+img {
+    cursor: pointer;
+}
+
+h2 {
+    font-weight: bolder;
+}
+
+.form-control {
+    padding-left: 20px;
+    background-color: #B1BA4D;
+    border-radius: 5px;
+    text-align: center;
+    color: #fff;
+    font-weight: 600;
+}
+/* Customize the background color of the selected items */
+.custom-select {
+    padding-left: 20px;
+    background-color: #B1BA4D;
+    border-radius: 5px;
+    text-align: center;
+    color: #fff;
+    font-weight: 600;
+}
+
+.active {
+    background-color: #B1BA4D; /* White background */
+    border-radius: 5px; /* Adjust the value to change the roundness */
+    padding: 4px 8px; /* Padding top and bottom only */
+    line-height: 30px; /* Adjust this to match the height of your nav links */
+}
+
+.toast-success-custom {
+    background-color: #28a745; /* Green color for success */
+    color: #ffffff; /* White text color */
+}
+
+.toast-error-custom {
+    background-color: #dc3545; /* Red color for error */
+    color: #ffffff; /* White text color */
+}
+
+.toast-info-custom {
+    background-color: #17a2b8; /* Blue color for info */
+    color: #ffffff; /* White text color */
+}
+
+.toast-warning-custom {
+    background-color: #ffc107; /* Yellow color for warning */
+    color: #000000; /* Black text color */
+}
+
+#downloadBtn, #unavailable, #selectFirst {
+    display: none;
+}

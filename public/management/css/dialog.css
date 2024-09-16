@@ -1,0 +1,121 @@
+dialog {
+    justify-self: center;
+    margin-top: 2rem;
+    min-width: 300px;
+    min-height: 150px;
+    border: none;
+    /* Remove the border */
+    border-radius: 8px;
+    /* Make it rounder */
+    padding: 20px;
+    background-color: #f1f1f1;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    animation: fade-in-from-top .5s ease-out;
+    animation-fill-mode: forwards;
+} 
+
+#messageDialog h4,
+#inputDialog h4 {
+    margin-top: 0;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+#messageDialog #message,
+#inputDialog #message {
+    margin: 1rem 0;
+}
+
+#messageDialog #message p,
+#inputDialog #message p {
+    margin: 1rem 0;
+}
+
+#messageDialog #btnOk {
+    width: 100%;
+}
+
+#messageDialog button,
+#inputDialog button {
+    flex: 1; /* Make the buttons equal width */
+    padding: 0 1rem;
+    background-color: #3BA424;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    line-height: 2rem;
+}
+
+#messageDialog button:last-child,
+#inputDialog button:last-child {
+    background-color: #6c757d;
+}
+
+#messageDialog button:hover,
+#inputDialog button:hover {
+    background-color: #3c8b2a;
+}
+
+
+#messageDialog button:last-child:hover,
+#inputDialog button:last-child:hover {
+    background-color: #4d5558;
+}
+
+
+#messageDialog::-webkit-scrollbar,
+#inputDialog::-webkit-scrollbar {
+    width: 5px;
+}
+
+#messageDialog::-webkit-scrollbar-track,
+#inputDialog::-webkit-scrollbar-track {
+    display: none;
+}
+
+#messageDialog::-webkit-scrollbar-thumb,
+#inputDialog::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 10px;
+}
+
+#messageDialog::-webkit-scrollbar-thumb:hover,
+#inputDialog::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+}
+
+#messageDialog::-webkit-scrollbar-button,
+#inputDialog::-webkit-scrollbar-button {
+    display: none;
+}
+
+#inputDialog input[type="text"] {
+    text-indent: 10px;
+    font-weight: bold;
+}
+
+#txtInput {
+    height: 30px;
+    width: 100%;
+}
+
+#divButtons {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+@keyframes fade-in-from-top {
+    from {
+        opacity: 0;
+        transform: translateY(-20px); /* Adjust the value to control the initial position */
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0); /* Ends at the current position */
+    }
+}

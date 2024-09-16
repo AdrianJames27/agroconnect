@@ -1,0 +1,68 @@
+/* Code By Webdevtrick ( https://webdevtrick.com )*/
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600,300,700);
+@import url(https://fonts.googleapis.com/css?family=Roboto+Slab:400,100);
+
+body {
+  background-color: lightgray;
+}
+
+.captchaField { 
+  margin: 0 auto;
+  margin-top: 15%;
+  border: 1px solid #ccc; 
+  padding: 15px;
+  width: 345px;
+  background-color: #fff;
+  border-radius: 5px;
+}
+
+.CaptchaWrap { 
+  position: relative; 
+}
+
+.CaptchaTxtField { 
+  border-radius: 5px; 
+  border: 1px solid #ccc; 
+  display: block;  
+  box-sizing: border-box;
+}
+
+#UserCaptchaCode { 
+  padding: 15px 10px; 
+  outline: none; 
+  font-size: 18px; 
+  font-weight: normal; 
+  font-family: 'Open Sans', sans-serif;
+  width: 343px;
+}
+
+#CaptchaImageCode { 
+  text-align: center;
+  margin-top: 15px;
+  padding: 0;
+  width: 300px;
+  overflow: hidden;
+}
+
+.capcode { 
+  font-size: 46px; 
+  display: block; 
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  user-select: none; 
+  cursor: default;
+  letter-spacing: 1px;
+  color: #ccc;
+  font-family: 'Roboto Slab', serif;
+  font-weight: 100;
+  font-style: italic;
+}
+
+.success {
+  color: green;
+  display: none;
+}
+
+.error {
+  color: red;
+}

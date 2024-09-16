@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgroConnect Cabuyao - Seasonal Top Crops</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Century+Gothic&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/css/theme.bootstrap_4.min.css" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.2.1/dist/exceljs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.16/jspdf.plugin.autotable.min.js"></script>  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <link rel="stylesheet" href="../../css/index.css">
+  <link rel="stylesheet" href="../../management/css/dialog.css">
+  <style>
+    .cont {
+      margin: 3.25rem;
+      margin-top: 2rem;
+    }
+
+    #interpretation {
+      text-align: justify;
+      font-size: 13px;
+    }
+    
+  </style>
+</head>
+
+<body>
+  <div class="header-container">
+    <!-- Include your header content or component here -->
+  </div>
+
+  <div class="main-content">
+    <div class="container-fluid">
+      <div class="cont">
+        <div class="col-md-12">
+          <div class="card w-100 bg-white">
+            <div id="pageTitle" class="container-fluid text-white d-flex justify-content-center align-items-center py-2 position-relative">
+              <h2 class="w-100 text-center">Seasonal Top Crops</h2>
+              <button id="infoBtn" class="btn btn-info position-absolute" style="right: 10px;">
+                <i class="fas fa-info-circle"></i>
+              </button>
+            </div> 
+            <div class="container mt-4">
+
+              <!-- Selection Form -->
+              <div class="mb-4">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="seasonSelect">Season</label>
+                      <select class="form-control" id="seasonSelect">
+                        <option value="Dry">Dry</option>
+                        <option value="Wet">Wet</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="typeSelect">Type</label>
+                      <select class="form-control" id="typeSelect">
+                        <option value="Vegetables">Vegetables</option>
+                        <option value="Fruits">Fruits</option>
+                        <option value="Rice">Rice</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Search and Download Section -->
+              <div class="row align-items-center mb-4">
+                <!-- Search Input (80% width) -->
+                <div class="col-8">
+                  <input style="background-color: #D9D9D9;" type="text" id="searchInput" class="form-control" placeholder="Search Crop Name/Variety...">
+                </div>
+                <!-- Download Button (20% width) -->
+                <div class="col-4">
+                  <button class="btn btn-primary download-btn">Download</button>
+                </div>
+              </div>
+
+              <!-- Data Table -->
+              <div class="table-responsive">
+                <table class="table table-bordered" id="cropsTable">
+                  <thead>
+                    <tr>
+                      <th>Commodity</th>
+                      <th>Variety</th>
+                      <th>Type</th>
+                      <th>Remarks</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Table rows will be dynamically added here -->
+                  </tbody>
+                </table>
+              </div>              
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-container">
+    <!-- Include your footer content or component here -->
+  </div>
+
+  <!-- JavaScript Files -->
+  <script src="../../components/Header.js"></script>
+  <script type="module" src="../../components/Footer.js"></script>
+  <script type="module" src="../../js/topCrops.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,59 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Century Gothic', Arial, sans-serif;
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+}
+
+.login-image {
+    background-image: url('../img/loginBg.png');
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+}
+
+.login-form {
+    padding: 5rem;
+}
+
+#logo {
+    width: 30%;
+}
+
+.form-control {
+    padding-left: 20%;
+    background-color: #D9D9D9; 
+    border: none;
+}
+
+.btn-custom {
+    background-color: #008000; /* Green background */
+    color: white; /* White text */
+    border-radius: 25px; /* Circular shape */
+    box-shadow: 0px 5px 5px rgba(0, 0, 0, 1); /* Shadow effect */
+    border: none; /* No border */
+    height: 35px; /* Adjust height as needed */
+    width: 50%; /* Full width */
+    font-size: 15px; /* Adjust font size */
+    font-weight: bold;
+    display: block; /* Ensure block level display */
+    margin: 0 auto; /* Center horizontally */
+}

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JavaScript Captcha Program | Webdevtrick.com</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <section>
+    <fieldset class="captchaField">
+      <span id="SuccessMessage" class="success">Thanks! The Captcha Is Correct!</span>
+      <input type="text" id="UserCaptchaCode" class="CaptchaTxtField" placeholder="Enter Captcha - Case Sensitive">
+      <span id="WrongCaptchaError" class="error"></span>
+      <div class="CaptchaWrap">
+        <div id="CaptchaImageCode" class="CaptchaTxtField">
+          <canvas id="CapCode" class="capcode" width="300" height="80"></canvas>
+        </div>
+        <input type="button" class="ReloadBtn" onclick="CreateCaptcha();" value="Reload Captcha">
+      </div>
+      <input type="button" class="btnSubmit" onclick="CheckCaptcha(); Submit();" value="Submit">
+    </fieldset>
+  </section>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+  <script src="function.js"></script>
+</body>
+</html>

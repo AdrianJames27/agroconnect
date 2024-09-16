@@ -1,0 +1,288 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Century Gothic', Arial, sans-serif;
+}
+
+body, html {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+
+body {
+    background-color: #F5F5F5;
+    
+}
+
+.wrapper {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+}
+.content-wrapper {
+    display: flex;
+    flex-grow: 1;
+    overflow: hidden; /* Ensure that only content scrolls */
+}
+
+.content {
+    flex-grow: 1;
+    overflow-y: auto; /* Make the content area scrollable */
+    padding: 20px;
+}
+.header {
+    background-color: #008000;
+    color: white;
+    text-align: center;
+}
+
+.header-logo {
+    z-index: 1;
+    height: 60px; /* Adjust logo height */
+    margin-left: 20px;
+}
+
+.sidebar-logo {
+    z-index: 1;
+    height: 60px; /* Adjust logo height */
+    margin-left: 20px;
+}
+
+.username {
+    margin-right: 10px; /* Space between username and user icon */
+}
+.user-icon {
+    width: 40px; /* Adjust user icon size */
+    height: 40px; /* Adjust user icon size */
+    border-radius: 50%; /* Rounded shape */
+    background-color: black; /* Icon background color */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white; /* Icon color */
+  }
+  
+  .fa-user {
+    font-size: 25px;
+  }
+
+  #appName {
+    font-weight: 600;
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+  }
+
+  .container-fluid {
+    height: 100%;
+}
+
+.nav-link {
+    color: white; /* Link text color */
+}
+
+.nav-link:hover {
+    text-decoration: none; /* Remove underline on hover */
+}
+
+.logout {
+    margin-top: 20vh;
+    padding-left: 5px;
+}
+
+.form-control {
+    background-color: #D9D9D9;
+    padding-left: 20px;
+}
+
+.form-select {
+    padding: 3px;
+    background-color: #B1BA4D;
+    border-radius: 5px;
+    text-align: center;
+    color: #fff;
+}
+
+.btn-custom {
+    width: 100%;
+    padding: 10px;
+    background-color: #B1BA4D;
+    border-radius: 3px;
+    color: white;
+    font-weight: 600;
+}
+
+.btn-green {
+    background-color: #B1BA4D;
+    color: white;
+    font-weight: 600;
+}
+
+.table-custom tbody tr:nth-child(odd) {
+    background-color: #D6DEE9;
+  }
+  
+.table-custom tbody tr:nth-child(even) {
+    background-color: #A7BEE0;
+ }
+
+ .tablesorter-bootstrap th {
+    background-color: #2774E9 !important;
+    color: white !important;
+  }
+
+  /* Add this CSS for highlighting the selected row */
+.selected-row {
+    background-color: #B1BA4D !important; /* Light blue background */
+  }
+
+.input-group {
+    width: 25%;
+}
+
+tr {
+    cursor: pointer;
+}
+
+#maintenance-option {
+    width: 120%;
+    border-radius: 15px;
+}
+
+#entries-option {
+    width: 220%;
+    border-radius: 15px;
+}
+
+#productionTableBody {
+    width: 50%;
+}
+
+.input-group .input-group-text {
+    cursor: pointer;
+}
+
+.table-custom {
+font-size: 1rem; /* Adjust the font size if needed */
+}
+
+.table-responsive {
+ overflow: auto;
+}
+
+.table-responsive::-webkit-scrollbar {
+width: 12px;
+height: 12px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+background-color: #2774E9;
+border-radius: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+background-color: #f1f1f1;
+}
+
+.table thead th {
+    vertical-align: middle;
+}
+
+.table-custom td {
+    vertical-align: middle; /* Center text vertically */
+}
+
+  /* Ensure sorting icons are visible and styled */
+  .tablesorter-headerAsc .tablesorter-header-inner::after {
+    content: '\25B2'; /* Upward arrow character */
+    font-size: 0.8em;
+    margin-left: 5px;
+  }
+
+  .tablesorter-headerDesc .tablesorter-header-inner::after {
+    content: '\25BC'; /* Downward arrow character */
+    font-size: 0.8em;
+    margin-left: 5px;
+  }
+
+  .toast-success-custom {
+    background-color: #28a745; /* Green color for success */
+    color: #ffffff; /* White text color */
+}
+
+.sidebar {
+    background-color: #2774E9;
+    padding: 15px;
+    flex-shrink: 0; /* Prevent the sidebar from shrinking */
+    z-index: 1000;
+    transition: transform 0.3s ease;
+}
+
+/* Full-screen sidebar on small screens */
+@media (max-width: 767px) {
+    #sidebar {
+        width: 100%;
+        height: 100vh; /* Full viewport height */
+        transform: translateX(-100%);
+        position: fixed;
+        top: 0;
+        left: 0;
+    }
+    #sidebar.show {
+        transform: translateX(0);
+    }
+    .btn-close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+
+    .actionBtn {
+        margin-top: 3em !important;
+    }
+}
+
+/* Ensure the sidebar is always visible on larger screens */
+@media (min-width: 768px) {
+    #sidebar {
+        transform: translateX(0); /* Always show on larger screens */
+        display: block;
+    }
+}
+
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: auto;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.form-control {
+    width: 100%;
+    max-width: 100%;
+}
+
+@media (max-width: 767.98px) {
+    .form-group {
+        margin-bottom: 1rem;
+    }
+}
+
+#unavailable, #selectFirst {
+    display: none;
+}

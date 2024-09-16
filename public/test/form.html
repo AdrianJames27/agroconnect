@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Upload Record</title>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<div style="width: 50%; margin: 0 auto;">
+    <h2>Upload Record</h2>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input type="text" class="form-control" id="name" name="name" placeholder="Enter Name">
+        </div>
+        <div class="form-group">
+            <label for="season">Season:</label>
+            <input type="text" class="form-control" id="season" name="season" placeholder="Enter Season">
+        </div>
+        <div class="form-group">
+            <label for="monthYear">Month/Year:</label>
+            <input type="text" class="form-control" id="monthYear" name="monthYear" placeholder="Enter Month/Year">
+        </div>
+        <div class="form-group">
+            <label for="fileRecord">File Record:</label>
+            <input type="file" class="form-control-file" id="fileRecord" name="fileRecord">
+        </div>
+        <button type="submit" class="btn btn-primary">Upload</button>
+    </form>
+</div>
+
+<script>
+$(document).ready(function() {
+    $('#uploadForm').submit(function(e) {
+        e.preventDefault();
+        
+        var name = $('#name').val();
+        var season = $('#season').val();
+        var monthYear = $('#monthYear').val();
+        var fileRecord = $('#fileRecord')[0].files[0];
+
+        var data = {
+            userId: "1",
+            name: name,
+            season: season,
+            monthYear: monthYear,
+        };
+
+        $.ajax({
+            url: '/api/records',
+            type: 'POST',
+            data: data,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function(response) {
+                console.log('Record uploaded successfully:', response);
+                alert('Record uploaded successfully!');
+                // Optionally redirect or clear form
+                $('#uploadForm')[0].reset();
+            },
+            error: function(xhr, status, error) {
+                console.error('Error uploading record:', error);
+                alert('Error uploading record. Please try again.');
+            }
+        });
+    });
+});
+</script>
+
+</body>
+</html>
