@@ -3,48 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Responsive Header</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>File Upload with Loading Screen</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
-        .header {
-            background-color: #008000;
-            color: white;
+        /* Overlay for loading screen */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+            z-index: 9999;
+            text-align: center;
+            color: #fff;
         }
-        .header .navbar-nav .nav-link {
-            color: white;
+        .loading-overlay .spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
-        .header .navbar-brand {
-            color: white;
-        }
-        .user-icon {
+        .loading-overlay .border {
+            border: 0.25em solid rgba(255, 255, 255, 0.1);
             border-radius: 50%;
-            background-color: white;
-            color: #008000;
-            padding: 5px 10px;
+            border-top: 0.25em solid #007bff;
+            width: 3em;
+            height: 3em;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-
-<nav class="navbar navbar-expand-lg navbar-light header">
-    <a class="navbar-brand" href="#">Logo</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
-                <a class="nav-link" href="#">Username</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#"><span class="user-icon">U</span></a>
-            </li>
-        </ul>
+    <div class="container mt-5">
+        <h1>Upload File</h1>
+        <form id="uploadForm">
+            <div class="form-group">
+                <input type="file" id="fileInput" class="form-control-file">
+            </div>
+            <button type="submit" class="btn btn-primary">Upload</button>
+        </form>
     </div>
-</nav>
 
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-overlay">
+        <div class="spinner">
+            <div class="border"></div>
+        </div>
+        <p>Uploading... Please wait.</p>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the form from submitting normally
+
+            // Show loading screen
+            document.getElementById('loadingScreen').style.display = 'flex';
+
+            // Simulate file upload (e.g., using fetch or XMLHttpRequest)
+            setTimeout(function() {
+                // Hide loading screen after a delay to simulate upload completion
+                document.getElementById('loadingScreen').style.display = 'none';
+                alert('File uploaded successfully!');
+            }, 3000); // Simulate a 3-second upload time
+        });
+    </script>
+
+    <!-- Bootstrap JS (optional) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

@@ -14,29 +14,47 @@ class Crop {
     this.description = description;
   }
 
-  createCrop(crop) {
-    // Check for duplicates based on both cropName and variety
-    const existingCrop = crops.find(c => c.cropName === crop.cropName && c.variety === crop.variety);
-    if (existingCrop) {
-      alert('Crop with the same name and variety already exists');
-      return;
-    }
-
-    console.log(crop.priceWeight);
-
-    $.ajax({
-      url: '/api/crops',
-      type: 'POST',
-      contentType: 'application/json',
-      data: JSON.stringify(crop),
-      success: function(data) {
-        console.log('Success:', data);
-      },
-      error: function(error) {
-        console.error('Error:', error);
+  async createCrop(crop) {
+      // Check for duplicates based on both cropName and variety
+      const existingCrop = crops.find(c => c.cropName === crop.cropName && c.variety === crop.variety);
+      if (existingCrop) {
+          alert('Crop with the same name and variety already exists');
+          return;
       }
-    });
+
+      // Show the static uploading message
+      $('#progressMessage').text('Uploading...');
+      $('#loader').show(); // Show the loader
+      $('body').addClass('no-scroll'); // Optional: Add a class to disable scrolling
+
+      try {
+          await $.ajax({
+              url: '/api/crops',
+              type: 'POST',
+              contentType: 'application/json',
+              data: JSON.stringify(crop),
+          });
+          console.log('Success:', crop);
+          toastr.success('Crop added successfully!', 'Success', {
+              timeOut: 5000,  // 5 seconds
+              positionClass: 'toast-top-center',
+              toastClass: 'toast-success-custom'
+          });
+      } catch (error) {
+          console.error('Error:', error);
+          toastr.error('Failed to add crop. Please try again.', 'Error', {
+              timeOut: 5000,  // 5 seconds
+              positionClass: 'toast-top-center',
+              toastClass: 'toast-error-custom'
+          });
+      } finally {
+          // Hide the loader and re-enable user interaction
+          $('#loader').hide();
+          $('body').removeClass('no-scroll'); // Remove the class to re-enable scrolling
+          $('#progressMessage').text(''); // Clear the progress message
+      }
   }
+
 
   updateCrop(updatedCrop) {
     // Check for duplicates based on both cropName and variety, excluding the current crop

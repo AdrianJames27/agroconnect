@@ -11,26 +11,64 @@ class Price {
     this.monthYear = monthYear;
   }
 
-  async addPrice(prices) {
-    console.log(prices);
-
-    $.ajax({
-      url: '/api/prices-batch',
-      method: 'POST',
-      data: {
-        priceData: prices, // Custom key for data
-        _token: $('meta[name="csrf-token"]').attr('content')
-      },
-      success: function(response) {
-        console.log(response);
-      },
-      error: function(xhr) {
-        console.error(xhr.responseText);
+    async addPrice(prices) {
+      function chunkArray(array, size) {
+          const result = [];
+          for (let i = 0; i < array.length; i += size) {
+              result.push(array.slice(i, i + size));
+          }
+          return result;
       }
-    });
 
-    getPrices();
+      const batchSize = 20; // Size of each batch
+      const totalRows = prices.length;
+      const priceBatches = chunkArray(prices, batchSize);
+
+      let processedRows = 0; // Keep track of the number of processed rows
+
+      // Function to update progress message
+      const updateProgressMessage = (start, end) => {
+          $('#progressMessage').text(`Uploading ${start}-${end}/${totalRows}`);
+      };
+
+      // Show the loader and disable user interaction
+      $('#loader').show();
+      $('body').addClass('no-scroll'); // Optional: Add a class to disable scrolling
+
+      for (const [index, batch] of priceBatches.entries()) {
+          const start = processedRows + 1;
+          const end = start + batch.length - 1;
+          updateProgressMessage(start, end);
+
+          try {
+              await $.ajax({
+                  url: '/api/prices-batch',
+                  method: 'POST',
+                  data: {
+                      priceData: batch,
+                      _token: $('meta[name="csrf-token"]').attr('content')
+                  }
+              });
+              console.log(`Batch ${index + 1} sent successfully:`, batch);
+              processedRows += batch.length;
+          } catch (xhr) {
+              console.error(`Error sending batch ${index + 1}:`, xhr.responseText);
+              // Optionally handle the error or retry
+          }
+      }
+
+      // Hide the loader and re-enable user interaction
+      $('#loader').hide();
+      $('body').removeClass('no-scroll'); // Remove the class to re-enable scrolling
+      toastr.success('Prices uploaded successfully!', 'Success', {
+          timeOut: 5000,  // 5 seconds
+          positionClass: 'toast-top-center',
+          toastClass: 'toast-success-custom'
+      });
+
+      getPrices();
   }
+
 
   updatePrice(updatedPrice) {
     const existingPrice = prices.find(p => p.recordId === updatedPrice.recordId);

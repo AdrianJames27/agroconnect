@@ -200,7 +200,7 @@ $.ajax({
 
 window.confirmDownload = async function(link, filename) {
   const res = await Dialog.confirmDialog('Download File', 'Are you sure you want to download this file?');
-  if (res.operation === Dialog.OK) {
+  if (res.operation === Dialog.OK_OPTION) {
     const a = document.createElement('a');
     a.href = link;
     a.download = filename;
@@ -435,11 +435,6 @@ function initializeMethodsRecord(dataType) {
               getRecord(dataType);
               displayRecords();
               resetFields();
-              toastr.success('File uploaded successfully!', 'Success', {
-                timeOut: 5000,  // 5 seconds
-                positionClass: 'toast-top-center',
-                toastClass: 'toast-success-custom'
-              }); 
               selectedRow = null;
             }).catch(error => {
               console.error("Error creating/updating record:", error);
@@ -471,11 +466,6 @@ function initializeMethodsRecord(dataType) {
               displayRecords();
               resetFields();
               isEdit = false;
-              toastr.success('File uploaded successfully!', 'Success', {
-                timeOut: 5000,  // 5 seconds
-                positionClass: 'toast-top-center',
-                toastClass: 'toast-success-custom'
-              }); 
               selectedRow = null;
             }).catch(error => {
               console.error("Error updating record:", error);

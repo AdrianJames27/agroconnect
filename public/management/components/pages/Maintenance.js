@@ -29,6 +29,11 @@ export default function initDashboard() {
             }
 
             $('#main-content').html(`
+                <div class="loader-overlay" id="loader">
+                    <div class="spinner"></div>
+                    <div class="progress-message text-center" id="progressMessage">Uploading 0-0/0</div>
+                </div>
+
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <div>
                         <select id="maintenance-option" class="form-select" name="role" required>

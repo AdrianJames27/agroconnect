@@ -19,75 +19,111 @@ class Production {
     this.monthYear = monthYear;
   }
 
-  async addProduction(productions) {
+   async addProduction(productions) {
 
-    console.log(productions);
+      function chunkArray(array, size) {
+          const result = [];
+          for (let i = 0; i < array.length; i += size) {
+              result.push(array.slice(i, i + size));
+          }
+          return result;
+      }
+      const batchSize = 20; // Size of each batch
+      const totalRows = productions.length;
+      const productionBatches = chunkArray(productions, batchSize);
+      
+      let processedRows = 0; // Keep track of the number of processed rows
 
-    $.ajax({
-        url: '/api/productions-batch',
-        method: 'POST',
-        data: {
-            productionData: productions, // Custom key for data
-            _token: $('meta[name="csrf-token"]').attr('content')
-        },
-        success: function(response) {
-            console.log(response);
-        },
-        error: function(xhr) {
-            console.error(xhr.responseText);
-        }
-    });
+      // Function to update progress message
+      const updateProgressMessage = (start, end) => {
+          $('#progressMessage').text(`Uploading ${start}-${end}/${totalRows}`);
+      };
 
-    getProduction();
+      // Show the loader and disable user interaction
+      $('#loader').show();
+      $('body').addClass('no-scroll'); // Optional: Add a class to disable scrolling
+
+      for (const [index, batch] of productionBatches.entries()) {
+          const start = processedRows + 1;
+          const end = start + batch.length - 1;
+          updateProgressMessage(start, end);
+
+          try {
+              await $.ajax({
+                  url: '/api/productions-batch',
+                  method: 'POST',
+                  data: {
+                      productionData: batch,
+                      _token: $('meta[name="csrf-token"]').attr('content')
+                  }
+              });
+              console.log(`Batch ${index + 1} sent successfully:`, batch);
+              processedRows += batch.length;
+          } catch (xhr) {
+              console.error(`Error sending batch ${index + 1}:`, xhr.responseText);
+              // Optionally handle the error or retry
+          }
+      }
+
+      // Hide the loader and re-enable user interaction
+      $('#loader').hide();
+      $('body').removeClass('no-scroll'); // Remove the class to re-enable scrolling
+      toastr.success('File uploaded successfully!', 'Success', {
+        timeOut: 5000,  // 5 seconds
+        positionClass: 'toast-top-center',
+        toastClass: 'toast-success-custom'
+      }); 
+
+      getProduction();
   }
 
-  updateProduction(updatedProduction) {
-    const existingProduction = productions.find(u => u.productionId === updatedProduction.productionId);
+    updateProduction(updatedProduction) {
+      const existingProduction = productions.find(u => u.productionId === updatedProduction.productionId);
 
-    if (existingProduction && existingProduction.productionId !== updatedProduction.productionId) {
-      alert('Production ID already exists');
-      return;
+      if (existingProduction && existingProduction.productionId !== updatedProduction.productionId) {
+        alert('Production ID already exists');
+        return;
+      }
+
+      productions = productions.map(production =>
+        production.recordId === updatedProduction.recordId ? { ...production, ...updatedProduction } : production
+      );
+
+      fetch(`/api/productions/${updatedProduction.productionId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedProduction),
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Success:', data);
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+        getProduction();
     }
 
-    productions = productions.map(production =>
-      production.recordId === updatedProduction.recordId ? { ...production, ...updatedProduction } : production
-    );
-
-    fetch(`/api/productions/${updatedProduction.productionId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(updatedProduction),
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log('Success:', data);
-      })
-      .catch(error => {
-        console.error('Error:', error);
-      });
-      getProduction();
+    removeProduction(productions) {
+        $.ajax({
+          url: '/api/productionsByRecords',
+          method: 'DELETE',
+          data: {
+              productionData: productions, // Custom key for data
+              _token: $('meta[name="csrf-token"]').attr('content')
+          },
+          success: function(response) {
+              console.log(response);
+          },
+          error: function(xhr) {
+              console.error(xhr.responseText);
+          }
+        });
+        getProduction();
+    }
   }
-
-  removeProduction(productions) {
-      $.ajax({
-        url: '/api/productionsByRecords',
-        method: 'DELETE',
-        data: {
-            productionData: productions, // Custom key for data
-            _token: $('meta[name="csrf-token"]').attr('content')
-        },
-        success: function(response) {
-            console.log(response);
-        },
-        error: function(xhr) {
-            console.error(xhr.responseText);
-        }
-      });
-      getProduction();
-  }
-}
 
 function getProduction() {
   // Fetch productions from Laravel backend
