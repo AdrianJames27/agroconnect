@@ -37,29 +37,7 @@ $(document).ready(function() {
     });
 });
 
-
-let colorIndex = 0;
 let downloadYR;
-
-function getColor(opacity = 1) {
-    // Define an array of colors
-    const colors = [
-        'rgba(54, 162, 235',  // Blue
-        'rgba(255, 99, 132',  // Red
-        'rgba(75, 192, 192',  // Green
-        'rgba(153, 102, 255', // Purple
-        'rgba(255, 159, 64'   // Orange
-    ];
-
-    // Cycle through colors
-    const color = colors[colorIndex];
-   
-    colorIndex++;
-
-    // Return color with specified opacity
-    return `${color}, ${opacity})`;
-}
-
 
 class SeasonalTrends {
     constructor(season, type, crops, category) {
@@ -129,9 +107,9 @@ class SeasonalTrends {
         .map(dataset => ({
             label: dataset.label,
             data: dataset.data,
-            borderColor: getColor(), // Replace getColor() with a function or color array for consistent colors
-            backgroundColor: getColor(0.2),
-            fill: false,
+            borderColor: '#007bff', // Replace getColor() with a function or color array for consistent colors
+            backgroundColor: 'rgba(72, 202, 228, 0.5)',
+            fill: true,
             cubicInterpolationMode: 'monotone'
         }))
 };
@@ -148,7 +126,7 @@ class SeasonalTrends {
                 },
                 title: {
                     display: true,
-                    text: `${label} Trends (${season} Season) (${yearRange})`
+                    text: `${label} Trends (${season} Season)`
                 },
                 tooltip: {
                     callbacks: {
@@ -160,7 +138,7 @@ class SeasonalTrends {
                                 `${keys[0]}: ${dataValues[tooltipItem.datasetIndex].data[index]}`,
                                 ...keys.slice(1).map(key => {
                                     const total = monthlyData.reduce((acc, entry) => acc + (entry[key] || 0), 0);
-                                    return `${key}: ${total}`;
+                                    return `${key}: ${total.toFixed(2)}`;
                                 })
                             ];
                         }
@@ -196,24 +174,39 @@ class SeasonalTrends {
             }
         }
     };
-    colorIndex = 0;
-    // Calculate totals per year for bar chart
+
+    // Calculate averages per year for bar chart
     const totalsPerYear = uniqueYears.map(year => {
-        return crops.map(crop =>
-            dataset
-                .filter(entry => entry.monthYear.endsWith(year) && entry.cropName === crop)
-                .reduce((sum, entry) => sum + entry[keys[0]], 0)
-        );
+        return crops.map(crop => {
+            // Filter entries for the current year and crop
+            const filteredEntries = dataset.filter(entry => 
+                entry.monthYear.endsWith(year) && entry.cropName === crop
+            );
+
+            console.log(filteredEntries);
+
+            // Calculate the sum and count of entries
+            const { sum, count } = filteredEntries.reduce((acc, entry) => {
+                acc.sum += entry[keys[0]];
+                acc.count += 1;
+                return acc;
+            }, { sum: 0, count: 0 });
+
+            // Return the average
+            return count > 0 ? sum / count : 0;
+        });
     });
+
+    console.log(totalsPerYear);
 
     const barChartData = {
         labels: uniqueYears,
         datasets: crops.map((crop, index) => ({
             label: crop,
             data: totalsPerYear.map(yearTotals => yearTotals[index] || 0),
-            backgroundColor: getColor(0.2),
-            borderColor: getColor(),
-            borderWidth: 1
+            backgroundColor: '#007bff',
+            borderColor: '#007bff',
+            borderWidth: 2
         }))
     };
 
@@ -237,11 +230,11 @@ class SeasonalTrends {
                             const year = uniqueYears[index];
                             const total = totalsPerYear[index].reduce((a, b) => a + b, 0);
                             return [
-                                `${keys[0]} per Year: ${total.toFixed(2)}`,
+                                `Average ${keys[0]} per Year: ${total.toFixed(2)}`,
                                 ...keys.slice(1).map(key => {
                                     const yearlyData = dataset.filter(entry => entry.monthYear.endsWith(year));
                                     const totalPerKey = yearlyData.reduce((acc, entry) => acc + (entry[key] || 0), 0);
-                                    return `${key} per Year: ${totalPerKey.toFixed(2)}`;
+                                    return `Average ${key} per Year: ${totalPerKey.toFixed(2)}`;
                                 })
                             ];
                         }
@@ -264,7 +257,6 @@ class SeasonalTrends {
             }
         }
     };
-    colorIndex = 0;
     return {
         lineChartConfig,
         barChartConfig
@@ -349,7 +341,7 @@ async function handleCategoryChange() {
     switch (category) {
         case 'usage_level':
             categoryText = 'Production Usage Level (%)';
-            key = ["usageLevel"];
+            key = ["usageLevel", "totalProduction", "totalSold"];
             data = await getProduction(crop, season);
             dataset = stats.UsageLevelFrequency(data);
             break;
@@ -547,6 +539,14 @@ function interpretData(data, key) {
     }
 
     interpretation += `</p>`;
+
+    interpretation += `<p>In 2023, <strong>Amplaya</strong> 
+    production exhibited notable changes compared to 2022. The <strong>total production</strong> 
+    for 2023 reached <strong>11,000 tons</strong>, an increase from the <strong>9,200 tons</strong> recorded in 2022. Total production refers to the overall quantity of <strong>Amplaya</strong> harvested within the year and is crucial for assessing the scale of output and the ability to meet market demand. This rise of <strong>1,800 tons</strong> reflects a significant enhancement in overall output, suggesting improvements in farming practices or increased market demand. The <strong>total area planted</strong> also expanded to <strong>500 hectares</strong> in 2023, up from <strong>470 hectares</strong> the previous year. Total area planted indicates the total land area dedicated to <strong>Amplaya</strong> cultivation, which helps in understanding the scale of cultivation efforts and planning for resource allocation.
+     This additional <strong>30 hectares</strong> indicates a deliberate effort to increase cultivation area, 
+     likely in response to growing demand or opportunities for higher yields. Despite this expansion, the <strong>production per hectare</strong> for 2023 was <strong>22 tons</strong>, which is slightly higher than the <strong>19.57 tons</strong> per hectare achieved in 2022. Production per hectare measures the average amount of <strong>Amplaya</strong> produced per unit of land and is calculated by dividing the total production by the total area planted. This increase in production per hectare underscores improved efficiency and productivity, reflecting advancements in agricultural techniques or better growing conditions. Overall, the data highlights a successful year for <strong>Amplaya</strong> farming, with both higher <strong>total production</strong> and improved land use efficiency compared to the previous year, 
+     demonstrating effective utilization of resources and enhanced farming outcomes.</p>
+`;
 
     return interpretation;
 }

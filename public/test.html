@@ -3,80 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Upload with Loading Screen</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Shared Charts with Custom Legend and PDF Download</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        /* Overlay for loading screen */
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-            z-index: 9999;
-            text-align: center;
-            color: #fff;
+        .legend-container {
+            margin-bottom: 20px;
         }
-        .loading-overlay .spinner {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+        .legend-item {
+            cursor: pointer;
+            margin-right: 10px;
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 5px;
+            transition: opacity 0.5s ease;
         }
-        .loading-overlay .border {
-            border: 0.25em solid rgba(255, 255, 255, 0.1);
+        .legend-box {
+            display: inline-flex;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
-            border-top: 0.25em solid #007bff;
-            width: 3em;
-            height: 3em;
-            animation: spin 1s linear infinite;
+            margin-right: 5px;
+            background-color: #000; /* Default color, will be overridden by JS */
+            position: relative;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .legend-item.hidden .legend-box {
+            opacity: 0.2; /* Fade out the legend box when hidden */
+        }
+        .legend-item.hidden .legend-label {
+            opacity: 0.2; /* Fade out the label when hidden */
+        }
+        .legend-label {
+            display: inline-flex;
+            align-items: center;
         }
     </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h1>Upload File</h1>
-        <form id="uploadForm">
-            <div class="form-group">
-                <input type="file" id="fileInput" class="form-control-file">
-            </div>
-            <button type="submit" class="btn btn-primary">Upload</button>
-        </form>
-    </div>
-
-    <!-- Loading Screen -->
-    <div id="loadingScreen" class="loading-overlay">
-        <div class="spinner">
-            <div class="border"></div>
+    <div class="container mt-4">
+        <div class="legend-container">
+            <div id="custom-legend"></div>
         </div>
-        <p>Uploading... Please wait.</p>
+        <div class="row">
+            <div class="col-md-6">
+                <canvas id="chart1" width="400" height="200"></canvas>
+            </div>
+            <div class="col-md-6">
+                <canvas id="chart2" width="400" height="200"></canvas>
+            </div>
+        </div>
+        <button id="download-pdf" class="btn btn-primary mt-4">Download PDF</button>
     </div>
-
     <script>
-        document.getElementById('uploadForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent the form from submitting normally
+        $(document).ready(function() {
+            // Sample data
+            const data = {
+                labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+                datasets: [{
+                    label: 'Dataset 1',
+                    data: [10, 20, 30, 40, 50, 60],
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1,
+                    fill: true // For line chart to be filled
+                }, {
+                    label: 'Dataset 2',
+                    data: [20, 30, 40, 50, 60, 70],
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
+                    fill: true // For line chart to be filled
+                }]
+            };
 
-            // Show loading screen
-            document.getElementById('loadingScreen').style.display = 'flex';
+            // Create Chart 1 (Bar Chart)
+            const ctx1 = document.getElementById('chart1').getContext('2d');
+            const chart1 = new Chart(ctx1, {
+                type: 'bar',
+                data: data,
+                options: {
+                    plugins: {
+                        legend: { display: false } // Disable default legend
+                    }
+                }
+            });
 
-            // Simulate file upload (e.g., using fetch or XMLHttpRequest)
-            setTimeout(function() {
-                // Hide loading screen after a delay to simulate upload completion
-                document.getElementById('loadingScreen').style.display = 'none';
-                alert('File uploaded successfully!');
-            }, 3000); // Simulate a 3-second upload time
+            // Create Chart 2 (Line Chart)
+            const ctx2 = document.getElementById('chart2').getContext('2d');
+            const chart2 = new Chart(ctx2, {
+                type: 'line',
+                data: data,
+                options: {
+                    plugins: {
+                        legend: { display: false } // Disable default legend
+                    }
+                }
+            });
+
+            // Generate custom legend
+            const customLegend = $('#custom-legend');
+            data.datasets.forEach((dataset, index) => {
+                const legendItem = $('<div class="legend-item"></div>');
+                const legendBox = $('<span class="legend-box"></span>').css('background-color', dataset.backgroundColor);
+                const legendLabel = $('<span class="legend-label"></span>').text(dataset.label);
+
+                legendItem.append(legendBox).append(legendLabel);
+                customLegend.append(legendItem);
+
+                // Add click event to legend items
+                legendItem.on('click', function() {
+                    const meta1 = chart1.getDatasetMeta(index);
+                    const meta2 = chart2.getDatasetMeta(index);
+                    const isHidden = !meta1.hidden;
+
+                    meta1.hidden = isHidden;
+                    meta2.hidden = isHidden;
+
+                    // Apply animation
+                    $(this).toggleClass('hidden', isHidden);
+
+                    chart1.update();
+                    chart2.update();
+                });
+            });
+
+            // Download PDF functionality
+            $('#download-pdf').on('click', function() {
+                // Reset filters
+                data.datasets.forEach((dataset, index) => {
+                    const meta1 = chart1.getDatasetMeta(index);
+                    const meta2 = chart2.getDatasetMeta(index);
+
+                    // Unhide datasets
+                    meta1.hidden = false;
+                    meta2.hidden = false;
+
+                    // Reset legend item visibility
+                    $('#custom-legend .legend-item').removeClass('hidden');
+                });
+
+                // Update charts to reflect reset
+                chart1.update();
+                chart2.update();
+
+                // Wait for the charts to update before downloading
+                setTimeout(() => {
+                    // Convert charts to images and generate PDF
+                    Promise.all([
+                        html2canvas(document.getElementById('chart1')).then(canvas => canvas.toDataURL('image/png')),
+                        html2canvas(document.getElementById('chart2')).then(canvas => canvas.toDataURL('image/png'))
+                    ]).then(images => {
+                        const { jsPDF } = window.jspdf;
+                        const pdf = new jsPDF('p', 'mm', 'a4');
+
+                        // Add Chart 1 image
+                        pdf.addImage(images[0], 'PNG', 10, 10, 190, 100);
+                        pdf.addPage();
+
+                        // Add Chart 2 image
+                        pdf.addImage(images[1], 'PNG', 10, 10, 190, 100);
+
+                        // Save the PDF
+                        pdf.save('charts.pdf');
+                    });
+                }, 500); // Delay in milliseconds (500ms in this case)
+            });
         });
     </script>
-
-    <!-- Bootstrap JS (optional) -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

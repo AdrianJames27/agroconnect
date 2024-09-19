@@ -139,7 +139,7 @@ function UsageLevelFrequency(data) {
 
     // Aggregate data
     const monthCropUsage = data.reduce((acc, item) => {
-        let { monthHarvested, cropName, volumeSold, volumeProduction } = item;
+        let { monthHarvested, cropName, volumeSold, volumeProduction, season } = item;
 
         // Handle months in the format "March-April 2021"
         if (monthHarvested.includes('-')) {
@@ -147,31 +147,40 @@ function UsageLevelFrequency(data) {
             monthHarvested = months[1].trim(); // Take the last month in the range
         }
 
+        // Initialize the accumulator for month, season, and crop
         if (!acc[monthHarvested]) {
             acc[monthHarvested] = {};
         }
-
-        if (!acc[monthHarvested][cropName]) {
-            acc[monthHarvested][cropName] = { totalProduction: 0, totalSold: 0, usageFrequency: 0 };
+        
+        if (!acc[monthHarvested][season]) {
+            acc[monthHarvested][season] = {};
+        }
+        
+        if (!acc[monthHarvested][season][cropName]) {
+            acc[monthHarvested][season][cropName] = { totalProduction: 0, totalSold: 0, usageLevel: 0 };
         }
 
-        acc[monthHarvested][cropName].totalProduction += volumeProduction;
-        acc[monthHarvested][cropName].totalSold += volumeSold;
+        acc[monthHarvested][season][cropName].totalProduction += volumeProduction;
+        acc[monthHarvested][season][cropName].totalSold += volumeSold;
 
         return acc;
     }, {});
 
     // Calculate usage level frequency and prepare final output
-    return Object.entries(monthCropUsage).flatMap(([month, crops]) =>
-        Object.entries(crops).map(([cropName, { totalProduction, totalSold }]) => ({
-            monthYear: month,
-            cropName,
-            totalProduction,
-            totalSold,
-            usageLevel: parseFloat((totalSold / totalProduction).toFixed(2)) // Compute usageFrequency as volumeSold / volumeProduction
-        }))
+    return Object.entries(monthCropUsage).flatMap(([month, seasons]) =>
+        Object.entries(seasons).flatMap(([season, crops]) =>
+            Object.entries(crops).map(([cropName, { totalProduction, totalSold }]) => ({
+                monthYear: month,
+                season,
+                cropName,
+                totalProduction,
+                totalSold,
+                usageLevel: parseFloat((totalSold / totalProduction).toFixed(2)) // Compute usageLevel as volumeSold / volumeProduction
+            }))
+        )
     );
 }
+
 
 function countAverageAreaPlanted(data) {
     if (!Array.isArray(data)) {
