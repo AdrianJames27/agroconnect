@@ -350,7 +350,7 @@ async function handleCategoryChange() {
             break;
         case 'production_volume':
             categoryText = 'Production Volume Per Hectare';
-            key = ["volumeProduction", "totalVolume", "totalArea"];
+            key = ["volumeProductionPerHectare", "totalVolume", "totalArea"];
             data = await getProduction(crop, season);
             dataset = stats.averageVolumeProduction(data);
             console.log(dataset);
