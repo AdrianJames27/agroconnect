@@ -319,7 +319,6 @@ function averagePrice(data) {
     );
 }
 
-
 function countPestOccurrence(data) {
     if (!Array.isArray(data)) {
         console.error('Expected data to be an array');
@@ -327,26 +326,36 @@ function countPestOccurrence(data) {
     }
 
     const monthCropCounts = data.reduce((acc, item) => {
-        const { monthYear, cropName, season } = item;
+        const { monthYear, cropName, season, pestName } = item;
 
         if (!acc[monthYear]) {
             acc[monthYear] = {};
         }
 
         if (!acc[monthYear][cropName]) {
-            acc[monthYear][cropName] = { season, pestOccurrence: 0 };
+            acc[monthYear][cropName] = { season, pestOccurrences: {}, totalOccurrence: 0 };
         }
 
-        acc[monthYear][cropName].pestOccurrence++;
+        if (!acc[monthYear][cropName].pestOccurrences[pestName]) {
+            acc[monthYear][cropName].pestOccurrences[pestName] = 0;
+        }
+
+        acc[monthYear][cropName].pestOccurrences[pestName]++;
+        acc[monthYear][cropName].totalOccurrence++;
+
         return acc;
     }, {});
 
     return Object.entries(monthCropCounts).flatMap(([month, crops]) =>
-        Object.entries(crops).map(([cropName, { season, pestOccurrence }]) => ({
+        Object.entries(crops).map(([cropName, { season, pestOccurrences, totalOccurrence }]) => ({
             monthYear: month,
             cropName,
             season,
-            pestOccurrence
+            totalOccurrence,
+            pestOccurrences: Object.entries(pestOccurrences).map(([pestName, occurrence]) => ({
+                pestName,
+                occurrence
+            }))
         }))
     );
 }
@@ -398,7 +407,7 @@ function countDiseaseOccurrence(data) {
     }
 
     const barangayMonthCropCounts = data.reduce((acc, item) => {
-        const { barangay, monthYear, cropName, season } = item;
+        const { barangay, monthYear, cropName, season, diseaseName } = item;
 
         if (!acc[barangay]) {
             acc[barangay] = {};
@@ -409,21 +418,31 @@ function countDiseaseOccurrence(data) {
         }
 
         if (!acc[barangay][monthYear][cropName]) {
-            acc[barangay][monthYear][cropName] = { season, diseaseOccurrence: 0 };
+            acc[barangay][monthYear][cropName] = { season, diseaseOccurrences: {}, totalOccurrence: 0 };
         }
 
-        acc[barangay][monthYear][cropName].diseaseOccurrence++;
+        if (!acc[barangay][monthYear][cropName].diseaseOccurrences[diseaseName]) {
+            acc[barangay][monthYear][cropName].diseaseOccurrences[diseaseName] = 0;
+        }
+
+        acc[barangay][monthYear][cropName].diseaseOccurrences[diseaseName]++;
+        acc[barangay][monthYear][cropName].totalOccurrence++;
+
         return acc;
     }, {});
 
     return Object.entries(barangayMonthCropCounts).flatMap(([barangay, monthCropCounts]) =>
         Object.entries(monthCropCounts).flatMap(([month, crops]) =>
-            Object.entries(crops).map(([cropName, { season, diseaseOccurrence }]) => ({
+            Object.entries(crops).map(([cropName, { season, diseaseOccurrences, totalOccurrence }]) => ({
                 barangay,
                 monthYear: month,
                 cropName,
                 season,
-                diseaseOccurrence
+                totalOccurrence,
+                diseaseOccurrences: Object.entries(diseaseOccurrences).map(([diseaseName, occurrence]) => ({
+                    diseaseName,
+                    occurrence
+                }))
             }))
         )
     );

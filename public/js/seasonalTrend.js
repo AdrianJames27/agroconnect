@@ -101,22 +101,24 @@ class SeasonalTrends {
     });
 
     const lineChartData = {
-    labels: monthlyLabels,
-    datasets: dataValues
-        .filter(dataset => dataset.data.some(value => value !== 0)) // Filter out datasets with only zero values
-        .map(dataset => ({
-            label: dataset.label,
-            data: dataset.data,
-            borderColor: '#007bff', // Replace getColor() with a function or color array for consistent colors
-            backgroundColor: 'rgba(72, 202, 228, 0.5)',
-            fill: true,
-            cubicInterpolationMode: 'monotone'
-        }))
-};
+        datasets: dataValues
+            .filter(dataset => dataset.data.some(value => value !== 0)) // Filter out datasets with only zero values
+            .map(dataset => ({
+                label: dataset.label,
+                data: dataset.data.map((value, index) => ({
+                    x: monthlyLabels[index], // Use the string labels as x values
+                    y: value
+                })),
+                borderColor: '#007bff', // Color for the scatter points
+                backgroundColor: 'rgba(72, 202, 228, 0.5)',
+                pointRadius: 5, // Size of the points
+            }))
+    };
 
-
+    const chartType = keys[0] === 'totalOccurrence' ? 'scatter' : 'line';
+    
     const lineChartConfig = {
-        type: 'line',
+        type: chartType,
         data: lineChartData,
         options: {
             responsive: true,
@@ -132,13 +134,19 @@ class SeasonalTrends {
                     callbacks: {
                         label: function(tooltipItem) {
                             const index = tooltipItem.dataIndex;
-                            const monthYear = monthlyLabels[index];
+                            const monthYear = lineChartData.datasets[tooltipItem.datasetIndex].data[index].x;
                             const monthlyData = dataset.filter(entry => entry.monthYear === monthYear);
+
                             return [
-                                `${keys[0]}: ${dataValues[tooltipItem.datasetIndex].data[index]}`,
+                                `${keys[0]}: ${lineChartData.datasets[tooltipItem.datasetIndex].data[index].y}`,
                                 ...keys.slice(1).map(key => {
-                                    const total = monthlyData.reduce((acc, entry) => acc + (entry[key] || 0), 0);
-                                    return `${key}: ${total.toFixed(2)}`;
+                                    if(key === "pestOccurrences") {
+                                        let result = monthlyData.reduce((acc, entry) => acc + (entry[key][0].occurence || 0), 0);
+                                        return result;
+                                    } else {
+                                        const total = monthlyData.reduce((acc, entry) => acc + (entry[key] || 0), 0);
+                                        return `${key}: ${total.toFixed(2)}`;
+                                    }
                                 })
                             ];
                         }
@@ -149,21 +157,9 @@ class SeasonalTrends {
                 x: {
                     title: {
                         display: true,
-                        text: 'Year'
+                        text: 'Month Year'
                     },
-                    ticks: {
-                        maxRotation: 0,
-                        minRotation: 0,
-                        autoSkip: false,
-                        callback: function(value, index) {
-                            const dateParts = lineChartData.labels[index].split(' ');
-                            const year = dateParts[1];
-                            if (index === lineChartData.labels.findIndex(label => label.endsWith(year))) {
-                                return year;
-                            }
-                            return '';
-                        }
-                    }
+                    type: 'category', // Change to 'category' for string labels
                 },
                 y: {
                     title: {
@@ -174,7 +170,7 @@ class SeasonalTrends {
             }
         }
     };
-
+    
     // Calculate averages per year for bar chart for a single crop
     const totalsPerYear = uniqueYears.map(year => {
         // Filter entries for the current year
@@ -363,9 +359,10 @@ async function handleCategoryChange() {
             break;
         case 'pest_occurrence':
             categoryText = 'Pest Occurrence';
-            key = ["pestOccurrence"];
+            key = ["totalOccurrence", "pestOccurrences"];
             data = await getPest(crop, season);
             dataset = stats.countPestOccurrence(data);
+            console.log(dataset);
             break;
         case 'disease_occurrence':
             categoryText = 'Disease Occurrence';
