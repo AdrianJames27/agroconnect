@@ -175,38 +175,39 @@ class SeasonalTrends {
         }
     };
 
-    // Calculate averages per year for bar chart
+    // Calculate averages per year for bar chart for a single crop
     const totalsPerYear = uniqueYears.map(year => {
-        return crops.map(crop => {
-            // Filter entries for the current year and crop
-            const filteredEntries = dataset.filter(entry => 
-                entry.monthYear.endsWith(year) && entry.cropName === crop
-            );
+        // Filter entries for the current year
+        const filteredEntries = dataset.filter(entry => 
+            entry.monthYear.endsWith(year) // No need to check cropName
+        );
 
-            console.log(filteredEntries);
-
-            // Calculate the sum and count of entries
+        // Calculate the sum and count of entries for each key
+        const averages = keys.map(key => {
             const { sum, count } = filteredEntries.reduce((acc, entry) => {
-                acc.sum += entry[keys[0]];
+                acc.sum += entry[key];
                 acc.count += 1;
                 return acc;
             }, { sum: 0, count: 0 });
 
-            // Return the average
+            // Return the average for the current key
             return count > 0 ? sum / count : 0;
         });
+
+        return averages; // Returns an array of averages for each key
     });
 
     console.log(totalsPerYear);
+
 
     const barChartData = {
         labels: uniqueYears,
         datasets: crops.map((crop, index) => ({
             label: crop,
             data: totalsPerYear.map(yearTotals => yearTotals[index] || 0),
-            backgroundColor: '#007bff',
+            backgroundColor:'#007bff',
             borderColor: '#007bff',
-            borderWidth: 2
+            borderWidth: 1
         }))
     };
 
@@ -223,20 +224,16 @@ class SeasonalTrends {
                     display: true,
                     text: `${label} Per Year (${season} Season)`
                 },
-                tooltip: {
+               tooltip: {
                     callbacks: {
                         label: function(tooltipItem) {
                             const index = tooltipItem.dataIndex;
                             const year = uniqueYears[index];
-                            const total = totalsPerYear[index].reduce((a, b) => a + b, 0);
-                            return [
-                                `Average ${keys[0]} per Year: ${total.toFixed(2)}`,
-                                ...keys.slice(1).map(key => {
-                                    const yearlyData = dataset.filter(entry => entry.monthYear.endsWith(year));
-                                    const totalPerKey = yearlyData.reduce((acc, entry) => acc + (entry[key] || 0), 0);
-                                    return `Average ${key} per Year: ${totalPerKey.toFixed(2)}`;
-                                })
-                            ];
+                            const averages = totalsPerYear[index];
+
+                            return averages.map((average, avgIndex) => {
+                                return `Average ${keys[avgIndex]} for ${year}: ${average.toFixed(2)}`;
+                            });
                         }
                     }
                 }
