@@ -114,7 +114,6 @@ class SeasonalTrends {
                 pointRadius: 5, // Size of the points
             }))
     };
-
     const chartType = keys[0] === 'totalOccurrence' ? 'scatter' : 'line';
     
     const lineChartConfig = {
@@ -141,7 +140,10 @@ class SeasonalTrends {
                                 `${keys[0]}: ${lineChartData.datasets[tooltipItem.datasetIndex].data[index].y}`,
                                 ...keys.slice(1).map(key => {
                                     if(key === "pestOccurrences") {
-                                        let result = monthlyData.reduce((acc, entry) => acc + (entry[key][0].occurence || 0), 0);
+                                        let result = monthlyData[0].pestOccurrences.map((pest) => {
+                                            return `${pest.pestName} : ${pest.occurrence}`;
+                                        }).join('\n');
+                                        
                                         return result;
                                     } else {
                                         const total = monthlyData.reduce((acc, entry) => acc + (entry[key] || 0), 0);
@@ -178,8 +180,18 @@ class SeasonalTrends {
             entry.monthYear.endsWith(year) // No need to check cropName
         );
 
+
         // Calculate the sum and count of entries for each key
         const averages = keys.map(key => {
+            if (["pestOccurrences", "diseaseOccurrences", "totalOccurrence"].includes(keys[avgIndex])) {
+                let result = filteredEntries.map((entry) => {
+                    return entry.pestOccurrences.map((pest) => {
+                        return `${pest.pestName} : ${pest.occurrence}`;
+                    }).join(', '); // Use comma and space for separation
+                }).join(' | '); // Join entries with a separator for the tooltip
+                
+                return result;
+            } 
             const { sum, count } = filteredEntries.reduce((acc, entry) => {
                 acc.sum += entry[key];
                 acc.count += 1;
@@ -228,6 +240,9 @@ class SeasonalTrends {
                             const averages = totalsPerYear[index];
 
                             return averages.map((average, avgIndex) => {
+                                if (["pestOccurrences", "diseaseOccurrences", "totalOccurrence"].includes(keys[avgIndex])) {
+                                    return `Average ${keys[avgIndex]} for ${year}: ${average}`;
+                                }
                                 return `Average ${keys[avgIndex]} for ${year}: ${average.toFixed(2)}`;
                             });
                         }
@@ -366,7 +381,7 @@ async function handleCategoryChange() {
             break;
         case 'disease_occurrence':
             categoryText = 'Disease Occurrence';
-            key = ["diseaseOccurrence"];
+            key = ["totalOccurrence", "diseaseOccurrences"];
             data = await getDisease(crop, season);
             dataset = stats.countDiseaseOccurrence(data);
             break;

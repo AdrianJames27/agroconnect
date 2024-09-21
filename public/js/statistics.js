@@ -399,52 +399,44 @@ function countPestOccurrenceBarangay(data) {
     );
 }
 
-
 function countDiseaseOccurrence(data) {
     if (!Array.isArray(data)) {
         console.error('Expected data to be an array');
         return [];
     }
 
-    const barangayMonthCropCounts = data.reduce((acc, item) => {
-        const { barangay, monthYear, cropName, season, diseaseName } = item;
+    const monthCropCounts = data.reduce((acc, item) => {
+        const { monthYear, cropName, season, diseaseName } = item;
 
-        if (!acc[barangay]) {
-            acc[barangay] = {};
+        if (!acc[monthYear]) {
+            acc[monthYear] = {};
         }
 
-        if (!acc[barangay][monthYear]) {
-            acc[barangay][monthYear] = {};
+        if (!acc[monthYear][cropName]) {
+            acc[monthYear][cropName] = { season, diseaseOccurrences: {}, totalOccurrence: 0 };
         }
 
-        if (!acc[barangay][monthYear][cropName]) {
-            acc[barangay][monthYear][cropName] = { season, diseaseOccurrences: {}, totalOccurrence: 0 };
+        if (!acc[monthYear][cropName].diseaseOccurrences[diseaseName]) {
+            acc[monthYear][cropName].diseaseOccurrences[diseaseName] = 0;
         }
 
-        if (!acc[barangay][monthYear][cropName].diseaseOccurrences[diseaseName]) {
-            acc[barangay][monthYear][cropName].diseaseOccurrences[diseaseName] = 0;
-        }
-
-        acc[barangay][monthYear][cropName].diseaseOccurrences[diseaseName]++;
-        acc[barangay][monthYear][cropName].totalOccurrence++;
+        acc[monthYear][cropName].diseaseOccurrences[diseaseName]++;
+        acc[monthYear][cropName].totalOccurrence++;
 
         return acc;
     }, {});
 
-    return Object.entries(barangayMonthCropCounts).flatMap(([barangay, monthCropCounts]) =>
-        Object.entries(monthCropCounts).flatMap(([month, crops]) =>
-            Object.entries(crops).map(([cropName, { season, diseaseOccurrences, totalOccurrence }]) => ({
-                barangay,
-                monthYear: month,
-                cropName,
-                season,
-                totalOccurrence,
-                diseaseOccurrences: Object.entries(diseaseOccurrences).map(([diseaseName, occurrence]) => ({
-                    diseaseName,
-                    occurrence
-                }))
+    return Object.entries(monthCropCounts).flatMap(([month, crops]) =>
+        Object.entries(crops).map(([cropName, { season, diseaseOccurrences, totalOccurrence }]) => ({
+            monthYear: month,
+            cropName,
+            season,
+            totalOccurrence,
+            diseaseOccurrences: Object.entries(diseaseOccurrences).map(([diseaseName, occurrence]) => ({
+                diseaseName,
+                occurrence
             }))
-        )
+        }))
     );
 }
 
