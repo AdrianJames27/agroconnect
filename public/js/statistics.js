@@ -10,6 +10,20 @@ function calculateYearlyAverages(yearlyData) {
     });
 }
 
+function calculateMonthlyAverages (monthlyData) {
+    const monthlyAverages = [];
+
+    // Iterate over each month and calculate the average value
+    Object.keys(monthlyData).forEach((monthYear) => {
+        const values = monthlyData[monthYear];
+        const total = values.reduce((sum, value) => sum + value, 0);
+        const average = total / values.length;
+        monthlyAverages.push(average);
+    });
+
+    return monthlyAverages;
+}
+
 function calculateZScoresForGrowthRates(yearlyAverages, growthRates) {
     const mean = growthRates.reduce((a, b) => a + b, 0) / growthRates.length;
     
@@ -1204,7 +1218,25 @@ cropDataMap.forEach((value, key) => {
 
 
 
-export { countAverageAreaPlanted, averageVolumeProduction, averagePrice, UsageLevelFrequency, countPestOccurrence, countDiseaseOccurrence, priceIncomePerHectare, profitPerHectare, getCropData,
-    parseDate, calculateYearlyAverages, calculateZScoresForGrowthRates, interpretPerformance, interpretPerformanceScore,
-    countAverageAreaPlantedBarangay, averageVolumeProductionBarangay, countPestOccurrenceBarangay, countDiseaseOccurrenceBarangay, priceIncomePerHectareBarangay, profitPerHectareBarangay
+export { countAverageAreaPlanted,
+    averageVolumeProduction,
+    averagePrice,
+    UsageLevelFrequency, 
+    countPestOccurrence, 
+    countDiseaseOccurrence, 
+    priceIncomePerHectare, 
+    profitPerHectare, 
+    getCropData,
+    parseDate,
+    calculateYearlyAverages, 
+    calculateZScoresForGrowthRates, 
+    interpretPerformance, 
+    interpretPerformanceScore,
+    countAverageAreaPlantedBarangay, 
+    averageVolumeProductionBarangay, 
+    countPestOccurrenceBarangay, 
+    countDiseaseOccurrenceBarangay, 
+    priceIncomePerHectareBarangay, 
+    profitPerHectareBarangay,
+    calculateMonthlyAverages
 };

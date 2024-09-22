@@ -139,10 +139,14 @@ class SeasonalTrends {
                             return [
                                 `${keys[0]}: ${lineChartData.datasets[tooltipItem.datasetIndex].data[index].y}`,
                                 ...keys.slice(1).map(key => {
-                                    if(key === "pestOccurrences") {
-                                        let result = monthlyData[0].pestOccurrences.map((pest) => {
-                                            return `${pest.pestName} : ${pest.occurrence}`;
-                                        }).join('\n');
+                                    if (["pestOccurrences", "diseaseOccurrences"].includes(key)) {
+                                        let result = monthlyData.map((entry) => {
+                                            return entry[key].map((item) => {
+                                                // Use dynamic property name based on the key
+                                                let name = key === "pestOccurrences" ? item.pestName : item.diseaseName;
+                                                return `${name} : ${item.occurrence}`;
+                                            }).join(', '); // Use comma and space for separation
+                                        }).join(' | '); // Join entries with a separator for the tooltip
                                         
                                         return result;
                                     } else {
@@ -183,15 +187,17 @@ class SeasonalTrends {
 
         // Calculate the sum and count of entries for each key
         const averages = keys.map(key => {
-            if (["pestOccurrences", "diseaseOccurrences", "totalOccurrence"].includes(keys[avgIndex])) {
+            if (["pestOccurrences", "diseaseOccurrences"].includes(key)) {
                 let result = filteredEntries.map((entry) => {
-                    return entry.pestOccurrences.map((pest) => {
-                        return `${pest.pestName} : ${pest.occurrence}`;
+                    return entry[key].map((item) => {
+                        // Use dynamic property name based on the key
+                        let name = key === "pestOccurrences" ? item.pestName : item.diseaseName;
+                        return `${name} : ${item.occurrence}`;
                     }).join(', '); // Use comma and space for separation
                 }).join(' | '); // Join entries with a separator for the tooltip
                 
                 return result;
-            } 
+            }            
             const { sum, count } = filteredEntries.reduce((acc, entry) => {
                 acc.sum += entry[key];
                 acc.count += 1;
@@ -447,145 +453,170 @@ $(document).ready(async function() {
     });
 });
 
-function interpretData(data, key) {
-    const cropData = { total: 0, yearlyData: {}, years: [] };
+function interpretData(data) {
+    const cropData = { total: {}, monthlyData: {}, months: [], pestOccurrences: {}, diseaseOccurrences: {} };
     const cropName = data[0]?.cropName || 'Unknown Crop';
+    const numericFields = Object.keys(data[0]).filter(key => typeof data[0][key] === 'number');
 
-    // Group data by year and calculate total
+    // Initialize structure for all numeric fields
+    numericFields.forEach((field) => {
+        cropData.total[field] = 0;
+        cropData.monthlyData[field] = {};
+    });
+
+    // Group data by monthYear and calculate totals
     data.forEach((item) => {
         const { monthYear } = item;
-        const value = item[key];
-        const year = new Date(monthYear).getFullYear();
 
-        cropData.total += value;
+        // Aggregate numeric fields
+        numericFields.forEach((field) => {
+            const value = item[field] || 0; // Default to 0 if undefined
+            cropData.total[field] += value;
 
-        if (!cropData.yearlyData[year]) {
-            cropData.yearlyData[year] = [];
+            if (!cropData.monthlyData[field][monthYear]) {
+                cropData.monthlyData[field][monthYear] = [];
+            }
+            cropData.monthlyData[field][monthYear].push(value);
+        });
+
+        // Handle pestOccurrences if they exist
+        if (item.pestOccurrences && Array.isArray(item.pestOccurrences)) {
+            item.pestOccurrences.forEach(({ pestName, occurrence }) => {
+                cropData.pestOccurrences[pestName] = (cropData.pestOccurrences[pestName] || 0) + occurrence;
+            });
         }
-        cropData.yearlyData[year].push(value);
-        if (!cropData.years.includes(year)) {
-            cropData.years.push(year);
+
+        // Handle diseaseOccurrences if they exist
+        if (item.diseaseOccurrences && Array.isArray(item.diseaseOccurrences)) {
+            item.diseaseOccurrences.forEach(({ diseaseName, occurrence }) => {
+                cropData.diseaseOccurrences[diseaseName] = (cropData.diseaseOccurrences[diseaseName] || 0) + occurrence;
+            });
+        }
+
+        if (!cropData.months.includes(monthYear)) {
+            cropData.months.push(monthYear);
         }
     });
 
-    cropData.years.sort((a, b) => a - b);
-    const yearlyAverages = stats.calculateYearlyAverages(cropData.yearlyData);
+    // Sort months for proper comparison
+    cropData.months.sort((a, b) => new Date(a) - new Date(b));
 
-    // Calculate growth rates
-    const growthRates = [];
-    if (cropData.years.length >= 2) {
-        for (let i = 1; i < cropData.years.length; i++) {
-            const previousYearAvg = yearlyAverages[i - 1];
-            const currentYearAvg = yearlyAverages[i];
-            const growthRate = Math.round(((currentYearAvg - previousYearAvg) / previousYearAvg) * 100);
-            growthRates.push(growthRate);
-        }
-    }
-    const growthRateOverall = cropData.years.length >= 2
-        ? Math.round(((yearlyAverages[yearlyAverages.length - 1] - yearlyAverages[0]) / yearlyAverages[0]) * 100)
-        : 0;
+    // Calculate monthly averages for each numeric field
+    const monthlyAverages = {};
+    numericFields.forEach((field) => {
+        monthlyAverages[field] = stats.calculateMonthlyAverages(cropData.monthlyData[field]);
+    });
 
-    const result = {
-        average: cropData.total / data.length,
-        growthRateOverall,
-        growthRateLatestYear: growthRates[growthRates.length - 1] || 0,
-        zScores: [],
-        performance: '',
-    };
-
-    // Calculate Z-scores for growth rates and interpret performance
-    if (growthRates.length > 0) {
-        const { growthRateZScores, meanGrowthRateZScore } = stats.calculateZScoresForGrowthRates(yearlyAverages, growthRates);
-        result.zScores = growthRateZScores;
-        result.performance = stats.interpretPerformance(meanGrowthRateZScore);
-    } else {
-        result.performance = 'Insufficient data';
-    }
-
-    // Calculate average value by month based on the specified key
-    const averageByMonth = (data, key) => {
-        const aggregates = data.reduce((acc, entry) => {
-            const [month] = entry.monthYear.split(' ');
-            const keyName = `${entry.cropName} - ${month}`;
-            if (!acc[keyName]) {
-                acc[keyName] = {
-                    value: 0,
-                    count: 0
-                };
+    // Calculate month-to-month growth rates for each field
+    const growthRates = {};
+    numericFields.forEach((field) => {
+        growthRates[field] = [];
+        if (cropData.months.length >= 2) {
+            for (let i = 1; i < cropData.months.length; i++) {
+                const previousMonthAvg = monthlyAverages[field][i - 1];
+                const currentMonthAvg = monthlyAverages[field][i];
+                const growthRate = Math.round(((currentMonthAvg - previousMonthAvg) / previousMonthAvg) * 100);
+                growthRates[field].push(growthRate);
             }
-            acc[keyName].value += entry[key];
-            acc[keyName].count += 1;
-            return acc;
-        }, {});
+        }
+    });
 
-        return Object.entries(aggregates).map(([keyName, values]) => {
-            const [cropName, month] = keyName.split(' - ');
-            return {
-                cropName,
-                month,
-                averageValue: values.value / values.count
-            };
-        });
-    };
+    // Handle edge cases where growth rates are insufficient
+    const overallGrowthRates = {};
+    numericFields.forEach((field) => {
+        overallGrowthRates[field] = cropData.months.length >= 2
+            ? Math.round(((monthlyAverages[field][monthlyAverages[field].length - 1] - monthlyAverages[field][0]) / monthlyAverages[field][0]) * 100)
+            : 0;
+    });
 
-    // Find the best month range for the crop
-    const peakMonthRange = bestMonthRange(cropName, averageByMonth(data, key));
+    const results = {};
+    numericFields.forEach((field) => {
+        const zScores = calculateZScores(monthlyAverages[field], growthRates[field]);
 
-    // Construct interpretation
-    const uniqueYears = Array.from(new Set(data.map(entry => entry.monthYear.split(' ')[1]))).sort((a, b) => a - b);
-    const yearRange = uniqueYears.length === 1
-        ? uniqueYears[0]
-        : `${Math.min(...uniqueYears)}-${Math.max(...uniqueYears)}`;
+        results[field] = {
+            average: cropData.total[field] / data.length,
+            growthRateOverall: overallGrowthRates[field],
+            growthRateLatestMonth: growthRates[field][growthRates[field].length - 1] || 0,
+            zScores: zScores.growthRateZScores,
+            performance: zScores.meanGrowthRateZScore === 0 ? 'Stable' : stats.interpretPerformance(zScores.meanGrowthRateZScore),
+        };
+    });
 
-    let interpretation = `From ${yearRange}, the average ${key.replace(/([A-Z])/g, ' $1').toLowerCase()} for <strong>${cropName}</strong> was ${result.average.toFixed(2)} units per hectare.`;
-
-    if (result.growthRateLatestYear !== 0 && result.performance !== 'Insufficient data') {
-        interpretation += ` Over the period, the crop experienced an overall growth rate of ${result.growthRateOverall}%, with a growth rate of ${result.growthRateLatestYear}% in the most recent year, indicating a performance level of ${result.performance}.`;
-    }
-
-    if (peakMonthRange !== 'No data') {
-        interpretation += ` The <strong>${cropName}</strong> appears to peak in the <strong>${peakMonthRange}</strong>.`;
-    }
-
-    interpretation += `</p>`;
-
-    interpretation += `<p>In 2023, <strong>Amplaya</strong> 
-    production exhibited notable changes compared to 2022. The <strong>total production</strong> 
-    for 2023 reached <strong>11,000 tons</strong>, an increase from the <strong>9,200 tons</strong> recorded in 2022. Total production refers to the overall quantity of <strong>Amplaya</strong> harvested within the year and is crucial for assessing the scale of output and the ability to meet market demand. This rise of <strong>1,800 tons</strong> reflects a significant enhancement in overall output, suggesting improvements in farming practices or increased market demand. The <strong>total area planted</strong> also expanded to <strong>500 hectares</strong> in 2023, up from <strong>470 hectares</strong> the previous year. Total area planted indicates the total land area dedicated to <strong>Amplaya</strong> cultivation, which helps in understanding the scale of cultivation efforts and planning for resource allocation.
-     This additional <strong>30 hectares</strong> indicates a deliberate effort to increase cultivation area, 
-     likely in response to growing demand or opportunities for higher yields. Despite this expansion, the <strong>production per hectare</strong> for 2023 was <strong>22 tons</strong>, which is slightly higher than the <strong>19.57 tons</strong> per hectare achieved in 2022. Production per hectare measures the average amount of <strong>Amplaya</strong> produced per unit of land and is calculated by dividing the total production by the total area planted. This increase in production per hectare underscores improved efficiency and productivity, reflecting advancements in agricultural techniques or better growing conditions. Overall, the data highlights a successful year for <strong>Amplaya</strong> farming, with both higher <strong>total production</strong> and improved land use efficiency compared to the previous year, 
-     demonstrating effective utilization of resources and enhanced farming outcomes.</p>
-`;
-
-    return interpretation;
+    // Construct interpretation text
+    const uniqueMonths = Array.from(new Set(data.map(entry => entry.monthYear))).sort((a, b) => new Date(a) - new Date(b));
+    const monthRange = uniqueMonths.length === 1
+        ? uniqueMonths[0]
+        : `${uniqueMonths[0]} - ${uniqueMonths[uniqueMonths.length - 1]}`;
+    
+    let interpretation = `<h3 class="text-primary" style="font-size: 1.8rem;">Crop Performance Analysis for <strong>${cropName}</strong></h3>`;
+    interpretation += `<p style="font-size: 1rem;">Period: <span class="text-success">${monthRange}</span>. During the specified period, the following trends were observed for the crop <strong>${cropName}</strong>: `;
+    
+    numericFields.forEach((field) => {
+        const formattedFieldName = field.replace(/([A-Z])/g, ' $1').toLowerCase();
+        interpretation += `Average ${formattedFieldName}: <span class="badge bg-info">${results[field].average.toFixed(2)} units per hectare</span>, Overall Growth Rate: <span class="badge bg-warning">${results[field].growthRateOverall}%</span> over the entire period, Growth Rate in Latest Month: <span class="badge bg-success">${results[field].growthRateLatestMonth}%</span> in the most recent month, Performance: The crop's ${formattedFieldName} is performing at a <span class="badge bg-secondary">${results[field].performance}</span> level. `;
+    });
+// Conditionally display pest occurrences
+if (Object.keys(cropData.pestOccurrences).length > 0) {
+    const pestItems = Object.entries(cropData.pestOccurrences)
+        .map(([name, occurrence]) => `
+            <li style="margin: 0; padding: 10px; border-bottom: 1px solid #ddd; 
+                background-color: #f9f9f9; transition: background-color 0.3s;">
+                ${name}: <strong>${occurrence}</strong>
+            </li>
+        `).join('');
+    interpretation += `
+        <div style="margin-top: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+            <h5 style="margin: 0; padding-bottom: 5px; color: #d9534f;">Pest Occurrences</h5>
+            <ul style="list-style-type: none; padding: 0; margin: 0;">
+                ${pestItems}
+            </ul>
+        </div>
+    </br>`;
 }
 
-// Find the best month range for each crop
-const bestMonthRange = (cropName, averageByMonth) => {
-    const monthlyData = averageByMonth.filter(item => item.cropName === cropName);
-    if (monthlyData.length === 0) return 'No data';
+// Conditionally display disease occurrences
+if (Object.keys(cropData.diseaseOccurrences).length > 0) {
+    const diseaseItems = Object.entries(cropData.diseaseOccurrences)
+        .map(([name, occurrence]) => `
+            <li style="margin: 0; padding: 10px; border-bottom: 1px solid #ddd; 
+                background-color: #f9f9f9; transition: background-color 0.3s;">
+                ${name}: <strong>${occurrence}</strong>
+            </li>
+        `).join('');
+    interpretation += `
+        <div style="margin-top: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+            <h5 style="margin: 0; padding-bottom: 5px; color: #d9534f;">Disease Occurrences</h5>
+            <ul style="list-style-type: none; padding: 0; margin: 0;">
+                ${diseaseItems}
+            </ul>
+        </div>
+    </br>`;
+}
 
-    // Group by months into ranges
-    const monthRanges = [
-        { range: 'Jan-Mar', months: ['January', 'February', 'March'] },
-        { range: 'Apr-Jun', months: ['April', 'May', 'June'] },
-        { range: 'Jul-Sep', months: ['July', 'August', 'September'] },
-        { range: 'Oct-Dec', months: ['October', 'November', 'December'] }
-    ];
 
-    const averageRange = monthRanges.map(range => {
-        const rangeData = monthlyData.filter(item => range.months.includes(item.month));
-        const average = rangeData.reduce((sum, item) => sum + item.averageValue, 0) / rangeData.length;
-        return { range: range.range, average };
-    });
 
-    // Find the best range
-    const bestRange = averageRange.reduce((best, current) => {
-        return current.average > best.average ? current : best;
-    }, { average: -Infinity });
+    interpretation += `This analysis provides an essential overview of the crop's performance over time, helping stakeholders understand production dynamics and make informed decisions based on growth rates and performance scores.</p>`;
+    
+    return interpretation;                       
+}
 
-    return bestRange.range;
-};
+
+// Modified Z-score calculation function to handle constant values or no variation
+function calculateZScores(values, growthRates) {
+    const mean = growthRates.reduce((sum, val) => sum + val, 0) / growthRates.length;
+    const squaredDiffs = growthRates.map(rate => Math.pow(rate - mean, 2));
+    const variance = squaredDiffs.reduce((sum, val) => sum + val, 0) / (squaredDiffs.length - 1 || 1);
+    const stdDev = Math.sqrt(variance);
+
+    if (stdDev === 0) {
+        return { growthRateZScores: Array(growthRates.length).fill(0), meanGrowthRateZScore: 0 };
+    }
+
+    const growthRateZScores = growthRates.map(rate => (rate - mean) / stdDev);
+    const meanGrowthRateZScore = growthRateZScores.reduce((sum, val) => sum + val, 0) / growthRateZScores.length;
+
+    return { growthRateZScores, meanGrowthRateZScore };
+}
 
 
 $(document).ready(function() {
@@ -992,7 +1023,7 @@ function downloadPDF(filename) {
     const addTextToPDF = (text, x, y) => {
         const textWidth = pageWidth - 2 * margin;
         const splitText = doc.splitTextToSize(text, textWidth);
-    
+
         splitText.forEach(line => {
             const lineWidth = doc.getTextWidth(line);
             const textX = (pageWidth - lineWidth) / 2; // Center horizontally
@@ -1003,7 +1034,7 @@ function downloadPDF(filename) {
             doc.text(line, textX, y);
             y += 10; // Line height
         });
-    
+
         return y; // Return updated y-coordinate
     };
 
@@ -1017,23 +1048,26 @@ function downloadPDF(filename) {
     html2canvas(document.getElementById('seasonalTrendChart'), {
         scale: 2,
         useCORS: true
-    }).then(canvas => {
-        addImageToPDF(canvas, 10, 10, 190, 80); // Add seasonalTrendChart to PDF
-
-        let currentY = 100; // Initial y-coordinate after the first image
-
-        const interpretationText = document.querySelector('#interpretation').innerText.trim();
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'normal');
-
-        currentY = addTextToPDF(interpretationText, 10, currentY); // Add interpretation text
+    }).then(canvas1 => {
+        // Add first chart to PDF
+        addImageToPDF(canvas1, margin, margin, 90, 80); // First chart
 
         // Add content from totalPerYearChart
         html2canvas(document.getElementById('totalPerYearChart'), {
             scale: 2,
             useCORS: true
-        }).then(canvas => {
-            addImageToPDF(canvas, 10, currentY, 190, 80); // Add totalPerYearChart to PDF
+        }).then(canvas2 => {
+            // Add second chart to PDF
+            addImageToPDF(canvas2, 100 + margin, margin, 90, 80); // Second chart
+
+            // Move y-coordinate for interpretation text
+            let currentY = Math.max(80, margin + 90); // Ensure it's below both charts
+
+            const interpretationText = document.querySelector('#interpretation').innerText.trim();
+            doc.setFontSize(10); // Set font size smaller for interpretation text
+            doc.setFont('helvetica', 'normal');
+
+            currentY = addTextToPDF(interpretationText, 10, currentY); // Add interpretation text
 
             doc.save(filename); // Save the PDF
         });
