@@ -463,7 +463,7 @@ function downloadCSV(filename, data) {
       barangay: 'Barangay / Area',
       cropName: 'Crop Name',
       season: 'Season',
-      volumeProduction: 'Average Volume Production (mt/ha)',
+      volumeProductionPerHectare: 'Average Volume Production (mt/ha)',
       incomePerHectare: 'Average Income / ha',
       profitPerHectare: 'Average Profit / ha',
       price: 'Price (kg)',
@@ -480,8 +480,8 @@ function downloadCSV(filename, data) {
 
   const filenameLower = filename.toLowerCase();
 
-  if (filenameLower.includes('volumeproduction')) {
-      additionalHeaders.push('volumeProduction');
+  if (filenameLower.includes('volumeproductionperhectare')) {
+      additionalHeaders.push('volumeProductionPerHectare');
   }
   if (filenameLower.includes('incomeperhectare')) {
       additionalHeaders.push('incomePerHectare');
@@ -547,13 +547,13 @@ function downloadExcel(filename, data) {
       barangay: 'Barangay / Area',
       cropName: 'Crop Name',
       season: 'Season',
-      volumeProduction: 'Average Volume Production (mt/ha)',
+      volumeProductionPerHectare: 'Average Volume Production (mt/ha)',
       incomePerHectare: 'Average Income / ha',
       profitPerHectare: 'Average Profit / ha',
       price: 'Price (kg)',
       pestOccurrence: 'Pest Observed',
       diseaseOccurrence: 'Disease Observed',
-      totalPlanted: 'Total Planted'
+      totalPlanted: 'Total Planted',
   };
 
   // Always include these three headers
@@ -564,8 +564,8 @@ function downloadExcel(filename, data) {
   
   const filenameLower = filename.toLowerCase();
 
-  if (filenameLower.includes('volumeproduction')) {
-      additionalHeaders.push('volumeProduction');
+  if (filenameLower.includes('volumeproductionperhectare')) {
+      additionalHeaders.push('volumeProductionPerHectare');
   }
   if (filenameLower.includes('incomeperhectare')) {
       additionalHeaders.push('incomePerHectare');

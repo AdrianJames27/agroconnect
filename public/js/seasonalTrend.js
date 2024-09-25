@@ -678,13 +678,14 @@ function downloadCSV(filename, data) {
         cropName: 'Crop Name',
         season: 'Season',
         monthYear: 'Month-Year',
-        volumeProduction: 'Average Volume Production (mt/ha)',
+        volumeProductionPerHectare: 'Average Volume Production (mt/ha)',
         incomePerHectare: 'Average Income / ha',
         profitPerHectare: 'Average Profit / ha',
         price: 'Price (kg)',
         pestOccurrence: 'Pest Observed',
         diseaseOccurrence: 'Disease Observed',
-        totalPlanted: 'Total Planted'
+        totalPlanted: 'Total Planted',
+        totalVolume: 'Total Volume (mt)'
     };
 
     // Always include these headers for both monthly and yearly data
@@ -694,8 +695,11 @@ function downloadCSV(filename, data) {
     const additionalHeaders = [];
     const filenameLower = filename.toLowerCase();
 
-    if (filenameLower.includes('volumeproduction')) {
-        additionalHeaders.push('volumeProduction');
+    if (filenameLower.includes('volumeproductionperhectare')) {
+        additionalHeaders.push('volumeProductionPerHectare');
+    }
+    if (filenameLower.includes('totalvolume')) {
+        additionalHeaders.push('totalVolume');
     }
     if (filenameLower.includes('incomeperhectare')) {
         additionalHeaders.push('incomePerHectare');
@@ -804,13 +808,14 @@ function downloadExcel(filename, data) {
         monthYear: 'Month Year',
         cropName: 'Crop Name',
         season: 'Season',
-        volumeProduction: 'Average Volume Production (mt/ha)',
+        volumeProductionPerHectare: 'Average Volume Production (mt/ha)',
         incomePerHectare: 'Average Income / ha',
         profitPerHectare: 'Average Profit / ha',
         price: 'Price (kg)',
         pestOccurrence: 'Pest Observed',
         diseaseOccurrence: 'Disease Observed',
-        totalPlanted: 'Total Planted'
+        totalPlanted: 'Total Planted',
+        totalVolume: 'Total Volume (mt)'
     };
 
     console.log(data);
@@ -823,8 +828,11 @@ function downloadExcel(filename, data) {
 
     const filenameLower = filename.toLowerCase();
 
-    if (filenameLower.includes('volumeproduction')) {
-        additionalHeaders.push('volumeProduction');
+    if (filenameLower.includes('volumeproductionperhectare')) {
+        additionalHeaders.push('volumeProductionPerHectare');
+    }
+    if (filenameLower.includes('totalvolume')) {
+        additionalHeaders.push('totalVolume');
     }
     if (filenameLower.includes('incomeperhectare')) {
         additionalHeaders.push('incomePerHectare');
