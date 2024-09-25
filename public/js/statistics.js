@@ -289,7 +289,7 @@ function averageVolumeProductionBarangay(data) {
             season,
             totalVolume: totalVolume.toFixed(2),
             totalArea: totalArea.toFixed(2),
-            volumeProduction: totalArea > 0 
+            volumeProductionPerHectare: totalArea > 0 
                 ? parseFloat((totalVolume / totalArea).toFixed(2)) 
                 : 0,
         }))

@@ -164,30 +164,112 @@ class MapTrends {
                 }
             });
 
-            interpret(updatedData, key, text);
+            interpret(updatedData, key);
         }, 500); // Delay of 500 milliseconds
     }
 }
 
-// Interpret data and update interpretation section
-function interpret(data, key, text) {
-  const sortedData = [...data].sort((a, b) => b[key] - a[key]);
-  const highestValue = sortedData[0][key];
-  const lowestValue = sortedData[sortedData.length - 1][key];
-  
-  // Filter barangays for highest and lowest values separately
-  const highestBarangays = sortedData
-      .filter(d => d[key] === highestValue)
-      .map(d => d.barangay);
-  const lowestBarangays = sortedData
-      .filter(d => d[key] === lowestValue)
-      .map(d => d.barangay)
-      .filter(barangay => !highestBarangays.includes(barangay)); // Exclude highest barangays
+function interpret(data, key) {
+    // Check if data is empty
+    if (data.length === 0) {
+        return `
+            <div class="alert alert-warning" role="alert">
+                No data available.
+            </div>
+        `;
+    }
 
-  $('#interpretation').html(`
-      <p>Findings: The barangays with the highest ${text} (${highestValue}) are: ${highestBarangays.join(', ')} (${highestBarangays.length} barangay${highestBarangays.length > 1 ? 's' : ''}). The barangays with the lowest ${text} (${lowestValue}) are: ${lowestBarangays.join(', ')} (${lowestBarangays.length} barangay${lowestBarangays.length > 1 ? 's' : ''}).</p>
-  `);
+    // Retrieve the crop name from the first entry
+    const cropName = data[0].cropName;
+
+    // Aggregate the specified key by barangay
+    const aggregatedData = aggregateProduction(data, key);
+
+    // Filter out barangays with positive and zero values
+    const productiveData = aggregatedData.filter(d => d.total > 0);
+    const nonProductiveData = aggregatedData.filter(d => d.total === 0);
+
+    // Handle case where there is no productive data
+    if (productiveData.length === 0) {
+        return `
+            <div class="alert alert-warning" role="alert">
+                No productive data available for ${cropName}.
+            </div>
+        `;
+    }
+
+    // Sort the productive data in descending order by the specified key
+    const sortedProductiveData = [...productiveData].sort((a, b) => b.total - a.total);
+
+    // Calculate statistics
+    const highestValue = sortedProductiveData[0].total;
+    const lowestValue = sortedProductiveData[sortedProductiveData.length - 1].total;
+    const averageValue = (sortedProductiveData.reduce((sum, d) => sum + d.total, 0) / sortedProductiveData.length).toFixed(2);
+
+    // Create a Bootstrap styled output
+    let interpretation = `
+        <div class="container">
+            <h3 class="text-primary" style="font-size: 1.8rem;">Crop Performance Analysis for <strong>${cropName}</strong></h3>
+            <p style="font-size: 1rem;">This analysis provides a detailed breakdown of ${cropName}'s performance, highlighting trends and growth rates.</p>
+            <ul class="list-group mb-4">
+                <li class="list-group-item">
+                    <strong>Highest ${formatKey(key)}:</strong> <span class="badge bg-success">${highestValue}</span>
+                    <div>Barangays: ${sortedProductiveData.filter(d => d.total === highestValue).map(d => d.barangay).join(', ')}</div>
+                </li>
+                <li class="list-group-item">
+                    <strong>Lowest ${formatKey(key)}:</strong> <span class="badge bg-danger">${lowestValue}</span>
+                    <div>Barangays: ${sortedProductiveData.filter(d => d.total === lowestValue).map(d => d.barangay).join(', ')}</div>
+                </li>
+                <li class="list-group-item">
+                    <strong>Average ${formatKey(key)}:</strong> <span class="badge bg-info">${averageValue}</span>
+                </li>
+            </ul>
+            <h5 class="text-secondary">Productive Barangay Breakdown:</h5>
+            <ul class="list-group">
+                ${sortedProductiveData.map(d => `<li class="list-group-item">${d.barangay}: ${d.total}</li>`).join('')}
+            </ul><br>
+            ${nonProductiveData.length > 0 ? `<p class="text-danger">The following barangays reported no production: ${nonProductiveData.map(d => d.barangay).join(', ')}.</p>` : ''}
+            <small class="text-muted">Note: Findings are based on available data only.</small>
+        </div>
+    `;
+
+    $('#interpretation').html(interpretation);
 }
+
+
+// Function to format the key
+function formatKey(key) {
+    // Add space before each uppercase letter
+    const formattedKey = key.replace(/([A-Z])/g, ' $1').trim();
+    
+    // Capitalize the first letter
+    return formattedKey.charAt(0).toUpperCase() + formattedKey.slice(1);
+}
+
+// Function to aggregate any specified key by barangay
+function aggregateProduction(data, key) {
+    const aggregatedData = {};
+
+    // Iterate through each data entry
+    data.forEach(entry => {
+        const barangay = entry.barangay;
+        const value = entry[key] || 0; // Use 0 if the value is undefined
+
+        // Aggregate the specified key by barangay
+        if (!aggregatedData[barangay]) {
+            aggregatedData[barangay] = {
+                barangay: barangay,
+                total: 0
+            };
+        }
+        aggregatedData[barangay].total += value;
+    });
+
+    // Convert aggregatedData object back to an array
+    return Object.values(aggregatedData);
+}
+
+
 
 // Function to update crop options based on type and season
 async function updateCropOptions() {
@@ -232,9 +314,9 @@ async function handleCategoryChange() {
             text = "area planted";
             break;
         case 'production_volume':
-            key = "volumeProduction";
+            key = "volumeProductionPerHectare";
             data = await getProduction(crop, season);
-            categoryText = `Production Volume Per Barangay (${yearRange})`;
+            categoryText = `Production Volume per Hectare Per Barangay (${yearRange})`;
             dataset = stats.averageVolumeProductionBarangay(data);
             text = "production volume per hectare";
             break;
@@ -610,110 +692,116 @@ function downloadExcel(filename, data) {
 
 
 function downloadPDF(filename, data) {
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF();
-  const margin = 10; // Margin from the page edges
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
-  let currentY = margin + 20;
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF();
+    const margin = 10; // Margin from the page edges
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    let currentY = margin + 20;
 
-  // Helper function to capture a section as an image
-  function captureSection(selector) {
-    return html2canvas(document.querySelector(selector), {
-      background: 'transparent',
-      useCORS: true,
-      scale: 2 // Increase scale for better image quality
-    }).then(canvas => canvas.toDataURL('image/png'));
-  }
+    // Capture a section and return its image data
+    function captureSection(selector) {
+        return html2canvas(document.querySelector(selector), {
+            background: 'transparent',
+            useCORS: true,
+            scale: 2
+        }).then(canvas => canvas.toDataURL('image/png'));
+    }
 
-  // Helper function to add an image to the PDF
-  function addImageToPDF(imgData, x, y, width, height) {
-    pdf.addImage(imgData, 'PNG', x, y, width, height, undefined, 'NONE'); // 'NONE' for no compression
-  }
+    // Add an image to the PDF
+    function addImageToPDF(imgData, x, y, width, height) {
+        pdf.addImage(imgData, 'PNG', x, y, width, height, undefined, 'NONE');
+    }
 
-  // Function to add the title text to the PDF
-  function addTitle() {
-    const titleText = document.querySelector('#title').innerText;
-    pdf.setFontSize(16);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text(titleText, pageWidth / 2, margin + 12, { align: 'center' });
-    pdf.setFont('helvetica', 'normal');
-  }
+    // Add title to the PDF with text size 12
+    function addTitle() {
+        return new Promise((resolve) => {
+            const titleText = document.querySelector('#title').innerText;
+            pdf.setFontSize(12); // Set title font size to 12
+            pdf.setFont('helvetica', 'bold');
+            const titleWidth = pdf.getTextWidth(titleText); // Get the width of the title
+            const titleX = (pageWidth - titleWidth) / 2; // Center the title
+            pdf.text(titleText, titleX, currentY); // Add title text to PDF
+            currentY += 15; // Increase the Y position for the next element
+            resolve(); // Resolve the promise
+        });
+    }
 
-  // Function to add the legend card to the PDF
-  function addLegendCard() {
-    return captureSection('.legend-card').then(imgData => {
-      const scaledWidth = 180 / 3; // Scaled down width
-      const scaledHeight = 40 / 3; // Scaled down height
-      const legendX = (pageWidth - scaledWidth) / 2; // Center horizontally
-      addImageToPDF(imgData, legendX, currentY, scaledWidth, scaledHeight);
-      currentY += scaledHeight + 10; // Update Y position for the next section
-    });
-  }
+    // Add legend card to the PDF using html2canvas
+    function addLegendCard() {
+        return captureSection('.legend-card').then(imgData => {
+            const legendWidth = 180 / 3;
+            const legendHeight = 40 / 3;
+            const legendX = (pageWidth - legendWidth) / 2; // Center legend
+            addImageToPDF(imgData, legendX, currentY, legendWidth, legendHeight);
+            currentY += legendHeight + 10; // Update current Y position
+        });
+    }
 
-  // Function to add the map image to the PDF
-  function addMap() {
-    return captureSection('#map').then(imgData => {
-      const imgWidth = 180;
-      const imgHeight = 130;
-      const mapX = (pageWidth - imgWidth) / 2; // Center horizontally
-      addImageToPDF(imgData, mapX, currentY, imgWidth, imgHeight);
-      currentY += imgHeight + 10; // Update Y position for the next section
-    });
-  }
+    // Add map to the PDF with adjusted size
+    function addMap() {
+        return captureSection('#map').then(imgData => {
+            const imgWidth = 120; // Adjusted width for the map
+            const imgHeight = 90; // Adjusted height for the map
+            const mapX = (pageWidth - imgWidth) / 2; // Center the map horizontally
+            addImageToPDF(imgData, mapX, currentY, imgWidth, imgHeight);
+            currentY += imgHeight + 10; // Update current Y position
+        });
+    }
 
-  // Function to add the interpretation text to the PDF
-  function addInterpretationText() {
-    const interpretationText = document.querySelector('#interpretation').innerText.trim();
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'normal');
-    const textWidth = pageWidth - 2 * margin;
-    const splitText = pdf.splitTextToSize(interpretationText, textWidth);
+    // Add interpretation text as an image to the PDF
+    function addInterpretationText() {
+        return captureSection('#interpretation').then(imgData => {
+            const imgWidth = pageWidth - 2 * margin; // Full width minus margins
+            const imgHeight = (imgWidth / 2); // Maintain aspect ratio, adjust height as needed
+            const interpretationX = (pageWidth - imgWidth) / 2; // Center horizontally
+            addImageToPDF(imgData, interpretationX, currentY, imgWidth, imgHeight);
+            currentY += imgHeight + 10; // Update current Y position
+        });
+    }
 
-    splitText.forEach(line => {
-      const lineWidth = pdf.getTextWidth(line);
-      const textX = (pageWidth - lineWidth) / 2; // Center horizontally
-      if (currentY > pageHeight - margin) {
-        pdf.addPage(); // Add a new page if needed
-        currentY = margin; // Reset text margin for the new page
-      }
-      pdf.text(line, textX, currentY);
-      currentY += 10; // Line height
-    });
+    // Add a table to the next page in the PDF
+    function addTable() {
+        pdf.addPage(); // Start a new page for the table
+        const keys = Object.keys(data[0]).filter(key => key !== 'remarks');
+        const rows = data.map(item => keys.map(key => item[key]));
 
-    currentY += 70; // Extra space after the text
-  }
+        pdf.autoTable({
+            head: [['Barangay (Area)', 'Rating']],
+            body: rows,
+            startY: margin,
+            margin: { left: margin, right: margin },
+            theme: 'grid',
+            styles: {
+                cellPadding: 2,
+                fontSize: 10 // Smaller font size for table
+            },
+            headStyles: {
+                fillColor: [22, 160, 133], // Custom header color
+                textColor: [255, 255, 255] // White text
+            },
+            alternateRowStyles: {
+                fillColor: [240, 240, 240] // Light gray for alternating rows
+            }
+        });
+    }
 
-  // Function to add the table data to the PDF using autoTable
-  function addTable() {
-    const keys = Object.keys(data[0]).filter(key => key !== 'remarks');
-    const rows = data.map(item => keys.map(key => item[key]));
+    // Prepare filename based on the selected season
+    let season = $("#season").val();
+    season = season.charAt(0).toUpperCase() + season.slice(1);
+    filename = season + "_" + downloadYR + "_" + filename.charAt(0).toUpperCase() + filename.slice(1);
 
-    pdf.autoTable({
-      head: [['Barangay (Area)', 'Rating']],
-      body: rows,
-      startY: currentY,
-      margin: { left: margin, right: margin },
-      theme: 'grid'
-    });
-  }
+    try {
+        addTitle() // Add title at the start of the PDF
+            .then(addLegendCard) // Add legend card
+            .then(addMap) // Add map
+            .then(addInterpretationText) // Add interpretation text
+            .then(addTable) // Add table on the next page
+            .finally(() => pdf.save(filename))
+            .catch(err => console.error('Error generating PDF:', err));
+    } catch (err) {
+        console.error('Error generating PDF:', err);
+    }
 
-  let season = $("#season").val();
-  season = season.charAt(0).toUpperCase() + season.slice(1)
-  filename = season + "_" + downloadYR + "_" + filename.charAt(0).toUpperCase() + filename.slice(1);
-
-  // Chain all the functions together to generate the PDF
-  try {
-    addTitle(); // Add title first
-    addLegendCard() // Add legend card
-      .then(addMap) // Add map image after legend
-      .then(addInterpretationText) // Add interpretation text
-      .then(addTable) // Add table data
-      .finally(() => pdf.save(filename)) // Save the PDF
-      .catch(err => console.error('Error generating PDF:', err));
-  } catch (err) {
-    console.error('Error generating PDF:', err);
-  }
-
-  addDownload(filename, 'PDF');
+    addDownload(filename, 'PDF');
 }

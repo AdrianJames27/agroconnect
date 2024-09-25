@@ -35,6 +35,7 @@ $(document).ready(function() {
 
         Dialog.showInfoModal(htmlScript);
     });
+
 });
 
 let downloadYR;
@@ -548,56 +549,71 @@ function interpretData(data) {
         ? uniqueMonths[0]
         : `${uniqueMonths[0]} - ${uniqueMonths[uniqueMonths.length - 1]}`;
     
-    let interpretation = `<h3 class="text-primary" style="font-size: 1.8rem;">Crop Performance Analysis for <strong>${cropName}</strong></h3>`;
-    interpretation += `<p style="font-size: 1rem;">Period: <span class="text-success">${monthRange}</span>. During the specified period, the following trends were observed for the crop <strong>${cropName}</strong>: `;
-    
-    numericFields.forEach((field) => {
-        const formattedFieldName = field.replace(/([A-Z])/g, ' $1').toLowerCase();
-        interpretation += `Average ${formattedFieldName}: <span class="badge bg-info">${results[field].average.toFixed(2)} units per hectare</span>, Overall Growth Rate: <span class="badge bg-warning">${results[field].growthRateOverall}%</span> over the entire period, Growth Rate in Latest Month: <span class="badge bg-success">${results[field].growthRateLatestMonth}%</span> in the most recent month, Performance: The crop's ${formattedFieldName} is performing at a <span class="badge bg-secondary">${results[field].performance}</span> level. `;
-    });
-// Conditionally display pest occurrences
-if (Object.keys(cropData.pestOccurrences).length > 0) {
-    const pestItems = Object.entries(cropData.pestOccurrences)
-        .map(([name, occurrence]) => `
-            <li style="margin: 0; padding: 10px; border-bottom: 1px solid #ddd; 
-                background-color: #f9f9f9; transition: background-color 0.3s;">
-                ${name}: <strong>${occurrence}</strong>
-            </li>
-        `).join('');
-    interpretation += `
-        <div style="margin-top: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-            <h5 style="margin: 0; padding-bottom: 5px; color: #d9534f;">Pest Occurrences</h5>
-            <ul style="list-style-type: none; padding: 0; margin: 0;">
-                ${pestItems}
-            </ul>
-        </div>
-    </br>`;
-}
-
-// Conditionally display disease occurrences
-if (Object.keys(cropData.diseaseOccurrences).length > 0) {
-    const diseaseItems = Object.entries(cropData.diseaseOccurrences)
-        .map(([name, occurrence]) => `
-            <li style="margin: 0; padding: 10px; border-bottom: 1px solid #ddd; 
-                background-color: #f9f9f9; transition: background-color 0.3s;">
-                ${name}: <strong>${occurrence}</strong>
-            </li>
-        `).join('');
-    interpretation += `
-        <div style="margin-top: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-            <h5 style="margin: 0; padding-bottom: 5px; color: #d9534f;">Disease Occurrences</h5>
-            <ul style="list-style-type: none; padding: 0; margin: 0;">
-                ${diseaseItems}
-            </ul>
-        </div>
-    </br>`;
-}
-
-
-
-    interpretation += `This analysis provides an essential overview of the crop's performance over time, helping stakeholders understand production dynamics and make informed decisions based on growth rates and performance scores.</p>`;
-    
-    return interpretation;                       
+        let interpretation = `<h3 class="text-primary" style="font-size: 1.8rem;">Crop Performance Analysis for <strong>${cropName}</strong></h3>`;
+        interpretation += `<p style="font-size: 1rem;">Period: <span class="text-success">${monthRange}</span>. Below is a detailed breakdown of the crop's performance during the specified period:</p>`;
+        
+        // Begin with listing the numeric fields
+        interpretation += `<ul style="list-style-type: none; padding: 0;">`;
+        
+        numericFields.forEach((field) => {
+            const formattedFieldName = field.replace(/([A-Z])/g, ' $1').toLowerCase();
+            interpretation += `
+                <li style="margin-bottom: 15px;">
+                    <strong>${formattedFieldName.charAt(0).toUpperCase() + formattedFieldName.slice(1)}:</strong>
+                    <ul style="list-style-type: disc; padding-left: 20px;">
+                        <li>Average: <span class="badge bg-info">${results[field].average.toFixed(2)} units per hectare</span></li>
+                        <li>Overall Growth Rate: <span class="badge bg-warning">${results[field].growthRateOverall}%</span></li>
+                        <li>Growth Rate in Latest Month: <span class="badge bg-success">${results[field].growthRateLatestMonth}%</span></li>
+                        <li>Performance: <span class="badge bg-secondary">${results[field].performance}</span></li>
+                    </ul>
+                </li>
+            `;
+        });
+        
+        interpretation += `</ul>`;
+        
+        // Conditionally display pest occurrences
+        if (Object.keys(cropData.pestOccurrences).length > 0) {
+            const pestItems = Object.entries(cropData.pestOccurrences)
+                .map(([name, occurrence]) => `
+                    <li style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f9f9f9;">
+                        ${name}: <strong>${occurrence}</strong>
+                    </li>
+                `).join('');
+        
+            interpretation += `
+                <div style="margin-top: 20px;">
+                    <h5 style="color: #d9534f;">Pest Occurrences:</h5>
+                    <ul style="list-style-type: none; padding: 0; border: 1px solid #ccc; border-radius: 5px;">
+                        ${pestItems}
+                    </ul>
+                </div>
+            `;
+        }
+        
+        // Conditionally display disease occurrences
+        if (Object.keys(cropData.diseaseOccurrences).length > 0) {
+            const diseaseItems = Object.entries(cropData.diseaseOccurrences)
+                .map(([name, occurrence]) => `
+                    <li style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f9f9f9;">
+                        ${name}: <strong>${occurrence}</strong>
+                    </li>
+                `).join('');
+        
+            interpretation += `
+                <div style="margin-top: 20px;">
+                    <h5 style="color: #d9534f;">Disease Occurrences:</h5>
+                    <ul style="list-style-type: none; padding: 0; border: 1px solid #ccc; border-radius: 5px;">
+                        ${diseaseItems}
+                    </ul>
+                </div>
+            `;
+        }
+        
+        interpretation += `<p style="margin-top: 20px;">This analysis provides a detailed breakdown of the crop's performance over time, highlighting trends, growth rates, and performance levels to support informed decision-making.</p>`;
+        interpretation += `<small class="text-muted">Note: Findings are based on available data only.</small>`;
+        return interpretation;
+                           
 }
 
 
@@ -1019,23 +1035,22 @@ function downloadPDF(filename) {
         doc.addImage(imgData, 'PNG', x, y, width, height);
     };
 
-    // Function to add text to the PDF
-    const addTextToPDF = (text, x, y) => {
-        const textWidth = pageWidth - 2 * margin;
-        const splitText = doc.splitTextToSize(text, textWidth);
-
-        splitText.forEach(line => {
-            const lineWidth = doc.getTextWidth(line);
-            const textX = (pageWidth - lineWidth) / 2; // Center horizontally
-            if (y > pageHeight - margin) {
-                doc.addPage(); // Add a new page if needed
-                y = margin; // Reset text margin for the new page
-            }
-            doc.text(line, textX, y);
-            y += 10; // Line height
+    // Function to add HTML content to the PDF
+    const addHTMLToPDF = (element, x, y) => {
+        return html2canvas(element, {
+            scale: 2,
+            useCORS: true
+        }).then(canvas => {
+            addImageToPDF(canvas, x, y, pageWidth - 2 * margin, canvas.height * (pageWidth - 2 * margin) / canvas.width);
         });
+    };
 
-        return y; // Return updated y-coordinate
+    // Function to add a title to the PDF
+    const addTitle = (title) => {
+        doc.setFontSize(18);
+        doc.setFont('helvetica', 'bold');
+        doc.text(title, margin, margin + 10);
+        doc.line(margin, margin + 12, pageWidth - margin, margin + 12); // Draw a line below the title
     };
 
     let season = $("#season").val();
@@ -1044,34 +1059,41 @@ function downloadPDF(filename) {
     season = season.charAt(0).toUpperCase() + season.slice(1);
     filename = crop + "_" + season + "_" + downloadYR + "_" + filename.charAt(0).toUpperCase() + filename.slice(1);
 
-    // Add content from seasonalTrendChart
-    html2canvas(document.getElementById('seasonalTrendChart'), {
-        scale: 2,
-        useCORS: true
-    }).then(canvas1 => {
-        // Add first chart to PDF
-        addImageToPDF(canvas1, margin, margin, 90, 80); // First chart
+    // Add title to PDF
+    addTitle(`${crop} Performance Analysis`);
 
-        // Add content from totalPerYearChart
+    // Add content from seasonalTrendChart
+    const chartPromises = [
+        html2canvas(document.getElementById('seasonalTrendChart'), {
+            scale: 2,
+            useCORS: true
+        }).then(canvas1 => {
+            addImageToPDF(canvas1, margin, margin + 20, 90, 80); // First chart
+        }),
+
         html2canvas(document.getElementById('totalPerYearChart'), {
             scale: 2,
             useCORS: true
         }).then(canvas2 => {
-            // Add second chart to PDF
-            addImageToPDF(canvas2, 100 + margin, margin, 90, 80); // Second chart
+            addImageToPDF(canvas2, 100 + margin, margin + 20, 90, 80); // Second chart
+        })
+    ];
 
-            // Move y-coordinate for interpretation text
-            let currentY = Math.max(80, margin + 90); // Ensure it's below both charts
+    Promise.all(chartPromises).then(() => {
+        let currentY = margin + 110; // Ensure it's below both charts
 
-            const interpretationText = document.querySelector('#interpretation').innerText.trim();
-            doc.setFontSize(10); // Set font size smaller for interpretation text
+        // Add HTML content from interpretation section
+        const interpretationElement = document.querySelector('#interpretation');
+        addHTMLToPDF(interpretationElement, margin, currentY).then(() => {
+            // Add footer
+            doc.setFontSize(12);
             doc.setFont('helvetica', 'normal');
-
-            currentY = addTextToPDF(interpretationText, 10, currentY); // Add interpretation text
-
+            const footerText = "Generated by Cabuyao Agriculture System";
+            const footerWidth = doc.getTextWidth(footerText);
+            doc.text(footerText, pageWidth - footerWidth - margin, pageHeight - margin);
+            
             doc.save(filename); // Save the PDF
         });
     });
-
-    addDownload(filename, 'PDF');
 }
+
