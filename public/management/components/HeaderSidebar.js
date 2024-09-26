@@ -1,6 +1,61 @@
 export let user;
+import Dialog from "./helpers/Dialog.js";
 
 $(document).ready(function() {
+
+    $('body').prepend(`
+        <!-- Loading screen -->
+        <div id="loadingScreen" class="loading-overlay1">
+            <div class="spinner-container1">
+                <div class="spinner-grow" role="status"></div>
+                <div class="spinner-grow" role="status"></div>
+                <div class="spinner-grow" role="status"></div>
+                <p class="loading-message1">Please wait while we load content...</p>
+            </div>
+        </div>
+    `);
+    
+    function showLoadingScreen() {
+        $("#loadingScreen").fadeIn();
+        // Optionally, set a timeout to auto-hide after a certain time
+        setTimeout(function() {
+            $("#loadingScreen").fadeOut();
+        }, 2000); // 2 seconds delay
+    }
+    
+    // Show loading screen on initial load
+    $(window).on('load', function() {
+        showLoadingScreen();
+    });
+    
+    // Show loading screen on URL change (for SPA)
+    $(window).on('popstate', function() {
+        showLoadingScreen();
+    });
+    
+    // If you're using a routing library, you might need to bind this to the route change event.
+    // Example for a hypothetical router event:
+    $(document).on('routeChange', function() {
+        showLoadingScreen();
+    });
+    
+    // Prevent loading screen on logout
+    $('.logout a').on('click', function(event) {
+        // Prevent the loading screen from showing
+        event.stopPropagation(); // Prevents event from bubbling up
+        // Proceed with the logout process
+        // Optionally, you can perform additional actions here, like confirming logout, etc.
+    });
+    
+    // Show loading screen only if it's not a logout action
+    $(document).on('click', 'a', function(event) {
+        if (!$(this).closest('.logout').length) {
+            showLoadingScreen();
+        }
+    });
+    
+
+
     async function getCsrfToken() {
         return $('meta[name="csrf-token"]').attr('content');
     }
@@ -256,30 +311,51 @@ $(document).ready(function() {
         initializeSidebar();
 
         // Logout button click event
-        $('.logout a').on('click', function() {
-            $.ajax({
-                url: '/api/logout', // Route to handle logout
-                type: 'POST',
-                xhrFields: {
-                    withCredentials: true, // Ensure cookies are sent with the request
-                },
-                headers: {
-                    'X-CSRF-TOKEN': getCsrfToken() // Include CSRF token if required
-                },
-                success: function(response) {
-                    if (response.success) {
-                        alert('You have been logged out.');
-                        window.location.href = '/management/login'; // Redirect to login page
-                    } else {
-                        alert('Logout failed: ' + response.message);
+        $('.logout a').on('click', async function(event) {
+            event.preventDefault(); // Prevent the default link behavior
+            event.stopPropagation(); // Prevents event from bubbling up
+            // Show confirmation dialog
+            const res = await Dialog.confirmDialog('Logout', 'Are you sure you want to logout?'); 
+            if (res.operation === Dialog.OK_OPTION) {
+                // Proceed with logout
+                $.ajax({
+                    url: '/api/logout', // Route to handle logout
+                    type: 'POST',
+                    xhrFields: {
+                        withCredentials: true, // Ensure cookies are sent with the request
+                    },
+                    headers: {
+                        'X-CSRF-TOKEN': getCsrfToken() // Include CSRF token if required
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            toastr.success('You have been logged out.', 'Success', {
+                                timeOut: 5000,  // 5 seconds
+                                positionClass: 'toast-top-center',
+                                toastClass: 'toast-success-custom'
+                            });
+                            // Redirect after a short delay to let the toast show
+                            setTimeout(function() {
+                                window.location.href = '/management/login'; // Redirect to login page
+                            }, 1500); // Adjust delay as needed
+                        } else {
+                            toastr.error('Logout failed: ' + response.message, 'Error', {
+                                timeOut: 5000,  // 5 seconds
+                                positionClass: 'toast-center-center',
+                                toastClass: 'toast-error' // Custom error color
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        toastr.error('Logout failed: ' + xhr.responseJSON.message, 'Error', {
+                            timeOut: 5000,  // 5 seconds
+                            positionClass: 'toast-center-center',
+                            toastClass: 'toast-error' // Custom error color
+                        });
                     }
-                },
-                error: function(xhr) {
-                    alert('Logout failed: ' + xhr.responseJSON.message);
-                }
-            });
+                });
+            }
         });
     }
-
 });
 

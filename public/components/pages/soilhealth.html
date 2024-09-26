@@ -20,6 +20,8 @@
   <!-- JavaScript Libraries -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/exceljs@4.2.1/dist/exceljs.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -61,6 +63,7 @@
     .modal-body .btn-primary {
       margin: 0.5rem;
     }
+
   </style>
 </head>
 
@@ -69,201 +72,233 @@
     <!-- Include your header content or component here -->
   </div>
   
-  <h1 class="mt-4 text-center">Cabuyao Soil Health Monitoring</h1>
-  
-  <div class="container-fluid">
-    <!-- Vegetables Section -->
-    <div class="cont">
-      <div class="card w-100 bg-white">
-        <div id="pageTitle" class="container-fluid text-white d-flex justify-content-center align-items-center py-2 position-relative">
-          <h2 class="w-100 text-center">Vegetables</h2>
-          <button id="infoBtn" class="btn btn-info position-absolute" style="right: 10px;">
-            <i class="fas fa-info-circle"></i>
-          </button>
-        </div> 
-        <div class="card mb-3">
-          <div class="card-body text-center" id="vegetables-body">
-            <div class="row justify-content-between">
-              <div class="col-md-3 mb-2">
-                <div class="card rounded-custom bg-success">
-                  <div class="card-body">
-                    <h1>GR</h1>
-                    <p id="vegetables-general">Loading...</p>
-                  </div>
+  <div class="main-content">     
+    <h1 class="mt-4 text-center">Cabuyao Soil Health Monitoring</h1>
+    <div class="container-fluid">
+        <!-- Vegetables Section -->
+        <div class="cont">
+            <div class="card w-100 bg-white">
+                <div id="pageTitle" class="container-fluid text-white d-flex justify-content-center align-items-center py-2 position-relative">
+                    <h2 class="w-100 text-center">Vegetables</h2>
+                    <button id="infoBtn" class="btn btn-info position-absolute" style="right: 10px;">
+                        <i class="fas fa-info-circle"></i>
+                    </button>
                 </div>
-                <p><strong>General Rating</strong></p>
-              </div>
-              <div class="col-md-3 mb-2">
-                <div class="card rounded-custom bg-success">
-                  <div class="card-body">
-                    <h1>P</h1>
-                    <p id="vegetables-phosphorus">Loading...</p>
-                  </div>
+                <div class="card">
+                    <div class="card-body mb-3 text-center" id="vegetables-body">
+                        <div class="row justify-content-between">
+                            <div class="col-md-6">
+                                <canvas id="vegetablesChart" style="max-width: 100%; margin: auto;"></canvas>
+                            </div>
+                            <div class="col-md-6" id="vegetables-card">
+                                <div class="row justify-content-center">
+                                    <div class="col-md-4 mb-2">
+                                        <div class="card rounded-custom bg-primary text-white d-flex align-items-center justify-content-center" style="height: 120px; margin: 10px;">
+                                            <div class="card-body text-center">
+                                                <h1 style="font-size: 1.5rem;">GR</h1>
+                                                <p id="vegetables-general" style="font-size: 0.8rem;">Loading...</p>
+                                            </div>
+                                        </div>
+                                        <p><strong>General Rating</strong></p>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <div class="card rounded-custom bg-warning text-dark d-flex align-items-center justify-content-center" style="height: 120px; margin: 10px;">
+                                            <div class="card-body text-center">
+                                                <h1 style="font-size: 1.5rem;">P</h1>
+                                                <p id="vegetables-phosphorus" style="font-size: 0.8rem;">Loading...</p>
+                                            </div>
+                                        </div>
+                                        <p><strong>Phosphorus</strong></p>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <div class="card rounded-custom bg-success text-white d-flex align-items-center justify-content-center" style="height: 120px; margin: 10px;">
+                                            <div class="card-body text-center">
+                                                <h1 style="font-size: 1.5rem;">pH</h1>
+                                                <p id="vegetables-ph" style="font-size: 0.8rem;">Loading...</p>
+                                            </div>
+                                        </div>
+                                        <p><strong>pH</strong></p>
+                                    </div>
+                                </div>
+                                <div class="row justify-content-center">
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card rounded-custom bg-danger text-white d-flex align-items-center justify-content-center" style="height: 120px; margin: 10px;">
+                                            <div class="card-body text-center">
+                                                <h1 style="font-size: 1.5rem;">K</h1>
+                                                <p id="vegetables-potassium" style="font-size: 0.8rem;">Loading...</p>
+                                            </div>
+                                        </div>
+                                        <p><strong>Potassium</strong></p>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card rounded-custom bg-info text-white d-flex align-items-center justify-content-center" style="height: 120px; margin: 10px;">
+                                            <div class="card-body text-center">
+                                                <h1 style="font-size: 1.5rem;">N</h1>
+                                                <p id="vegetables-nitrogen" style="font-size: 0.8rem;">Loading...</p>
+                                            </div>
+                                        </div>
+                                        <p><strong>Nitrogen</strong></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="interpretation">
+                          <div id="vegetablesBreakdown"></div>
+                        </div>
+                        <button class="btn btn-primary download-btn" data-type="vegetables">Download Vegetables Data</button>            
+                    </div>
                 </div>
-                <p><strong>Phosphorus</strong></p>
-              </div>
-              <div class="col-md-3 mb-2">
-                <div class="card rounded-custom bg-success">
-                  <div class="card-body">
-                    <h1>pH</h1>
-                    <p id="vegetables-ph">Loading...</p>
-                  </div>
-                </div>
-                <p><strong>pH</strong></p>
-              </div>
             </div>
-            <div class="row justify-content-center">
-              <div class="col-md-3 mb-3">
-                <p><strong>Potassium</strong></p>
-                <div class="card rounded-custom bg-success">
-                  <div class="card-body">
-                    <h1>K</h1>
-                    <p id="vegetables-potassium">Loading...</p>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-3 mb-3 offset-md-1">
-                <p><strong>Nitrogen</strong></p>
-                <div class="card rounded-custom bg-success">
-                  <div class="card-body">
-                    <h1>N</h1>
-                    <p id="vegetables-nitrogen">Loading...</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <button class="btn btn-primary download-btn" data-type="vegetables">Download Vegetables Data</button>
-          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Rice Section -->
-    <div class="cont">
-      <div class="card w-100 bg-white">
-        <div id="pageTitle" class="container-fluid text-white d-flex justify-content-center align-items-center py-2">
-          <h2>Rice</h2>
-        </div>
-        <div class="card mb-3">
-          <div class="card-body text-center" id="rice-body">
-            <div class="row justify-content-between">
-              <div class="col-md-3 mb-2">
-                <div class="card rounded-custom bg-success">
-                  <div class="card-body">
-                    <h1>GR</h1>
-                    <p id="rice-general">Loading...</p>
-                  </div>
+        <!-- Rice Section -->
+        <div class="cont">
+            <div class="card w-100 bg-white">
+                <div id="pageTitle" class="container-fluid text-white d-flex justify-content-center align-items-center py-2 position-relative">
+                    <h2 class="w-100 text-center">Rice</h2>
                 </div>
-                <p><strong>General Rating</strong></p>
-              </div>
-              <div class="col-md-3 mb-2">
-                <div class="card rounded-custom bg-success">
-                  <div class="card-body">
-                    <h1>P</h1>
-                    <p id="rice-phosphorus">Loading...</p>
-                  </div>
+                <div class="card">
+                    <div class="card-body mb-3 text-center" id="rice-body">
+                        <div class="row justify-content-between">
+                            <div class="col-md-6">
+                                <canvas id="riceChart" style="max-width: 100%; margin: auto;"></canvas>
+                            </div>
+                            <div class="col-md-6" id="rice-card">
+                                <div class="row justify-content-center">
+                                    <div class="col-md-4 mb-2">
+                                        <div class="card rounded-custom bg-primary text-white d-flex align-items-center justify-content-center" style="height: 120px; margin: 10px;">
+                                            <div class="card-body text-center">
+                                                <h1 style="font-size: 1.5rem;">GR</h1>
+                                                <p id="rice-general" style="font-size: 0.8rem;">Loading...</p>
+                                            </div>
+                                        </div>
+                                        <p><strong>General Rating</strong></p>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <div class="card rounded-custom bg-warning text-dark d-flex align-items-center justify-content-center" style="height: 120px; margin: 10px;">
+                                            <div class="card-body text-center">
+                                                <h1 style="font-size: 1.5rem;">P</h1>
+                                                <p id="rice-phosphorus" style="font-size: 0.8rem;">Loading...</p>
+                                            </div>
+                                        </div>
+                                        <p><strong>Phosphorus</strong></p>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <div class="card rounded-custom bg-success text-white d-flex align-items-center justify-content-center" style="height: 120px; margin: 10px;">
+                                            <div class="card-body text-center">
+                                                <h1 style="font-size: 1.5rem;">pH</h1>
+                                                <p id="rice-ph" style="font-size: 0.8rem;">Loading...</p>
+                                            </div>
+                                        </div>
+                                        <p><strong>pH</strong></p>
+                                    </div>
+                                </div>
+                                <div class="row justify-content-center">
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card rounded-custom bg-danger text-white d-flex align-items-center justify-content-center" style="height: 120px; margin: 10px;">
+                                            <div class="card-body text-center">
+                                                <h1 style="font-size: 1.5rem;">K</h1>
+                                                <p id="rice-potassium" style="font-size: 0.8rem;">Loading...</p>
+                                            </div>
+                                        </div>
+                                        <p><strong>Potassium</strong></p>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card rounded-custom bg-info text-white d-flex align-items-center justify-content-center" style="height: 120px; margin: 10px;">
+                                            <div class="card-body text-center">
+                                                <h1 style="font-size: 1.5rem;">N</h1>
+                                                <p id="rice-nitrogen" style="font-size: 0.8rem;">Loading...</p>
+                                            </div>
+                                        </div>
+                                        <p><strong>Nitrogen</strong></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="interpretation">
+                          <div id="riceBreakdown"></div>
+                        </div>
+                        <button class="btn btn-primary download-btn" data-type="rice">Download Rice Data</button>            
+                    </div>
                 </div>
-                <p><strong>Phosphorus</strong></p>
-              </div>
-              <div class="col-md-3 mb-2">
-                <div class="card rounded-custom bg-success">
-                  <div class="card-body">
-                    <h1>pH</h1>
-                    <p id="rice-ph">Loading...</p>
-                  </div>
-                </div>
-                <p><strong>pH</strong></p>
-              </div>
             </div>
-            <div class="row justify-content-center">
-              <div class="col-md-3 mb-3">
-                <p><strong>Potassium</strong></p>
-                <div class="card rounded-custom bg-success">
-                  <div class="card-body">
-                    <h1>K</h1>
-                    <p id="rice-potassium">Loading...</p>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-3 mb-3 offset-md-1">
-                <p><strong>Nitrogen</strong></p>
-                <div class="card rounded-custom bg-success">
-                  <div class="card-body">
-                    <h1>N</h1>
-                    <p id="rice-nitrogen">Loading...</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <button class="btn btn-primary download-btn" data-type="rice">Download Rice Data</button>
-          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Fruits Section -->
-    <div class="cont">
-      <div class="card w-100 bg-white">
-        <div id="pageTitle" class="container-fluid text-white d-flex justify-content-center align-items-center py-2">
-          <h2>Fruits</h2>
-        </div>
-        <div class="card mb-3">
-          <div class="card-body text-center" id="fruits-body">
-            <div class="row justify-content-between">
-              <div class="col-md-3 mb-2">
-                <div class="card rounded-custom bg-success">
-                  <div class="card-body">
-                    <h1>GR</h1>
-                    <p id="fruits-general">Loading...</p>
-                  </div>
+        <!-- Fruits Section -->
+        <div class="cont">
+            <div class="card w-100 bg-white">
+                <div id="pageTitle" class="container-fluid text-white d-flex justify-content-center align-items-center py-2 position-relative">
+                    <h2 class="w-100 text-center">Fruits</h2>
                 </div>
-                <p><strong>General Rating</strong></p>
-              </div>
-              <div class="col-md-3 mb-2">
-                <div class="card rounded-custom bg-success">
-                  <div class="card-body">
-                    <h1>P</h1>
-                    <p id="fruits-phosphorus">Loading...</p>
-                  </div>
+                <div class="card">
+                    <div class="card-body mb-3 text-center" id="fruits-body">
+                        <div class="row justify-content-between">
+                            <div class="col-md-6">
+                                <canvas id="fruitsChart" style="max-width: 100%; margin: auto;"></canvas>
+                            </div>
+                            <div class="col-md-6" id="fruits-card">
+                                <div class="row justify-content-center">
+                                    <div class="col-md-4 mb-2">
+                                        <div class="card rounded-custom bg-primary text-white d-flex align-items-center justify-content-center" style="height: 120px; margin: 10px;">
+                                            <div class="card-body text-center">
+                                                <h1 style="font-size: 1.5rem;">GR</h1>
+                                                <p id="fruits-general" style="font-size: 0.8rem;">Loading...</p>
+                                            </div>
+                                        </div>
+                                        <p><strong>General Rating</strong></p>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <div class="card rounded-custom bg-warning text-dark d-flex align-items-center justify-content-center" style="height: 120px; margin: 10px;">
+                                            <div class="card-body text-center">
+                                                <h1 style="font-size: 1.5rem;">P</h1>
+                                                <p id="fruits-phosphorus" style="font-size: 0.8rem;">Loading...</p>
+                                            </div>
+                                        </div>
+                                        <p><strong>Phosphorus</strong></p>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <div class="card rounded-custom bg-success text-white d-flex align-items-center justify-content-center" style="height: 120px; margin: 10px;">
+                                            <div class="card-body text-center">
+                                                <h1 style="font-size: 1.5rem;">pH</h1>
+                                                <p id="fruits-ph" style="font-size: 0.8rem;">Loading...</p>
+                                            </div>
+                                        </div>
+                                        <p><strong>pH</strong></p>
+                                    </div>
+                                </div>
+                                <div class="row justify-content-center">
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card rounded-custom bg-danger text-white d-flex align-items-center justify-content-center" style="height: 120px; margin: 10px;">
+                                            <div class="card-body text-center">
+                                                <h1 style="font-size: 1.5rem;">K</h1>
+                                                <p id="fruits-potassium" style="font-size: 0.8rem;">Loading...</p>
+                                            </div>
+                                        </div>
+                                        <p><strong>Potassium</strong></p>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card rounded-custom bg-info text-white d-flex align-items-center justify-content-center" style="height: 120px; margin: 10px;">
+                                            <div class="card-body text-center">
+                                                <h1 style="font-size: 1.5rem;">N</h1>
+                                                <p id="fruits-nitrogen" style="font-size: 0.8rem;">Loading...</p>
+                                            </div>
+                                        </div>
+                                        <p><strong>Nitrogen</strong></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="interpretation">
+                          <div id="fruitsBreakdown"></div>
+                        </div>
+                        <button class="btn btn-primary download-btn" data-type="fruits">Download Fruits Data</button>            
+                    </div>
                 </div>
-                <p><strong>Phosphorus</strong></p>
-              </div>
-              <div class="col-md-3 mb-2">
-                <div class="card rounded-custom bg-success">
-                  <div class="card-body">
-                    <h1>pH</h1>
-                    <p id="fruits-ph">Loading...</p>
-                  </div>
-                </div>
-                <p><strong>pH</strong></p>
-              </div>
             </div>
-            <div class="row justify-content-center">
-              <div class="col-md-3 mb-3">
-                <p><strong>Potassium</strong></p>
-                <div class="card rounded-custom bg-success">
-                  <div class="card-body">
-                    <h1>K</h1>
-                    <p id="fruits-potassium">Loading...</p>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-3 mb-3 offset-md-1">
-                <p><strong>Nitrogen</strong></p>
-                <div class="card rounded-custom bg-success">
-                  <div class="card-body">
-                    <h1>N</h1>
-                    <p id="fruits-nitrogen">Loading...</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <button class="btn btn-primary download-btn" data-type="fruits">Download Fruits Data</button>
-          </div>
         </div>
-      </div>
     </div>
-  </div>
+</div>
+
   
   <div class="footer-container">
     <!-- Include your footer content or component here -->

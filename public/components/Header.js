@@ -3,6 +3,27 @@ $(document).ready(function() {
     $('head').prepend(`
         <link rel="icon" href="../img/logo.png" type="image/png">   
     `);
+
+    $('body').prepend(`
+        <!-- Loading screen -->
+        <div id="loadingScreen" class="loading-overlay">
+            <div class="spinner-container">
+                <div class="spinner-grow" role="status"></div>
+                <div class="spinner-grow" role="status"></div>
+                <div class="spinner-grow" role="status"></div>
+                <p class="loading-message">Please wait while we load content...</p>
+            </div>
+        </div>
+    `);
+    
+    $(window).on('load', function() {
+        // Wait for 2 seconds after all content is fully loaded
+        setTimeout(function() {
+            $("#loadingScreen").fadeOut();
+        }, 2000); // 2 seconds delay
+    });
+    
+    
     
     // Prepend header structure with navigation links to the body
     $('.header-container').prepend(`

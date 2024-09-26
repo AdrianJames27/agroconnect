@@ -90,20 +90,212 @@ $(document).ready(function() {
     })
     .catch(error => console.error('Error fetching data:', error));
 
-  function displayData(type, data) {
-    console.log(data);
-    if (data.length === 0) {
-      $(`#${type}-body`).html('<p class="h3">Data is not available for now.</p>');
-      $(`.download-btn[data-type="${type}"]`).hide();
-    } else {
-      let averages = calculateAverages(data);
-      $(`#${type}-phosphorus`).html(`${averages.phosphorus.value} <br>(${averages.phosphorus.percentage}%)`);
-      $(`#${type}-nitrogen`).html(`${averages.nitrogen.value} <br>(${averages.nitrogen.percentage}%)`);
-      $(`#${type}-potassium`).html(`${averages.potassium.value} <br> (${averages.potassium.percentage}%)`);
-      $(`#${type}-ph`).html(`${averages.ph.value} <br>(${averages.ph.percentage}%)`);
-      $(`#${type}-general`).html(`${averages.generalRating.value} <br> (${averages.generalRating.percentage}%)`);
-    }
-  }
+    function displayData(type, data) {
+      console.log(data);
+      if (data.length === 0) {
+          $(`#${type}-body`).html('<p class="h3">Data is not available for now.</p>');
+          $(`.download-btn[data-type="${type}"]`).hide();
+      } else {
+          let averages = calculateAverages(data);
+          $(`#${type}-phosphorus`).html(`${averages.phosphorus.value} <br>(${averages.phosphorus.percentage}%)`);
+          $(`#${type}-nitrogen`).html(`${averages.nitrogen.value} <br>(${averages.nitrogen.percentage}%)`);
+          $(`#${type}-potassium`).html(`${averages.potassium.value} <br> (${averages.potassium.percentage}%)`);
+          $(`#${type}-ph`).html(`${averages.ph.value} <br>(${averages.ph.percentage}%)`);
+          $(`#${type}-general`).html(`${averages.generalRating.value} <br> (${averages.generalRating.percentage}%)`);
+  
+          // Prepare data for the doughnut chart
+          const chartData = {
+              labels: ['Phosphorus', 'Nitrogen', 'Potassium', 'pH', 'General Rating'],
+              datasets: [{
+                  label: 'Average Nutrient Levels',
+                  data: [
+                      averages.phosphorus.percentage,
+                      averages.nitrogen.percentage,
+                      averages.potassium.percentage,
+                      averages.ph.percentage,
+                      averages.generalRating.percentage
+                  ],
+                  backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#FF9F40'],
+                  hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#FF9F40']
+              }]
+          };
+  
+          // Chart configuration
+          const config = {
+              type: 'doughnut',
+              data: chartData,
+              options: {
+                  responsive: true,
+                  plugins: {
+                      legend: {
+                          position: 'top',
+                      },
+                      title: {
+                          display: true,
+                          text: 'Nutrient Averages'
+                      },
+                      tooltip: {
+                          callbacks: {
+                              label: function(context) {
+                                  const label = context.chart.data.labels[context.dataIndex];
+                                  let nutrientValue;
+                                  switch(label) {
+                                      case 'Phosphorus':
+                                          nutrientValue = averages.phosphorus.value;
+                                          break;
+                                      case 'Nitrogen':
+                                          nutrientValue = averages.nitrogen.value;
+                                          break;
+                                      case 'Potassium':
+                                          nutrientValue = averages.potassium.value;
+                                          break;
+                                      case 'pH':
+                                          nutrientValue = averages.ph.value;
+                                          break;
+                                      case 'General Rating':
+                                          nutrientValue = averages.generalRating.value;
+                                          break;
+                                  }
+                                  return `${label} - ${nutrientValue} (${context.formattedValue}%)`;
+                              }
+                          }
+                      }
+                  }
+              },
+              plugins: [ChartDataLabels] // Register the plugin
+          };
+  
+          // Destroy the existing chart instance if it exists
+          const doughnut = Chart.getChart(`${type}Chart`);
+          if (doughnut) {
+              doughnut.destroy(); // Destroy the existing chart instance
+          }
+  
+          // Create the new chart
+          new Chart(
+              document.getElementById(`${type}Chart`),
+              config
+          );
+  
+          // Create nutrient breakdown by crop type
+          const breakdownContainer = $(`#${type}Breakdown`);
+          breakdownContainer.empty(); // Clear previous breakdown
+  
+  
+          const recommendations = {
+            rice: {
+                npk: {
+                    nitrogen: {
+                        level: "High",
+                        description: "Nitrogen is crucial for rice, promoting leaf and tiller growth, and enhancing grain yield. Rice plants typically require higher nitrogen levels, particularly during the vegetative stage for robust growth and development."
+                    },
+                    phosphorus: {
+                        level: "Moderate",
+                        description: "Phosphorus supports root development and early growth in rice plants. It is also important for energy transfer and grain formation. Rice usually needs moderate amounts of phosphorus."
+                    },
+                    potassium: {
+                        level: "Moderate to High",
+                        description: "Potassium is essential for improving disease resistance, water regulation, and grain quality in rice. It helps in strengthening plant cells and is important for grain filling, so moderate to high levels of potassium are required."
+                    }
+                },
+                ph: {
+                    level: "Moderate",
+                    description: "A pH level between 5.5 and 7.0 is considered moderate, supporting nutrient availability for rice."
+                },
+                generalRating: {
+                    rating: "Moderate",
+                    description: "A general rating of 'Moderate' is optimal for rice. High nutrient levels can lead to lodging."
+                }
+            },
+            vegetables: {
+                npk: {
+                    nitrogen: {
+                        level: "Moderate to High",
+                        description: "Vegetables generally require balanced NPK ratios. Leafy greens benefit from higher nitrogen levels, while root vegetables thrive on higher potassium."
+                    },
+                    phosphorus: {
+                        level: "Moderate",
+                        description: "Phosphorus is vital for root development and flower formation in many vegetable crops."
+                    },
+                    potassium: {
+                        level: "Moderate",
+                        description: "Adequate potassium is crucial for water regulation and overall plant health."
+                    }
+                },
+                ph: {
+                    level: "Moderate",
+                    description: "A pH of 6.0 to 7.0 is considered moderate and is ideal for most vegetables, promoting nutrient uptake."
+                },
+                generalRating: {
+                    rating: "High",
+                    description: "Aim for a general rating of 'High' to ensure optimal growth and yield for most vegetable crops."
+                }
+            },
+            fruits: {
+                npk: {
+                    nitrogen: {
+                        level: "Moderate",
+                        description: "Fruits generally benefit from moderate nitrogen levels to support leaf growth without sacrificing fruit development."
+                    },
+                    phosphorus: {
+                        level: "Moderate",
+                        description: "Important during the flowering stage to promote fruit set and development."
+                    },
+                    potassium: {
+                        level: "High",
+                        description: "Essential for fruit quality and yield, especially during the maturation phase."
+                    }
+                },
+                ph: {
+                    level: "Moderate",
+                    description: "A slightly acidic pH of 6.0 to 6.8 is considered moderate for many fruit-bearing plants, helping to maximize nutrient absorption."
+                },
+                generalRating: {
+                    rating: "Moderate to High",
+                    description: "A general rating of 'Moderate' to 'High' is recommended for fruit crops, as it ensures good growth and quality."
+                }
+            }
+        };
+        
+        
+        const breakdownHtml = `
+        <div class="container mt-4">
+            <h4>${type.charAt(0).toUpperCase() + type.slice(1)} Nutrients</h4>
+            <hr />
+            <div class="card mb-3">
+                <div class="card-body">
+                    <p><strong>Nitrogen:</strong> <span class="small">${averages.nitrogen.value}</span> <span class="badge bg-info">${averages.nitrogen.percentage}%</span></p>
+                    <p class="small">${recommendations[type].npk.nitrogen.description}</p>
+                    <p class="small"><strong>Recommended Level:</strong> ${recommendations[type].npk.nitrogen.level}</p>
+                    <hr />
+
+                    <p><strong>Phosphorus:</strong> <span class="small">${averages.phosphorus.value}</span> <span class="badge bg-info">${averages.phosphorus.percentage}%</span></p>
+                    <p class="small">${recommendations[type].npk.phosphorus.description}</p>
+                    <p class="small"><strong>Recommended Level:</strong> ${recommendations[type].npk.phosphorus.level}</p>
+                    <hr />
+                    
+                    <p><strong>Potassium:</strong> <span class="small">${averages.potassium.value}</span> <span class="badge bg-info">${averages.potassium.percentage}%</span></p>
+                    <p class="small">${recommendations[type].npk.potassium.description}</p>
+                    <p class="small"><strong>Recommended Level:</strong> ${recommendations[type].npk.potassium.level}</p>
+                    <hr />
+                    
+                    <p><strong>pH:</strong> <span class="small">${averages.ph.value}</span> <span class="badge bg-info">${averages.ph.percentage}%</span></p>
+                    <p class="small">${recommendations[type].ph.description}</p>
+                    <p class="small"><strong>Recommended Level:</strong> ${recommendations[type].ph.level}</p>
+                    <hr />
+                    
+                    <p><strong>General Rating:</strong> <span class="small">${averages.generalRating.value}</span> <span class="badge bg-info">${averages.generalRating.percentage}%</span></p>
+                    <p class="small">${recommendations[type].generalRating.description}</p>
+                    <p class="small"><strong>Recommended Level:</strong> ${recommendations[type].generalRating.rating}</p>
+                </div>
+            </div>
+        </div>
+    `;
+    
+   
+          breakdownContainer.append(breakdownHtml);
+      }
+  } 
 
   function calculateAverages(records) {
     let totalPhosphorus = 0, totalNitrogen = 0, totalPotassium = 0, totalPH = 0, totalGeneral = 0;
@@ -153,13 +345,15 @@ $(document).ready(function() {
   }
 
   function downloadData(format, type, data) {
+
     const filename = `${type.toLowerCase()}.${format}`;
+    const itemType = `${type.toLowerCase()}`;
     if (format === 'csv') {
       downloadCSV(filename, data);
     } else if (format === 'xlsx') {
       downloadExcel(filename, data);
     } else if (format === 'pdf') {
-      downloadPDF(filename, data);
+      downloadPDF(filename, data, itemType);
     }
   }
   
@@ -361,32 +555,102 @@ $(document).ready(function() {
 }
 
   
-  // Download PDF
-  function downloadPDF(filename, data) {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
 
-    filename = 'Soil Health_' + yearRange + "_" + filename.charAt(0).toUpperCase() + filename.slice(1);
+function downloadPDF(filename, data, type) { 
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const margin = 10;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+
+  // Function to add an image to the PDF
+  const addImageToPDF = (canvas, x, y, width, height) => {
+      const imgData = canvas.toDataURL('image/png');
+      doc.addImage(imgData, 'PNG', x, y, width, height);
+  };
+
+  // Function to add HTML content to the PDF
+  const addHTMLToPDF = (element, x, y) => {
+      return html2canvas(element, {
+          scale: 2,
+          useCORS: true
+      }).then(canvas => {
+          addImageToPDF(canvas, x, y, pageWidth - 2 * margin, canvas.height * (pageWidth - 2 * margin) / canvas.width);
+      });
+  };
+
+  // Function to add a title to the PDF
+  const addTitle = (title) => {
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.text(title, margin, margin + 10);
+      doc.line(margin, margin + 12, pageWidth - margin, margin + 12); // Draw a line below the title
+  };
+
+  // Use 'type' to define the title and filename
+  filename = type.charAt(0).toUpperCase() + type.slice(1) + "_" + filename.charAt(0).toUpperCase() + filename.slice(1);
   
-    doc.autoTable({
-      head: [['Barangay', 'Type', 'Phosphorus', 'Nitrogen', 'Potassium', 'pH', 'General Rating', 'Date Observed', 'Season Collected']],
-      body: data.map(record => [
-        record.barangay,
-        record.fieldType,
-        record.phosphorusContent,
-        record.nitrogenContent,
-        record.potassiumContent,
-        record.pH,
-        record.generalRating,
-        record.monthYear,
-        record.season,
-      ]),
-      startY: 10,
-      margin: { top: 10, right: 10, bottom: 10, left: 10 },
-      theme: 'grid',
-    });
-  
-    doc.save(filename);
-    addDownload(filename, 'PDF');
-  }
+  // Add title to PDF
+  addTitle(`${type.charAt(0).toUpperCase() + type.slice(1)} Performance Analysis`);
+
+  // Add content from vegetablesCard and vegetables-card
+  const chartPromises = [
+      // Add the vegetablesCard
+      html2canvas(document.getElementById('vegetablesChart'), {
+          scale: 2,
+          useCORS: true
+      }).then(canvas1 => {
+          // Resize chart: Adjust the width and height as necessary
+          const chartWidth = pageWidth - 2 * margin;
+          const chartHeight = canvas1.height * (chartWidth / canvas1.width) * 0.75; // Resize to 75% of the original height
+          addImageToPDF(canvas1, margin, margin + 20, chartWidth, chartHeight); // Vegetables card
+      }),
+  ];
+
+  Promise.all(chartPromises).then(() => {
+      let currentY = margin + 220; // Adjust Y position after adding cards
+
+      // Add HTML content from interpretation section
+      const interpretationElement = document.querySelector('#vegetablesBreakdown');
+      addHTMLToPDF(interpretationElement, margin, currentY).then(() => {
+          
+          // Add a new page for the table
+          doc.addPage();
+          
+          // Add title for the table page
+          addTitle(`${type.charAt(0).toUpperCase() + type.slice(1)} Data Table`);
+
+          // Add the data table
+          doc.autoTable({
+              head: [['Barangay', 'Type', 'Phosphorus', 'Nitrogen', 'Potassium', 'pH', 'General Rating', 'Date Observed', 'Season Collected']],
+              body: data.map(record => [
+                  record.barangay,
+                  record.fieldType,
+                  record.phosphorusContent,
+                  record.nitrogenContent,
+                  record.potassiumContent,
+                  record.pH,
+                  record.generalRating,
+                  record.monthYear,
+                  record.season,
+              ]),
+              startY: 30, // Adjust to add space for the title
+              margin: { top: 10, right: 10, bottom: 10, left: 10 },
+              theme: 'grid',
+          });
+
+          // Add footer
+          doc.setFontSize(12);
+          doc.setFont('helvetica', 'normal');
+          const footerText = "Generated by Cabuyao Agriculture System";
+          const footerWidth = doc.getTextWidth(footerText);
+          doc.text(footerText, pageWidth - footerWidth - margin, pageHeight - margin);
+          
+          doc.save(filename); // Save the PDF
+      });
+  });
+}
+
+
+
 });  
