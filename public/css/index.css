@@ -246,11 +246,14 @@ html, body {
     scrollbar-width: none; /* Firefox */
 }
 
-#seasonalTrendChart, #totalPerYearChart {
+#seasonalTrendChart,
+#totalPerYearChart,
+#vegetablesChart,
+#riceChart,
+#fruitsChart {
     width: 100% !important;
-    min-height: 100% !important; 
+    height: 100% !important; 
 }
-
 
 .loading-overlay {
     position: fixed;

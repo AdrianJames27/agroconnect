@@ -278,30 +278,52 @@ class SeasonalTrends {
     };
 }
 
-    displayTrends(chartConfigs, interpretation) {
-        // Check if a chart instance already exists and destroy it
-        const line = Chart.getChart('seasonalTrendChart'); // Retrieve the existing chart instance
-        const bar = Chart.getChart('totalPerYearChart');
-        if (line) {
-            line.destroy(); // Destroy the existing chart instance
-            bar.destroy();
-            $('#interpretation').empty();
-        }
-
-        // Create the line chart
-        new Chart(
-            document.getElementById('seasonalTrendChart'),
-            chartConfigs.lineChartConfig
-        );
-
-        // Create the bar chart
-        new Chart(
-            document.getElementById('totalPerYearChart'),
-            chartConfigs.barChartConfig
-        );
-        
-        $('#interpretation').html(interpretation);
+ displayTrends(chartConfigs, interpretation) {
+    // Check if a chart instance already exists and destroy it
+    const line = Chart.getChart('seasonalTrendChart'); // Retrieve the existing chart instance
+    const bar = Chart.getChart('totalPerYearChart');
+    if (line) {
+        line.destroy(); // Destroy the existing chart instance
+        bar.destroy();
+        $('#interpretation').empty();
     }
+
+    // Create the line chart
+    const lineChart = new Chart(
+        document.getElementById('seasonalTrendChart'),
+        {
+            ...chartConfigs.lineChartConfig,
+            options: {
+                ...chartConfigs.lineChartConfig.options,
+                responsive: true, // Ensure responsiveness
+                maintainAspectRatio: false, // Allows better control of chart sizing
+            },
+        }
+    );
+
+    // Create the bar chart
+    const barChart = new Chart(
+        document.getElementById('totalPerYearChart'),
+        {
+            ...chartConfigs.barChartConfig,
+            options: {
+                ...chartConfigs.barChartConfig.options,
+                responsive: true, // Ensure responsiveness
+                maintainAspectRatio: false, // Allows better control of chart sizing
+            },
+        }
+    );
+
+    // Set interpretation text
+    $('#interpretation').html(interpretation);
+
+    // Handle window resize to re-render charts if necessary
+    window.addEventListener('resize', function () {
+        lineChart.resize();
+        barChart.resize();
+    });
+}
+
 }
 
 let downloadData;
