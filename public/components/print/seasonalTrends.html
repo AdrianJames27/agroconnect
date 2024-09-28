@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ampalaya Crop Performance Analysis</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @media print {
+            html, body {
+                box-sizing: border-box;
+                width: 1200px;  /* Use full viewport width */
+                height: auto;
+                margin: 0;
+                padding: 0;
+                font-size: 16px;
+            }
+
+            canvas {
+                width: 100% !important;
+                height: 100% !important;
+                max-width: none !important;
+            }
+
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f8f9fa; /* Light background for the footer */
+            border-top: 1px solid #dee2e6; /* Add a top border */
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid m-0">
+        <h2 class="text-center" id="analysisTitle">Ampalaya Crop Performance Analysis</h2>
+
+        <div class="row">
+            <div class="col-sm-6">
+                <canvas id="seasonalTrendChart"></canvas>
+            </div>
+            <div class="col-sm-6">
+                <canvas id="totalPerYearChart"></canvas>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <div id="interpretation" style="text-align: justify;"></div>
+        </div>
+    </div>
+
+    <footer>
+        @Agroconnect Cabuyao System
+    </footer>
+
+    <script>
+        function displayTrends(chartConfigs, interpretation) {
+            // Check if a chart instance already exists and destroy it
+            const line = Chart.getChart('seasonalTrendChart'); // Retrieve the existing chart instance
+            const bar = Chart.getChart('totalPerYearChart');
+            if (line) {
+                line.destroy(); // Destroy the existing chart instance
+            }
+            if (bar) {
+                bar.destroy();
+            }
+
+            // Create the line chart
+            const lineChart = new Chart(
+                document.getElementById('seasonalTrendChart'),
+                {
+                    ...chartConfigs.lineChartConfig,
+                    options: {
+                        ...chartConfigs.lineChartConfig.options,
+                        responsive: true, // Ensure responsiveness
+                        maintainAspectRatio: false, // Allows better control of chart sizing
+                    },
+                }
+            );
+
+            // Create the bar chart
+            const barChart = new Chart(
+                document.getElementById('totalPerYearChart'),
+                {
+                    ...chartConfigs.barChartConfig,
+                    options: {
+                        ...chartConfigs.barChartConfig.options,
+                        responsive: true, // Ensure responsiveness
+                        maintainAspectRatio: false, // Allows better control of chart sizing
+                    },
+                }
+            );
+
+            // Set interpretation text
+            document.getElementById('interpretation').innerHTML = interpretation;
+
+            // Handle window resize to re-render charts if necessary
+            window.addEventListener('resize', function () {
+                lineChart.resize();
+                barChart.resize();
+            });
+        }
+
+        window.onload = function() {
+            // Retrieve data from sessionStorage
+            const printData = JSON.parse(sessionStorage.getItem('printData'));
+            const chartConfigs = {
+                lineChartConfig: printData.charts.lineChartConfig,
+                barChartConfig: printData.charts.barChartConfig
+            };
+
+            // Set the title dynamically
+            document.getElementById('analysisTitle').innerText = printData.categoryText;
+
+            // Load charts using the displayTrends function
+            displayTrends(chartConfigs, printData.interpretation);
+
+            // Delay before triggering the print dialog
+            setTimeout(() => {
+                window.print(); // Automatically trigger print dialog after 3 seconds
+            }, 3000); // 3000 milliseconds = 3 seconds
+        };
+    </script>
+</body>
+</html>

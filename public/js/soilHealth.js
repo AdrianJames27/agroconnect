@@ -159,7 +159,10 @@ $(document).ready(function() {
                                   return `${label} - ${nutrientValue} (${context.formattedValue}%)`;
                               }
                           }
-                      }
+                      },
+                      datalabels: {
+                        color: 'white', // Change datalabels color to white
+                    }
                   }
               },
               plugins: [ChartDataLabels] // Register the plugin
@@ -552,103 +555,91 @@ $(document).ready(function() {
         URL.revokeObjectURL(url);
     });
     addDownload(filename, 'XLSX');
-}
-
-  
+} 
 
 function downloadPDF(filename, data, type) { 
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  const margin = 10;
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'pt', 'a4'); // A4 size
+    const margin = 10;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
 
-  // Function to add an image to the PDF
-  const addImageToPDF = (canvas, x, y, width, height) => {
-      const imgData = canvas.toDataURL('image/png');
-      doc.addImage(imgData, 'PNG', x, y, width, height);
-  };
+    const addImageToPDF = (canvas, x, y, width, height) => {
+        const imgData = canvas.toDataURL('image/png');
+        doc.addImage(imgData, 'PNG', x, y, width, height);
+    };
 
-  // Function to add HTML content to the PDF
-  const addHTMLToPDF = (element, x, y) => {
-      return html2canvas(element, {
-          scale: 2,
-          useCORS: true
-      }).then(canvas => {
-          addImageToPDF(canvas, x, y, pageWidth - 2 * margin, canvas.height * (pageWidth - 2 * margin) / canvas.width);
-      });
-  };
+    const addHTMLToPDF = (element, x, y) => {
+        return html2canvas(element, {
+            scale: 2, // Increase scale for higher resolution
+            useCORS: true,
+            width: 800, // Set a fixed width for the canvas
+            height: 600, // Set a fixed height for the canvas
+        }).then(canvas => {
+            addImageToPDF(canvas, x, y, pageWidth - 2 * margin, (canvas.height * (pageWidth - 2 * margin)) / canvas.width);
+        });
+    };
 
-  // Function to add a title to the PDF
-  const addTitle = (title) => {
-      doc.setFontSize(18);
-      doc.setFont('helvetica', 'bold');
-      doc.text(title, margin, margin + 10);
-      doc.line(margin, margin + 12, pageWidth - margin, margin + 12); // Draw a line below the title
-  };
+    const addTitle = (title) => {
+        doc.setFontSize(18);
+        doc.setFont('helvetica', 'bold');
+        doc.text(title, margin, margin + 10);
+        doc.line(margin, margin + 12, pageWidth - margin, margin + 12);
+    };
 
-  // Use 'type' to define the title and filename
-  filename = type.charAt(0).toUpperCase() + type.slice(1) + "_" + filename.charAt(0).toUpperCase() + filename.slice(1);
-  
-  // Add title to PDF
-  addTitle(`${type.charAt(0).toUpperCase() + type.slice(1)} Performance Analysis`);
+    filename = `${type.charAt(0).toUpperCase() + type.slice(1)}_${filename.charAt(0).toUpperCase() + filename.slice(1)}`;
 
-  // Add content from vegetablesCard and vegetables-card
-  const chartPromises = [
-      // Add the vegetablesCard
-      html2canvas(document.getElementById('vegetablesChart'), {
-          scale: 2,
-          useCORS: true
-      }).then(canvas1 => {
-          // Resize chart: Adjust the width and height as necessary
-          const chartWidth = pageWidth - 2 * margin;
-          const chartHeight = canvas1.height * (chartWidth / canvas1.width) * 0.75; // Resize to 75% of the original height
-          addImageToPDF(canvas1, margin, margin + 20, chartWidth, chartHeight); // Vegetables card
-      }),
-  ];
+    addTitle(`${type.charAt(0).toUpperCase() + type.slice(1)} Performance Analysis`);
 
-  Promise.all(chartPromises).then(() => {
-      let currentY = margin + 220; // Adjust Y position after adding cards
+    const chartPromises = [
+        html2canvas(document.getElementById('vegetablesChart'), {
+            scale: 2,
+            useCORS: true,
+            width: 800, // Fixed width for chart
+            height: 400 // Fixed height for chart
+        }).then(canvas1 => {
+            const chartWidth = pageWidth - 2 * margin;
+            const chartHeight = canvas1.height * (chartWidth / canvas1.width) * 0.75;
+            addImageToPDF(canvas1, margin, margin + 20, chartWidth, chartHeight);
+        }),
+    ];
 
-      // Add HTML content from interpretation section
-      const interpretationElement = document.querySelector('#vegetablesBreakdown');
-      addHTMLToPDF(interpretationElement, margin, currentY).then(() => {
-          
-          // Add a new page for the table
-          doc.addPage();
-          
-          // Add title for the table page
-          addTitle(`${type.charAt(0).toUpperCase() + type.slice(1)} Data Table`);
+    Promise.all(chartPromises).then(() => {
+        let currentY = margin + 220;
 
-          // Add the data table
-          doc.autoTable({
-              head: [['Barangay', 'Type', 'Phosphorus', 'Nitrogen', 'Potassium', 'pH', 'General Rating', 'Date Observed', 'Season Collected']],
-              body: data.map(record => [
-                  record.barangay,
-                  record.fieldType,
-                  record.phosphorusContent,
-                  record.nitrogenContent,
-                  record.potassiumContent,
-                  record.pH,
-                  record.generalRating,
-                  record.monthYear,
-                  record.season,
-              ]),
-              startY: 30, // Adjust to add space for the title
-              margin: { top: 10, right: 10, bottom: 10, left: 10 },
-              theme: 'grid',
-          });
+        const interpretationElement = document.querySelector('#vegetablesBreakdown');
+        addHTMLToPDF(interpretationElement, margin, currentY).then(() => {
+            doc.addPage();
 
-          // Add footer
-          doc.setFontSize(12);
-          doc.setFont('helvetica', 'normal');
-          const footerText = "Generated by Cabuyao Agriculture System";
-          const footerWidth = doc.getTextWidth(footerText);
-          doc.text(footerText, pageWidth - footerWidth - margin, pageHeight - margin);
-          
-          doc.save(filename); // Save the PDF
-      });
-  });
+            addTitle(`${type.charAt(0).toUpperCase() + type.slice(1)} Data Table`);
+
+            doc.autoTable({
+                head: [['Barangay', 'Type', 'Phosphorus', 'Nitrogen', 'Potassium', 'pH', 'General Rating', 'Date Observed', 'Season Collected']],
+                body: data.map(record => [
+                    record.barangay,
+                    record.fieldType,
+                    record.phosphorusContent,
+                    record.nitrogenContent,
+                    record.potassiumContent,
+                    record.pH,
+                    record.generalRating,
+                    record.monthYear,
+                    record.season,
+                ]),
+                startY: 30,
+                margin: { top: 10, right: 10, bottom: 10, left: 10 },
+                theme: 'grid',
+            });
+
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'normal');
+            const footerText = "Generated by Cabuyao Agriculture System";
+            const footerWidth = doc.getTextWidth(footerText);
+            doc.text(footerText, pageWidth - footerWidth - margin, pageHeight - margin);
+            
+            doc.save(filename);
+        });
+    });
 }
 
 

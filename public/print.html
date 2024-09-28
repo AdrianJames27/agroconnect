@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Page</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            text-align: center; /* Center text for a cleaner look */
+        }
+        h1 {
+            font-size: 24px; /* Consistent heading size */
+        }
+        p {
+            font-size: 18px; /* Consistent paragraph size */
+            margin: 20px 0; /* Space around the text */
+        }
+        canvas {
+            max-width: 600px; /* Limit canvas size for better appearance */
+            margin: 0 auto; /* Center the canvas */
+        }
+    </style>
+</head>
+<body>
+    <h1>This is the page to print</h1>
+    <p id="printData"></p>
+    <canvas id="myChart"></canvas> <!-- Canvas for the chart -->
+
+    <script>
+        // Function to retrieve and display data from sessionStorage
+        function loadData() {
+            const data = sessionStorage.getItem('printData');
+            if (data) {
+                document.getElementById('printData').innerText = data;
+            } else {
+                document.getElementById('printData').innerText = "No data available."; // Fallback message
+            }
+        }
+
+        // Load data when the page loads
+        function initPage() {
+            loadData();
+            createChart(); // Create the chart
+        }
+
+        // Function to create the Chart.js chart
+        function createChart() {
+            const ctx = document.getElementById('myChart').getContext('2d');
+            const myChart = new Chart(ctx, {
+                type: 'bar', // Example chart type
+                data: {
+                    labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+                    datasets: [{
+                        label: 'Sample Data',
+                        data: [12, 19, 3, 5, 2, 3],
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Trigger print dialog after a short delay to ensure everything is rendered
+            setTimeout(() => {
+                window.print(); // Automatically trigger print dialog after chart is created
+            }, 1000); // Delay can be adjusted as needed
+        }
+
+        // Initialize the page when it loads
+        window.onload = initPage;
+
+    </script>
+</body>
+</html>

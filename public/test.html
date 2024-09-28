@@ -3,74 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Responsive Chart.js Example</title>
-    
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <style>
-        /* Ensure the canvas element scales with the container */
-        #salesChart {
-            width: 100%;
-            height: auto;
-        }
-    </style>
+    <title>Hello World</title>
 </head>
 <body>
-    <div class="container mt-5">
-        <h2 class="text-center">Responsive Sales Chart Example</h2>
-        <div class="row">
-            <div class="col-md-8 offset-md-2">
-                <canvas id="salesChart"></canvas>
-            </div>
-        </div>
-    </div>
+    <h1>Print a page</h1>
+    <input type="text" id="dataInput" placeholder="Enter some data" />
+    <button onclick="openPrintPage()">Print</button>
 
     <script>
-        $(document).ready(function() {
-            // Data for the chart
-            const labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July'];
-            const data = {
-                labels: labels,
-                datasets: [{
-                    label: 'Monthly Sales',
-                    data: [1200, 1900, 3000, 5000, 2300, 3200, 4000],
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                }]
-            };
+        function openPrintPage() {
+            // Get data from input
+            const data = document.getElementById('dataInput').value;
 
-            // Configuration of the chart with responsive option
-            const config = {
-                type: 'bar', // You can also try 'line', 'pie', etc.
-                data: data,
-                options: {
-                    responsive: true, // Enable responsiveness
-                    maintainAspectRatio: false, // Adjust aspect ratio for responsiveness
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            };
+            // Store data in sessionStorage
+            sessionStorage.setItem('printData', data);
 
-            // Render the chart
-            const salesChart = new Chart(
-                document.getElementById('salesChart'),
-                config
-            );
-        });
+            // Open print page
+            const printWindow = window.open('print.html', '_blank');
+            printWindow.onload = function() {
+                printWindow.print();
+            };
+        }
     </script>
-
-    <!-- Bootstrap JS (optional) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

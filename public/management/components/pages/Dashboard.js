@@ -1,5 +1,5 @@
 import { getCrop, getProduction, getPrice, getPest, getDisease, getProductions, getFarmer, getDataEntries, getRecord, getUsers, getBarangay, getConcerns, getDownloadCount, getUniqueCropNames} from '../../../js/fetch.js';
-import { countAverageAreaPlanted, averageVolumeProduction, averagePrice, countPestOccurrence, countDiseaseOccurrence, priceIncomePerHectare, profitPerHectare, getCropData } from '../../../js/statistics.js';
+import * as stats from '../../../js/statistics.js';
 import { user } from '../HeaderSidebar.js';
 
 export default function initDashboard() {
@@ -176,10 +176,11 @@ export default function initDashboard() {
               <div class="form-group col-md-4">
                 <label for="category">Category:</label>
                 <select id="category" class="form-control">
+                    <option value="usage_level">Production Usage Level</option>
                     <option value="production_volume">Average Production Volume</option>
                     <option value="price_income_per_hectare">Average Income</option>
                     <option value="profit_per_hectare">Average Profit</option>
-                    <option value="area">Average Area Planted</option>
+                    <option value="area_planted">Average Area Planted</option>
                     <option value="price">Average Price</option>
                     <option value="pest_occurrence">Pest Occurrence</option>
                     <option value="disease_occurrence">Disease Occurrence</option>
@@ -188,7 +189,7 @@ export default function initDashboard() {
             </form>
             <div class="row justify-content-center">
               <div id="available" class="col text-center">
-                <canvas id="totalPerYearChart" width="400" height="200"></canvas>
+                <canvas id="totalPerYearChart"></canvas>
               </div>
               <div id="unavailable" class="col text-center mb-5">
                 <p class="h4">We're sorry, but there is no data available at the moment.</p>
@@ -372,53 +373,61 @@ async function updateCropOptions() {
       let key = [];
       
       try {
-          switch (category) {
-              case 'area_planted':
-                  categoryText = 'Area Planted';
-                  key = ["areaPlanted"];
-                  data = await getProduction(crop, season);
-                  dataset = countAverageAreaPlanted(data);
-                  console.log(dataset);
-                  break;
-              case 'production_volume':
-                  categoryText = 'Production Volume Per Hectare';
-                  key = ["volumeProduction", "totalVolume", "totalArea"];
-                  data = await getProduction(crop, season);
-                  dataset = averageVolumeProduction(data);
-                  break;
-              case 'price':
-                  categoryText = 'Price';
-                  key = ["price"];
-                  data = await getPrice(crop, season);
-                  dataset = averagePrice(data);
-                  break;
-              case 'pest_occurrence':
-                  categoryText = 'Pest Occurrence';
-                  key = ["pestOccurrence"];
-                  data = await getPest(crop, season);
-                  dataset = countPestOccurrence(data);
-                  break;
-              case 'disease_occurrence':
-                  categoryText = 'Disease Occurrence';
-                  key = ["diseaseOccurrence"];
-                  data = await getDisease(crop, season);
-                  dataset = countDiseaseOccurrence(data);
-                  break;
-              case 'price_income_per_hectare':
-                  categoryText = 'Price Income per Hectare';
-                  key = ["incomePerHectare", "totalArea", "totalIncome"];
-                  data = await getProduction(crop, season);
-                  dataset = priceIncomePerHectare(data);
-                  break;
-              case 'profit_per_hectare':
-                  categoryText = 'Profit per Hectare';
-                  key = ["profitPerHectare", "totalArea", "totalIncome", "totalProductionCost"];
-                  data = await getProduction(crop, season);
-                  dataset = profitPerHectare(data);
-                  break;
-              default:
-                  categoryText = 'Category not recognized';
-          }
+        switch (category) {
+          case 'usage_level':
+              categoryText = 'Production Usage Level (%)';
+              key = ["usageLevel", "totalProduction", "totalSold"];
+              data = await getProduction(crop, season);
+              dataset = stats.UsageLevelFrequency(data);
+              break;
+          case 'area_planted':
+              categoryText = 'Area Planted (Hectare)';
+              key = ["areaPlanted"];
+              data = await getProduction(crop, season);
+              dataset = stats.countAverageAreaPlanted(data);
+              break;
+          case 'production_volume':
+              categoryText = 'Production Volume Per Hectare';
+              key = ["volumeProductionPerHectare", "totalVolume", "totalArea"];
+              data = await getProduction(crop, season);
+              dataset = stats.averageVolumeProduction(data);
+              console.log(dataset);
+              break;
+          case 'price':
+              categoryText = 'Price';
+              key = ["price"];
+              data = await getPrice(crop, season);
+              dataset = stats.averagePrice(data);
+              break;
+          case 'pest_occurrence':
+              categoryText = 'Pest Occurrence';
+              key = ["totalOccurrence", "pestOccurrences"];
+              data = await getPest(crop, season);
+              dataset = stats.countPestOccurrence(data);
+              console.log(dataset);
+              break;
+          case 'disease_occurrence':
+              categoryText = 'Disease Occurrence';
+              key = ["totalOccurrence", "diseaseOccurrences"];
+              data = await getDisease(crop, season);
+              dataset = stats.countDiseaseOccurrence(data);
+              break;
+          case 'price_income_per_hectare':
+              categoryText = 'Price Income per Hectare';
+              key = ["incomePerHectare", "totalArea", "totalIncome"];
+              data = await getProduction(crop, season);
+              dataset = stats.priceIncomePerHectare(data);
+              console.log(dataset);
+              break;
+          case 'profit_per_hectare':
+              categoryText = 'Profit per Hectare';
+              key = ["profitPerHectare", "totalArea", "totalIncome", "totalProductionCost"];
+              data = await getProduction(crop, season);
+              dataset = stats.profitPerHectare(data);
+              break;
+          default:
+              categoryText = 'Category not recognized';
+      }
           
           // Clear the previous chart before generating a new one
           if(dataset.length !== 0) {
@@ -450,12 +459,40 @@ async function updateCropOptions() {
       const uniqueYears = Array.from(new Set(dataset.map(entry => entry.monthYear.split(' ')[1])));
       uniqueYears.sort((a, b) => a - b);
 
+      // Calculate averages per year for bar chart for a single crop
       const totalsPerYear = uniqueYears.map(year => {
-          var total = dataset
-              .filter(entry => entry.monthYear.endsWith(year))
-              .reduce((total, entry) => total + entry[keys[0]], 0);
-          return total.toFixed(2);
-      });
+        // Filter entries for the current year
+        const filteredEntries = dataset.filter(entry => 
+            entry.monthYear.endsWith(year) // No need to check cropName
+        );
+
+
+        // Calculate the sum and count of entries for each key
+        const averages = keys.map(key => {
+            if (["pestOccurrences", "diseaseOccurrences"].includes(key)) {
+                let result = filteredEntries.map((entry) => {
+                    return entry[key].map((item) => {
+                        // Use dynamic property name based on the key
+                        let name = key === "pestOccurrences" ? item.pestName : item.diseaseName;
+                        return `${name} : ${item.occurrence}`;
+                    }).join(', '); // Use comma and space for separation
+                }).join(' | '); // Join entries with a separator for the tooltip
+                
+                return result;
+            }            
+            const { sum, count } = filteredEntries.reduce((acc, entry) => {
+                acc.sum += entry[key];
+                acc.count += 1;
+                return acc;
+            }, { sum: 0, count: 0 });
+
+            // Return the average for the current key
+            return count > 0 ? sum / count : 0;
+        });
+
+        return averages; // Returns an array of averages for each key
+    });
+
 
       const barChartData = {
           labels: uniqueYears,
@@ -471,51 +508,51 @@ async function updateCropOptions() {
       };
 
       const barChartConfig = {
-          type: 'bar',
-          data: barChartData,
-          options: {
-              responsive: true,
-              plugins: {
-                  legend: {
-                      position: 'top',
-                  },
-                  title: {
-                      display: true,
-                      text: `${label} Per Year (${season} Season)`
-                  },
-                  tooltip: {
-                      callbacks: {
-                          label: function(tooltipItem) {
-                              const index = tooltipItem.dataIndex;
-                              const year = uniqueYears[index];
-                              const yearlyData = dataset.filter(entry => entry.monthYear.endsWith(year));
-                              return [
-                                  `${keys[0]} per Year: ${totalsPerYear[index]}`,
-                                  ...keys.slice(1).map(key => {
-                                      const total = yearlyData.reduce((acc, entry) => acc + (entry[key] || 0), 0);
-                                      return `${key} per Year: ${total}`;
-                                  })
-                              ];
-                          }
-                      }
-                  }
-              },
-              scales: {
-                  x: {
-                      title: {
-                          display: true,
-                          text: 'Year'
-                      }
-                  },
-                  y: {
-                      title: {
-                          display: true,
-                          text: label
-                      }
-                  }
-              }
-          }
-      };
+        type: 'bar',
+        data: barChartData,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: `${label} Per Year (${season} Season)`
+                },
+               tooltip: {
+                    callbacks: {
+                        label: function(tooltipItem) {
+                            const index = tooltipItem.dataIndex;
+                            const year = uniqueYears[index];
+                            const averages = totalsPerYear[index];
+
+                            return averages.map((average, avgIndex) => {
+                                if (["pestOccurrences", "diseaseOccurrences", "totalOccurrence"].includes(keys[avgIndex])) {
+                                    return `Average ${keys[avgIndex]} for ${year}: ${average}`;
+                                }
+                                return `Average ${keys[avgIndex]} for ${year}: ${average.toFixed(2)}`;
+                            });
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Year'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: label
+                    }
+                }
+            }
+        }
+    };
 
       return { barChartConfig };
   }
@@ -648,7 +685,7 @@ async function updateCropOptions() {
           pest = pest.map(entry => ({ ...entry, type }));
           disease = disease.map(entry => ({ ...entry, type }));
 
-          return await getCropData(production, price, pest, disease, crops, type);
+          return await stats.getCropData(production, price, pest, disease, crops, type);
       } catch (error) {
           console.error('An error occurred in the main function:', error);
       }

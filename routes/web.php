@@ -32,6 +32,11 @@ Route::get('/contact-us', function () {
     return file_get_contents(public_path('components/pages/contact.html'));
 })->name('contact-us');
 
+//Print
+Route::get('/print-seasonal-trends', function () {
+    return file_get_contents(public_path('components/print/seasonalTrends.html'));
+})->name('print-seasonal-trends');
+
 Route::middleware([TrimTrailingSlashes::class])->group(function () {
     Route::get('/greet/me', function () {
         return view('greet');
