@@ -487,62 +487,81 @@ function interpretData(data) {
     const cropData = { total: {}, monthlyData: {}, months: [], pestOccurrences: {}, diseaseOccurrences: {} };
     const cropName = data[0]?.cropName || 'Unknown Crop';
     const numericFields = Object.keys(data[0]).filter(key => typeof data[0][key] === 'number');
-
+    
     // Initialize structure for all numeric fields
     numericFields.forEach((field) => {
         cropData.total[field] = 0;
         cropData.monthlyData[field] = {};
     });
-
+    
     // Group data by monthYear and calculate totals
     data.forEach((item) => {
         const { monthYear } = item;
-
+    
         // Aggregate numeric fields
         numericFields.forEach((field) => {
             const value = item[field] || 0; // Default to 0 if undefined
             cropData.total[field] += value;
-
+    
             if (!cropData.monthlyData[field][monthYear]) {
                 cropData.monthlyData[field][monthYear] = [];
             }
             cropData.monthlyData[field][monthYear].push(value);
         });
-
+    
         // Handle pestOccurrences if they exist
         if (item.pestOccurrences && Array.isArray(item.pestOccurrences)) {
             item.pestOccurrences.forEach(({ pestName, occurrence }) => {
                 cropData.pestOccurrences[pestName] = (cropData.pestOccurrences[pestName] || 0) + occurrence;
             });
         }
-
+    
         // Handle diseaseOccurrences if they exist
         if (item.diseaseOccurrences && Array.isArray(item.diseaseOccurrences)) {
             item.diseaseOccurrences.forEach(({ diseaseName, occurrence }) => {
                 cropData.diseaseOccurrences[diseaseName] = (cropData.diseaseOccurrences[diseaseName] || 0) + occurrence;
             });
         }
-
+    
         if (!cropData.months.includes(monthYear)) {
             cropData.months.push(monthYear);
         }
     });
-
+    
     // Sort months for proper comparison
     cropData.months.sort((a, b) => new Date(a) - new Date(b));
+    
+    // Extract the latest year from the months array
+    const latestMonthString = cropData.months[cropData.months.length - 1]; // Get the last month string
+    const latestYear = latestMonthString.split(' ')[1]; // Split by space and take the second element, which is the year
 
-    // Calculate monthly averages for each numeric field
+    // Filter months to include only those from the latest year
+    let latestYearMonths = cropData.months.filter(month => month.endsWith(latestYear)); // Check if the month ends with the latestYear
+
+    // If not enough data for the latest year, fallback to the previous year
+    if (latestYearMonths.length < 2) {
+        const previousYear = (parseInt(latestYear) - 1).toString(); // Get the previous year as a string
+        latestYearMonths = cropData.months.filter(month => month.endsWith(previousYear)); // Filter for the previous year
+    }
+
+console.log(latestMonthString, latestYear, latestYearMonths);
+
+    // Calculate monthly averages for each numeric field for the latest year
     const monthlyAverages = {};
     numericFields.forEach((field) => {
-        monthlyAverages[field] = stats.calculateMonthlyAverages(cropData.monthlyData[field]);
+        const totalMonths = latestYearMonths.length;
+        monthlyAverages[field] = Array(totalMonths).fill(0);
+        latestYearMonths.forEach((month, index) => {
+            monthlyAverages[field][index] = cropData.monthlyData[field][month].reduce((a, b) => a + b, 0) / (cropData.monthlyData[field][month].length || 1);
+        });
     });
 
-    // Calculate month-to-month growth rates for each field
+    // Calculate month-to-month growth rates for each field for the latest year
     const growthRates = {};
     numericFields.forEach((field) => {
         growthRates[field] = [];
-        if (cropData.months.length >= 2) {
-            for (let i = 1; i < cropData.months.length; i++) {
+        if (latestYearMonths.length >= 2) {
+            for (let i = 1; i < latestYearMonths.length; i++) {
                 const previousMonthAvg = monthlyAverages[field][i - 1];
                 const currentMonthAvg = monthlyAverages[field][i];
                 const growthRate = Math.round(((currentMonthAvg - previousMonthAvg) / previousMonthAvg) * 100);
@@ -551,26 +570,31 @@ function interpretData(data) {
         }
     });
 
-    // Handle edge cases where growth rates are insufficient
+    // Handle edge cases for overall growth rates for the latest year
     const overallGrowthRates = {};
     numericFields.forEach((field) => {
-        overallGrowthRates[field] = cropData.months.length >= 2
+        overallGrowthRates[field] = latestYearMonths.length >= 2
             ? Math.round(((monthlyAverages[field][monthlyAverages[field].length - 1] - monthlyAverages[field][0]) / monthlyAverages[field][0]) * 100)
-            : 0;
+            : null; // Use null or a meaningful value
     });
-
+    
+    // Calculate results
     const results = {};
     numericFields.forEach((field) => {
-        const zScores = calculateZScores(monthlyAverages[field], growthRates[field]);
+        const latestGrowthRate = growthRates[field][growthRates[field].length - 1] || 0; // Get the latest growth rate
 
         results[field] = {
-            average: cropData.total[field] / data.length,
+            average: cropData.total[field] / (data.length || 1), // Avoid division by zero
             growthRateOverall: overallGrowthRates[field],
-            growthRateLatestMonth: growthRates[field][growthRates[field].length - 1] || 0,
-            zScores: zScores.growthRateZScores,
-            performance: zScores.meanGrowthRateZScore === 0 ? 'Stable' : stats.interpretPerformance(zScores.meanGrowthRateZScore),
+            growthRateLatestMonth: latestGrowthRate,
+            performance: latestGrowthRate > 0 
+                ? 'Increase' 
+                : latestGrowthRate < 0 
+                ? 'Decrease' 
+                : 'Stable', // Performance based on latest growth rate
         };
     });
+ 
 
     // Construct interpretation text
     const uniqueMonths = Array.from(new Set(data.map(entry => entry.monthYear))).sort((a, b) => new Date(a) - new Date(b));
@@ -578,89 +602,84 @@ function interpretData(data) {
         ? uniqueMonths[0]
         : `${uniqueMonths[0]} - ${uniqueMonths[uniqueMonths.length - 1]}`;
     
-        let interpretation = `<h3 class="text-primary" style="font-size: 1.8rem;">Crop Performance Analysis for <strong>${cropName}</strong></h3>`;
-        interpretation += `<p style="font-size: 1rem;">Period: <span class="text-success">${monthRange}</span>. Below is a detailed breakdown of the crop's performance during the specified period:</p>`;
-        
-        // Begin with listing the numeric fields
-        interpretation += `<ul style="list-style-type: none; padding: 0;">`;
-        
-        numericFields.forEach((field) => {
-            const formattedFieldName = field.replace(/([A-Z])/g, ' $1').toLowerCase();
-            interpretation += `
-                <li style="margin-bottom: 15px;">
-                    <strong>${formattedFieldName.charAt(0).toUpperCase() + formattedFieldName.slice(1)}:</strong>
-                    <ul style="list-style-type: disc; padding-left: 20px;">
-                        <li>Average: <span class="badge bg-info">${results[field].average.toFixed(2)} units per hectare</span></li>
-                        <li>Overall Growth Rate: <span class="badge bg-warning">${results[field].growthRateOverall}%</span></li>
-                        <li>Growth Rate in Latest Month: <span class="badge bg-success">${results[field].growthRateLatestMonth}%</span></li>
-                        <li>Performance: <span class="badge bg-secondary">${results[field].performance}</span></li>
-                    </ul>
+        let interpretation = `
+        <h3 class="text-primary" style="font-size: 2rem; font-weight: bold;">Crop Performance Analysis for <strong>${cropName}</strong></h3>
+        <p style="font-size: 1.1rem; color: #333;">Period: <span class="text-success">${monthRange}</span>. Below is a detailed breakdown of the crop's performance during the specified period, focusing on the latest years with sufficient records:</p>
+    `;
+    
+    interpretation += `<div class="row" style="margin-bottom: 20px;">`;
+    
+    numericFields.forEach((field) => {
+        const formattedFieldName = field.replace(/([A-Z])/g, ' $1').toLowerCase();
+        const growthRateOverall = results[field].growthRateOverall;
+        const growthRateLatestMonth = results[field].growthRateLatestMonth;
+    
+        // Determine card color based on performance
+        const cardClass = results[field].performance === 'Increase' ? 'bg-success' :
+                          results[field].performance === 'Decrease' ? 'bg-danger' : 'bg-warning';
+    
+        interpretation += `
+            <div class="col-md-4 mb-4"> <!-- Adjust the number of columns here -->
+                <div class="card ${cardClass}" style="border-radius: 15px; color: white; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);">
+                    <div class="card-body">
+                        <h5 class="card-title" style="font-size: 1.25rem;"><strong>${formattedFieldName.charAt(0).toUpperCase() + formattedFieldName.slice(1)}</strong></h5>
+                        <ul class="text-center" style="list-style-type: none; padding: 0; color: white;">
+                            <li style="margin: 5px 0;">Average: <strong>${results[field].average.toFixed(2)}</strong></li>
+                            <li style="margin: 5px 0;">Overall Growth Rate: <strong>${growthRateOverall}%</strong></li>
+                            <li style="margin: 5px 0;">Growth Rate in Latest Month: <strong>${growthRateLatestMonth}%</strong></li>
+                            <li style="margin: 5px 0;">Performance: <strong>${results[field].performance}</strong></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    interpretation += `</div>`; // Closing the row
+    
+    // Conditionally display pest occurrences
+    if (Object.keys(cropData.pestOccurrences).length > 0) {
+        const pestItems = Object.entries(cropData.pestOccurrences)
+            .map(([name, occurrence]) => `
+                <li style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f9f9f9;">
+                    ${name}: <strong>${occurrence}</strong>
                 </li>
-            `;
-        });
-        
-        interpretation += `</ul>`;
-        
-        // Conditionally display pest occurrences
-        if (Object.keys(cropData.pestOccurrences).length > 0) {
-            const pestItems = Object.entries(cropData.pestOccurrences)
-                .map(([name, occurrence]) => `
-                    <li style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f9f9f9;">
-                        ${name}: <strong>${occurrence}</strong>
-                    </li>
-                `).join('');
-        
-            interpretation += `
-                <div style="margin-top: 20px;">
-                    <h5 style="color: #d9534f;">Pest Occurrences:</h5>
-                    <ul style="list-style-type: none; padding: 0; border: 1px solid #ccc; border-radius: 5px;">
-                        ${pestItems}
-                    </ul>
-                </div>
-            `;
-        }
-        
-        // Conditionally display disease occurrences
-        if (Object.keys(cropData.diseaseOccurrences).length > 0) {
-            const diseaseItems = Object.entries(cropData.diseaseOccurrences)
-                .map(([name, occurrence]) => `
-                    <li style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f9f9f9;">
-                        ${name}: <strong>${occurrence}</strong>
-                    </li>
-                `).join('');
-        
-            interpretation += `
-                <div style="margin-top: 20px;">
-                    <h5 style="color: #d9534f;">Disease Occurrences:</h5>
-                    <ul style="list-style-type: none; padding: 0; border: 1px solid #ccc; border-radius: 5px;">
-                        ${diseaseItems}
-                    </ul>
-                </div>
-            `;
-        }
-        
-        interpretation += `<p style="margin-top: 20px;">This analysis provides a detailed breakdown of the crop's performance over time, highlighting trends, growth rates, and performance levels to support informed decision-making.</p>`;
-        interpretation += `<small class="text-muted">Note: Findings are based on available data only.</small>`;
+            `).join('');
+    
+        interpretation += `
+            <div style="margin-top: 20px;">
+                <h5 style="color: #d9534f;">Pest Occurrences:</h5>
+                <ul style="list-style-type: none; padding: 0; border: 1px solid #ccc; border-radius: 5px; background-color: #fff;">
+                    ${pestItems}
+                </ul>
+            </div>
+        `;
+    }
+    
+    // Conditionally display disease occurrences
+    if (Object.keys(cropData.diseaseOccurrences).length > 0) {
+        const diseaseItems = Object.entries(cropData.diseaseOccurrences)
+            .map(([name, occurrence]) => `
+                <li style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f9f9f9;">
+                    ${name}: <strong>${occurrence}</strong>
+                </li>
+            `).join('');
+    
+        interpretation += `
+            <div style="margin-top: 20px;">
+                <h5 style="color: #d9534f;">Disease Occurrences:</h5>
+                <ul style="list-style-type: none; padding: 0; border: 1px solid #ccc; border-radius: 5px; background-color: #fff;">
+                    ${diseaseItems}
+                </ul>
+            </div>
+        `;
+    }
+    
+    interpretation += `<p style="margin-top: 20px; font-size: 1rem; color: #333;">This analysis provides a detailed breakdown of the crop's performance over time, highlighting trends, growth rates, and performance levels to support informed decision-making.</p>`;
+    interpretation += `<small class="text-muted">Note: Findings are based on available data only.</small>`;
+    
         return interpretation;
                            
-}
-
-
-// Modified Z-score calculation function to handle constant values or no variation
-function calculateZScores(values, growthRates) {
-    const mean = growthRates.reduce((sum, val) => sum + val, 0) / growthRates.length;
-    const squaredDiffs = growthRates.map(rate => Math.pow(rate - mean, 2));
-    const variance = squaredDiffs.reduce((sum, val) => sum + val, 0) / (squaredDiffs.length - 1 || 1);
-    const stdDev = Math.sqrt(variance);
-
-    if (stdDev === 0) {
-        return { growthRateZScores: Array(growthRates.length).fill(0), meanGrowthRateZScore: 0 };
-    }
-
-    const growthRateZScores = growthRates.map(rate => (rate - mean) / stdDev);
-    const meanGrowthRateZScore = growthRateZScores.reduce((sum, val) => sum + val, 0) / growthRateZScores.length;
-
-    return { growthRateZScores, meanGrowthRateZScore };
 }
 
 

@@ -207,45 +207,6 @@ h2 {
     margin-top: 20px; /* Spacing above the table */
   }
 
-  /* Enable scroll snapping on the body or main container */
-body {
-    scroll-snap-type: y proximity; /* vertical scrolling with proximity snapping */
-    scroll-behavior: smooth; /* Smooth scrolling effect */
-}
-
-/* Each section will snap to the center when in proximity */
-section {
-    scroll-snap-align: center; /* Snap to the top of each section */
-    margin-bottom: 40px; /* Adjust spacing as needed */
-    padding-bottom: 20px;
-    scroll-padding-top: 10px; /* Provides a buffer from the top when snapping */
-}
-
-/* Ensure the body and html are contained and remove extra scrollbars */
-html, body {
-    height: 100%; /* Ensure height is full */
-    overflow: hidden; /* Prevent overflow and extra scrollbar */
-}
-
-/* For the scrollable container holding your content */
-.main-content {
-    overflow-y: auto; /* Enable vertical scrolling only */
-    max-height: 100vh; /* Ensure content height fits within the viewport */
-    scroll-snap-type: y proximity;
-    padding: 20px;
-}
-
-/* Optional - Hide scroll bar (for specific browsers) */
-.main-content::-webkit-scrollbar {
-    width: 0px;
-    background: transparent; /* Hide scrollbar */
-}
-
-.main-content {
-    -ms-overflow-style: none; /* Internet Explorer 10+ */
-    scrollbar-width: none; /* Firefox */
-}
-
 #seasonalTrendChart,
 #totalPerYearChart,
 #vegetablesChart,

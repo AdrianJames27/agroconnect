@@ -2,100 +2,140 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ampalaya Crop Performance Analysis</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        @media print {
-            html, body {
-                box-sizing: border-box;
-                width: 1200px;  /* Use full viewport width */
-                height: auto;
-                margin: 0;
-                padding: 0;
-                font-size: 16px;
-            }
-
-            canvas {
-                width: 100% !important;
-                height: 100% !important;
-                max-width: none !important;
-            }
-
+        body {
+            background-color: #f4f7f6;
+            font-family: 'Arial', sans-serif;
         }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-top: 20px;
+            color: #006400;
+        }
+
+        .chart-container {
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            height: 400px; /* Set height for charts */
+        }
+
+        .chart-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        #interpretation {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
         footer {
             text-align: center;
-            margin-top: 20px;
             padding: 10px;
-            background-color: #f8f9fa; /* Light background for the footer */
-            border-top: 1px solid #dee2e6; /* Add a top border */
+            background-color: #006400;
+            color: #fff;
+            margin-top: 40px;
+        }
+
+        /* Handle two-column layout for print */
+        @media print {
+            .row {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+            }
+
+            .col-md-6 {
+                width: 48%; /* Make each column take half the space */
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+                font-size: 14px;
+            }
+
+            .chart-container {
+                page-break-inside: avoid; /* Prevent chart from breaking between pages */
+                break-inside: avoid;
+                height: 300px; /* Set a print-specific height */
+            }
+
+            footer {
+                position: absolute;
+                bottom: 0;
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container-fluid m-0">
+    <div class="container">
         <h2 class="text-center" id="analysisTitle">Ampalaya Crop Performance Analysis</h2>
 
         <div class="row">
-            <div class="col-sm-6">
-                <canvas id="seasonalTrendChart"></canvas>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <canvas id="seasonalTrendChart"></canvas>
+                </div>
             </div>
-            <div class="col-sm-6">
-                <canvas id="totalPerYearChart"></canvas>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <canvas id="totalPerYearChart"></canvas>
+                </div>
             </div>
         </div>
 
         <div class="mt-4">
-            <div id="interpretation" style="text-align: justify;"></div>
+            <div id="interpretation"></div>
         </div>
     </div>
 
     <footer>
-        @Agroconnect Cabuyao System
+        &copy; 2024 Agroconnect Cabuyao System
     </footer>
 
     <script>
         function displayTrends(chartConfigs, interpretation) {
-            // Check if a chart instance already exists and destroy it
-            const line = Chart.getChart('seasonalTrendChart'); // Retrieve the existing chart instance
+            const line = Chart.getChart('seasonalTrendChart');
             const bar = Chart.getChart('totalPerYearChart');
-            if (line) {
-                line.destroy(); // Destroy the existing chart instance
-            }
-            if (bar) {
-                bar.destroy();
-            }
+            
+            if (line) line.destroy();
+            if (bar) bar.destroy();
 
-            // Create the line chart
-            const lineChart = new Chart(
-                document.getElementById('seasonalTrendChart'),
-                {
-                    ...chartConfigs.lineChartConfig,
-                    options: {
-                        ...chartConfigs.lineChartConfig.options,
-                        responsive: true, // Ensure responsiveness
-                        maintainAspectRatio: false, // Allows better control of chart sizing
-                    },
-                }
-            );
+            const lineChart = new Chart(document.getElementById('seasonalTrendChart'), {
+                ...chartConfigs.lineChartConfig,
+                options: {
+                    ...chartConfigs.lineChartConfig.options,
+                    responsive: true,
+                    maintainAspectRatio: false, // Disables default aspect ratio
+                },
+            });
 
-            // Create the bar chart
-            const barChart = new Chart(
-                document.getElementById('totalPerYearChart'),
-                {
-                    ...chartConfigs.barChartConfig,
-                    options: {
-                        ...chartConfigs.barChartConfig.options,
-                        responsive: true, // Ensure responsiveness
-                        maintainAspectRatio: false, // Allows better control of chart sizing
-                    },
-                }
-            );
+            const barChart = new Chart(document.getElementById('totalPerYearChart'), {
+                ...chartConfigs.barChartConfig,
+                options: {
+                    ...chartConfigs.barChartConfig.options,
+                    responsive: true,
+                    maintainAspectRatio: false, // Disables default aspect ratio
+                },
+            });
 
-            // Set interpretation text
             document.getElementById('interpretation').innerHTML = interpretation;
 
-            // Handle window resize to re-render charts if necessary
             window.addEventListener('resize', function () {
                 lineChart.resize();
                 barChart.resize();
@@ -103,23 +143,19 @@
         }
 
         window.onload = function() {
-            // Retrieve data from sessionStorage
             const printData = JSON.parse(sessionStorage.getItem('printData'));
             const chartConfigs = {
                 lineChartConfig: printData.charts.lineChartConfig,
                 barChartConfig: printData.charts.barChartConfig
             };
 
-            // Set the title dynamically
             document.getElementById('analysisTitle').innerText = printData.categoryText;
 
-            // Load charts using the displayTrends function
             displayTrends(chartConfigs, printData.interpretation);
 
-            // Delay before triggering the print dialog
             setTimeout(() => {
-                window.print(); // Automatically trigger print dialog after 3 seconds
-            }, 3000); // 3000 milliseconds = 3 seconds
+                window.print();
+            }, 3000);
         };
     </script>
 </body>
