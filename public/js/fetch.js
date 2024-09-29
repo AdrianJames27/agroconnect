@@ -180,7 +180,7 @@ async function getDataEntries() {
 }
 
 
-async function getProduction(cropName = '', season) {
+async function getProduction(cropName = '', season = '') {
     try {
         const response = await $.ajax({
             url: 'api/productions', // Update this path to the location of your production.json
@@ -191,7 +191,7 @@ async function getProduction(cropName = '', season) {
         const lowerCaseSeason = season ? season.toLowerCase() : '';
         return response.filter(item => 
             (lowerCaseCropName === '' || item.cropName.toLowerCase() === lowerCaseCropName) &&
-            item.season.toLowerCase() === lowerCaseSeason
+            (lowerCaseSeason === '' || item.season.toLowerCase() === lowerCaseSeason)
         );
     } catch (error) {
         console.error('An error occurred while fetching the production data:', error);
