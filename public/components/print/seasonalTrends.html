@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ampalaya Crop Performance Analysis</title>
+    <title>Crop Performance Analysis</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -52,6 +51,12 @@
 
         /* Handle two-column layout for print */
         @media print {
+
+            * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
             .row {
                 display: flex;
                 flex-direction: row;
@@ -84,7 +89,7 @@
 </head>
 <body>
     <div class="container">
-        <h2 class="text-center" id="analysisTitle">Ampalaya Crop Performance Analysis</h2>
+        <h2 class="text-center" id="analysisTitle">Title</h2>
 
         <div class="row">
             <div class="col-md-6">

@@ -3,27 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello World</title>
+    <title>Scroll Snap Example</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+
+        /* Container for scroll snapping */
+        .container {
+            height: 100vh;
+            scroll-snap-type: y mandatory; /* Y-axis scroll snapping */
+            overflow-y: scroll; /* Enable vertical scrolling */
+        }
+
+        /* Each section */
+        .section {
+            height: 100vh; /* Full viewport height */
+            scroll-snap-align: start; /* Snap at the start of the section */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+        }
+
+        /* Background colors for the sections */
+        .section:nth-child(1) {
+            background-color: #ff6b6b;
+        }
+
+        .section:nth-child(2) {
+            background-color: #feca57;
+        }
+
+        .section:nth-child(3) {
+            background-color: #1dd1a1;
+        }
+
+        .section:nth-child(4) {
+            background-color: #54a0ff;
+        }
+    </style>
 </head>
 <body>
-    <h1>Print a page</h1>
-    <input type="text" id="dataInput" placeholder="Enter some data" />
-    <button onclick="openPrintPage()">Print</button>
-
-    <script>
-        function openPrintPage() {
-            // Get data from input
-            const data = document.getElementById('dataInput').value;
-
-            // Store data in sessionStorage
-            sessionStorage.setItem('printData', data);
-
-            // Open print page
-            const printWindow = window.open('print.html', '_blank');
-            printWindow.onload = function() {
-                printWindow.print();
-            };
-        }
-    </script>
+    <div class="container">
+        <div class="section">Section 1</div>
+        <div class="section">Section 2</div>
+        <div class="section">Section 3</div>
+        <div class="section">Section 4</div>
+    </div>
 </body>
 </html>
