@@ -1288,6 +1288,55 @@ function aggregateData(data) {
     return Object.values(aggregatedResultsMap);
 }
 
+function aggregateDataBarangay(data) {
+    const averageVolume = averageVolumeProductionBarangay(data);
+    const priceIncome = priceIncomePerHectareBarangay(data);
+    const profit = profitPerHectareBarangay(data);
+
+    // Create a map for quick lookup of price and income per hectare data
+    const priceIncomeMap = new Map();
+    priceIncome.forEach(({ barangay, cropName, season, totalIncome, totalArea, incomePerHectare }) => {
+        const key = `${barangay}-${cropName}`;
+        priceIncomeMap.set(key, { totalIncome, totalArea, incomePerHectare, season });
+    });
+
+    // Create a map for quick lookup of profit per hectare data
+    const profitMap = new Map();
+    profit.forEach(({ barangay, cropName, season, totalIncome, totalArea, totalProductionCost, profitPerHectare }) => {
+        const key = `${barangay}-${cropName}`;
+        profitMap.set(key, { totalIncome, totalArea, totalProductionCost, profitPerHectare, season });
+    });
+
+    // Use an object to accumulate results and prevent duplicates
+    const aggregatedResultsMap = {};
+
+    // Combine the results from averageVolume with the other data sources
+    averageVolume.forEach(({ barangay, cropName, season, totalVolume, totalArea, volumeProductionPerHectare }) => {
+        const key = `${barangay}-${cropName}`;
+
+        const priceIncomeData = priceIncomeMap.get(key) || { totalIncome: 0, totalArea: 0, incomePerHectare: 0 };
+        const profitData = profitMap.get(key) || { totalIncome: 0, totalArea: 0, totalProductionCost: 0, profitPerHectare: 0 };
+
+        // Combine data into a single object
+        aggregatedResultsMap[key] = {
+            barangay, // remains a string
+            cropName, // remains a string
+            season,   // remains a string
+            totalVolume: Number(totalVolume),  // ensure it's a number
+            totalArea: Number(totalArea),  // ensure it's a number
+            volumeProductionPerHectare: Number(volumeProductionPerHectare),  // ensure it's a number
+            totalIncome: Number(priceIncomeData.totalIncome),  // ensure it's a number
+            incomePerHectare: Number(priceIncomeData.incomePerHectare),  // ensure it's a number
+            totalProductionCost: Number(profitData.totalProductionCost),  // ensure it's a number
+            profitPerHectare: Number(profitData.profitPerHectare)  // ensure it's a number
+        };
+    });
+
+    // Convert the map back to an array for the final result
+    return Object.values(aggregatedResultsMap);
+}
+
+
 
 export { countAverageAreaPlanted,
     averageVolumeProduction,
@@ -1310,5 +1359,6 @@ export { countAverageAreaPlanted,
     priceIncomePerHectareBarangay, 
     profitPerHectareBarangay,
     calculateMonthlyAverages,
-    aggregateData
+    aggregateData,
+    aggregateDataBarangay
 };

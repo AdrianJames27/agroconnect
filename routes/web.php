@@ -41,6 +41,10 @@ Route::get('/print-soil-health', function () {
     return file_get_contents(public_path('components/print/soilHealth.html'));
 })->name('print-soil-health');
 
+Route::get('/print-map-trends', function () {
+    return file_get_contents(public_path('components/print/mapTrends.html'));
+})->name('print-map-trends');
+
 Route::middleware([TrimTrailingSlashes::class])->group(function () {
     Route::get('/greet/me', function () {
         return view('greet');

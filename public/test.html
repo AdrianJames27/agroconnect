@@ -1,57 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scroll Snap Example</title>
+    <title>Leaflet Map to Image Example</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-        }
-
-        /* Container for scroll snapping */
-        .container {
-            height: 100vh;
-            scroll-snap-type: y mandatory; /* Y-axis scroll snapping */
-            overflow-y: scroll; /* Enable vertical scrolling */
-        }
-
-        /* Each section */
-        .section {
-            height: 100vh; /* Full viewport height */
-            scroll-snap-align: start; /* Snap at the start of the section */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 2rem;
-        }
-
-        /* Background colors for the sections */
-        .section:nth-child(1) {
-            background-color: #ff6b6b;
-        }
-
-        .section:nth-child(2) {
-            background-color: #feca57;
-        }
-
-        .section:nth-child(3) {
-            background-color: #1dd1a1;
-        }
-
-        .section:nth-child(4) {
-            background-color: #54a0ff;
-        }
+        #map { height: 400px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="section">Section 1</div>
-        <div class="section">Section 2</div>
-        <div class="section">Section 3</div>
-        <div class="section">Section 4</div>
-    </div>
+    <div id="map"></div>
+    <button id="saveMapImage">Save Map as Image</button>
+
+    <script>
+        // Create the map
+        var globalMap = L.map('map').setView([51.505, -0.09], 11);
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(globalMap);
+
+        // Function to save map as image
+        document.getElementById('saveMapImage').addEventListener('click', function() {
+            html2canvas(document.querySelector('#map')).then(canvas => {
+                // Convert the canvas to a data URL
+                const imgData = canvas.toDataURL('image/png');
+
+                // Create a link element for downloading the image
+                const link = document.createElement('a');
+                link.href = imgData;
+                link.download = 'leaflet_map.png'; // Set the name of the downloaded file
+                link.click(); // Trigger the download
+            });
+        });
+    </script>
 </body>
 </html>

@@ -6,6 +6,8 @@ let barangays = [];
 let globalMap = null;
 let downloadData;
 let downloadYR;
+let printDataMap;
+let markers = [];
 let currentType;
 
 $(document).ready(function() {
@@ -131,25 +133,25 @@ class MapTrends {
 
     displayMapTrends(barangays, data, key, label, text) {
         let markerLayerGroup = L.layerGroup().addTo(globalMap);
-
+    
         // Close all open popups before adding new markers
         globalMap.eachLayer(layer => {
             if (layer instanceof L.CircleMarker && layer.isPopupOpen()) {
                 layer.closePopup();
             }
         });
-
+    
         const { barangays: updatedBarangays, data: updatedData, getColor } = this.generateMapTrends(barangays, data, key, label);
-
+    
         setTimeout(() => {
             markerLayerGroup.clearLayers();
-
+    
             updatedBarangays.forEach(barangay => {
                 const { lat, lon } = getLatLon(barangay.coordinates);
                 const locationData = updatedData.find(d => d.barangay === barangay.barangayName);
                 if (locationData) {
                     const color = getColor(locationData.zScore);
-
+    
                     var circleMarker = L.circleMarker([lat, lon], {
                         radius: 8,
                         color: 'black',
@@ -159,17 +161,26 @@ class MapTrends {
                       .on('popupopen', function () {
                           globalMap.panTo(circleMarker.getLatLng());
                       });
-
+    
                     markerLayerGroup.addLayer(circleMarker);
+    
+                    // Store marker data in the array
+                    markers.push({
+                        lat,
+                        lon,
+                        color,
+                        popupText: `<strong>${barangay.barangayName}:</strong><br>${text}: ${locationData[key]}`
+                    });
                 }
             });
-
-            interpret(updatedData, key);
+    
+            interpret(updatedData, key, text);
         }, 500); // Delay of 500 milliseconds
     }
+    
 }
 
-function interpret(data, key) {
+function interpret(data, key, text) {
     // Check if data is empty
     if (data.length === 0) {
         return `
@@ -186,7 +197,7 @@ function interpret(data, key) {
     const aggregatedData = aggregateProduction(data, key);
 
     // Filter out barangays with positive and zero values
-    const productiveData = aggregatedData.filter(d => d.total > 0);
+    const productiveData = aggregatedData.filter(d => d.total !== 0);
     const nonProductiveData = aggregatedData.filter(d => d.total === 0);
 
     // Handle case where there is no productive data
@@ -201,39 +212,119 @@ function interpret(data, key) {
     // Sort the productive data in descending order by the specified key
     const sortedProductiveData = [...productiveData].sort((a, b) => b.total - a.total);
 
-    // Calculate statistics
-    const highestValue = sortedProductiveData[0].total;
-    const lowestValue = sortedProductiveData[sortedProductiveData.length - 1].total;
-    const averageValue = (sortedProductiveData.reduce((sum, d) => sum + d.total, 0) / sortedProductiveData.length).toFixed(2);
+    // Create data for the pie chart
+    const pieLabels = sortedProductiveData.map(d => d.barangay);
+    const pieData = sortedProductiveData.map(d => d.total);
 
-    // Create a Bootstrap styled output
+    // Prepare the content for ranking and non-productive barangays
+    const ranking = sortedProductiveData.map((d, index) => `
+        <li class="list-group-item d-flex justify-content-between align-items-center" style="background-color: #f9f9f9;">
+            <span>${index + 1}. ${d.barangay}</span>
+            <span class="badge" style="background-color: #4CAF50; color: white;">${d.total}</span>
+        </li>
+    `).join('');
+    const nonProductiveText = nonProductiveData.length > 0 
+        ? `<p class="text-danger">Data not available for: ${nonProductiveData.map(d => d.barangay).join(', ')}.</p>` 
+        : '';
+
+    // Set up the pie chart
+    const chartCanvas = `
+        <canvas id="pieChart" style="max-height: 50rem;"></canvas>
+    `;
+
+    // Create a Bootstrap styled output with chart and ranking
     let interpretation = `
         <div class="container">
-            <h3 class="text-primary" style="font-size: 1.8rem;">Crop Performance Analysis for <strong>${cropName}</strong></h3>
-            <p style="font-size: 1rem;">This analysis provides a detailed breakdown of ${cropName}'s performance, highlighting trends and growth rates.</p>
-            <ul class="list-group mb-4">
-                <li class="list-group-item">
-                    <strong>Highest ${formatKey(key)}:</strong> <span class="badge bg-success">${highestValue}</span>
-                    <div>Barangays: ${sortedProductiveData.filter(d => d.total === highestValue).map(d => d.barangay).join(', ')}</div>
-                </li>
-                <li class="list-group-item">
-                    <strong>Lowest ${formatKey(key)}:</strong> <span class="badge bg-danger">${lowestValue}</span>
-                    <div>Barangays: ${sortedProductiveData.filter(d => d.total === lowestValue).map(d => d.barangay).join(', ')}</div>
-                </li>
-                <li class="list-group-item">
-                    <strong>Average ${formatKey(key)}:</strong> <span class="badge bg-info">${averageValue}</span>
-                </li>
-            </ul>
-            <h5 class="text-secondary">Productive Barangay Breakdown:</h5>
-            <ul class="list-group">
-                ${sortedProductiveData.map(d => `<li class="list-group-item">${d.barangay}: ${d.total}</li>`).join('')}
-            </ul><br>
-            ${nonProductiveData.length > 0 ? `<p class="text-danger">The following barangays reported no production: ${nonProductiveData.map(d => d.barangay).join(', ')}.</p>` : ''}
+            <h3 class="text-success" style="font-size: 1.8rem;">
+                ${text.replace(/\b\w/g, letter => letter.toUpperCase())} for <strong>${cropName}</strong>
+            </h3>
+            <p class="text-muted">
+                This analysis is about ${cropName}'s performance in the barangay, aiding in resource allocation metrics and decision-making based on trends and growth rates.
+            </p>
+
+            <div class="row">
+                <div class="col-md-8 mb-4">
+                    <div class="card" style="background-color: #e9f5e9;">
+                        <div class="card-body">
+                            ${chartCanvas}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card" style="background-color: #e0f7fa;">
+                        <div class="card-header" style="background-color: #4CAF50; color: white;">
+                            <h5 class="mb-0">Ranking</h5>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            ${ranking}
+                        </ul>
+                        <div class="card-body">
+                            ${nonProductiveText}
+                        </div>
+                    </div>
+                </div>
+            </div>
             <small class="text-muted">Note: Findings are based on available data only.</small>
         </div>
     `;
 
+    // Render the content in the DOM
     $('#interpretation').html(interpretation);
+
+
+    // Initialize the pie chart using Chart.js
+    const ctx = document.getElementById('pieChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: pieLabels,
+            datasets: [{
+                label: `Total ${formatKey(key)}`,
+                data: pieData,
+                backgroundColor: generateColors(pieData.length), // Helper function to generate colors for each slice
+                borderColor: '#fff',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false, // Allow the chart to resize based on the container
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(tooltipItem) {
+                            return `${tooltipItem.label}: ${tooltipItem.raw}`;
+                        }
+                    }
+                },
+                // Data labels settings
+                datalabels: {
+                    color: 'white', // Change datalabels color to white
+                }
+            }
+        },
+        plugins: [ChartDataLabels] // Register the plugin
+    });
+
+    printDataMap = {
+        markers,
+        interpretation,
+        pieData,
+        pieLabels,
+        key
+    } 
+}
+
+// Helper function to generate colors for the chart
+function generateColors(numColors) {
+    const colors = [];
+    for (let i = 0; i < numColors; i++) {
+        colors.push(`hsl(${(i * 360 / numColors)}, 70%, 50%)`);
+    }
+    return colors;
 }
 
 
@@ -358,7 +449,7 @@ async function handleCategoryChange() {
         const mt = new MapTrends(season, type, crop, categoryText);
         mt.displayMapTrends(barangays, dataset, key, categoryText, text);
         currentType = key;
-        downloadData = dataset;
+  
     } else {
         $('.available').hide();
         $('#unavailable').show();
@@ -404,43 +495,15 @@ function getLatLon(coordinate) {
     return { lat, lon };
 }
 
-// Function to determine the rate based on zScore
-function getRate(zScore) {
-  if (zScore > 1.5) return 'High'; 
-  if (zScore >= 0.5) return 'Moderate'; 
-  return 'Low'; 
-}
-
 async function download(format, type, data) {
     const filename = `${type.toLowerCase()}.${format}`;
-    // Extract barangay and rate
-    let pdfData = data.map(item => ({
-      barangay: item.barangay,
-      rate: getRate(item.zScore)
-    }));
 
     if (format === 'csv') {
-      downloadCSV(filename, data);
+      downloadCSV(data);
     } else if (format === 'xlsx') {
-      downloadExcel(filename, data);
+      downloadExcel(data);
     } else if (format === 'pdf') {
-      globalMap.whenReady(() => {
-  // Set the view of the map
-  globalMap.setView([14.2700, 121.1260], 11);
-  
-  // Close all open popups
-  globalMap.eachLayer(layer => {
-    if (layer instanceof L.CircleMarker && layer.isPopupOpen()) {
-      layer.closePopup();
-    }
-  });
-
-  // Delay to ensure all popups are closed before starting the download
-  setTimeout(() => {
-    downloadPDF(filename, pdfData);
-  }, 1000); // Adjust the delay as needed
-});
-
+        downloadPDF(filename);
     }
   }
 
@@ -450,8 +513,20 @@ function formatHeader(key) {
             .replace(/\b\w/g, char => char.toUpperCase());
 }
 
+function formatWithPesoSign(key, value) {
+    const keysToFormat = ['incomePerHectare', 'profitPerHectare', 'price', 'totalIncome', 'totalProductionCost'];
+    
+    // Check if the key is one of the keys that require formatting
+    if (keysToFormat.includes(key)) {
+        return value ? `₱${parseFloat(value).toFixed(2)}` : '';
+    }
 
-function downloadCSV(filename, data) {
+    // If the key does not require formatting, return the original value
+    return value;
+}
+
+
+function downloadCSV(data) {
     // Ensure there is data to process
     if (!data || data.length === 0) {
         console.error('No data available to download.');
@@ -476,17 +551,18 @@ function downloadCSV(filename, data) {
         ...data.map(row => 
             headersToInclude.map(key => {
                 const value = row[key];
-                // Format specific columns with peso sign
-                if (key === 'incomePerHectare' || key === 'profitPerHectare' || key === 'price') {
-                    return value ? `"₱${parseFloat(value).toFixed(2)}"` : '';
-                }
-                return escapeCSVValue(value);
+            
+                // Use the formatWithPesoSign function to handle peso formatting for specific columns
+                const formattedValue = formatWithPesoSign(key, value);
+            
+                // If the value is not formatted by the peso function, escape it for CSV
+                return formattedValue || escapeCSVValue(value);
             }).join(',')
         )
     ].join('\n');
 
     // Create the new filename
-    const filename = `Map Trends Crops Data.csv`;
+    const filename = `Map Trends Crops Data Barangay.csv`;
 
     // Create CSV download
     const blob = new Blob([csvData], { type: 'text/csv' });
@@ -502,268 +578,133 @@ function downloadCSV(filename, data) {
     addDownload(filename, 'CSV');
 }
 
+function downloadExcel(data) {
+    // Ensure there is data to process
+    if (!data || data.length === 0) {
+        console.error('No data available to download.');
+        return;
+    }
 
-function downloadExcel(filename, data) {
-  // Define the header mapping
-  const headerMap = {
-      barangay: 'Barangay / Area',
-      cropName: 'Crop Name',
-      season: 'Season',
-      volumeProductionPerHectare: 'Average Volume Production (mt/ha)',
-      incomePerHectare: 'Average Income / ha',
-      profitPerHectare: 'Average Profit / ha',
-      price: 'Price (kg)',
-      pestOccurrence: 'Pest Observed',
-      diseaseOccurrence: 'Disease Observed',
-      totalPlanted: 'Total Planted',
-  };
+    // Extract all keys from the first data object for headers
+    const headersToInclude = Object.keys(data[0]);
 
-  // Always include these three headers
-  const alwaysIncludedHeaders = ['barangay', 'cropName', 'season'];
+    // Create a new workbook
+    const workbook = new ExcelJS.Workbook();
 
-  // Dynamically include other headers based on filename
-  const additionalHeaders = [];
-  
-  const filenameLower = filename.toLowerCase();
+    // Define header and data style
+    const headerStyle = {
+        font: {
+            name: "Calibri",
+            size: 12,
+            bold: true,
+            color: { argb: "FFFFFFFF" } // White color
+        },
+        fill: {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: "B1BA4D" } // Green fill color
+        },
+        alignment: { horizontal: 'center', vertical: 'middle' },
+        border: {
+            top: { style: 'thin', color: { argb: "FF000000" } }, // Black border
+            right: { style: 'thin', color: { argb: "FF000000" } },
+            bottom: { style: 'thin', color: { argb: "FF000000" } },
+            left: { style: 'thin', color: { argb: "FF000000" } }
+        }
+    };
 
-  if (filenameLower.includes('volumeproductionperhectare')) {
-      additionalHeaders.push('volumeProductionPerHectare');
-  }
-  if (filenameLower.includes('incomeperhectare')) {
-      additionalHeaders.push('incomePerHectare');
-  }
-  if (filenameLower.includes('profitperhectare')) {
-      additionalHeaders.push('profitPerHectare');
-  }
-  if (filenameLower.includes('price')) {
-      additionalHeaders.push('price');
-  }
-  if (filenameLower.includes('pestoccurrence')) {
-      additionalHeaders.push('pestOccurrence');
-  }
-  if (filenameLower.includes('diseaseoccurrence')) {
-      additionalHeaders.push('diseaseOccurrence');
-  }
-  if (filenameLower.includes('totalplanted')) {
-      additionalHeaders.push('totalPlanted');
-  }
+    // Create a single worksheet for the data
+    const worksheet = workbook.addWorksheet('Map Trends Crops Data');
+    worksheet.addRow(['Crops Data']).font = { bold: true }; // Title Row
 
-  // Define the order of headers to include (first three + dynamically added)
-  const headersToInclude = [...alwaysIncludedHeaders, ...additionalHeaders];
+    // Create header row and apply header style
+    const headerRow = worksheet.addRow(headersToInclude);
+    headerRow.eachCell((cell) => {
+        cell.style = headerStyle; // Apply header style
+    });
 
-  // Map headers to the desired names
-  const mappedHeaders = headersToInclude.map(key => headerMap[key]);
+    // Populate the worksheet with data rows
+    data.forEach(row => {
+        const rowData = headersToInclude.map(key => {
+            const value = row[key];
+        
+            // Use the formatWithPesoSign function to format specific columns with a peso sign
+            return formatWithPesoSign(key, value) || value; // Fallback to original value if no formatting is needed
+        });        
+        const dataRow = worksheet.addRow(rowData); // Add data row
 
-  // Filter data to match the new headers
-  const filteredData = data.map(row => {
-      const filteredRow = {};
-      headersToInclude.forEach(key => {
-          filteredRow[headerMap[key]] = row[key];
-      });
-      return filteredRow;
-  });
+        // Apply data cell styles
+        dataRow.eachCell(cell => {
+            cell.border = {
+                top: { style: 'thin', color: { argb: "FF000000" } },
+                left: { style: 'thin', color: { argb: "FF000000" } },
+                bottom: { style: 'thin', color: { argb: "FF000000" } },
+                right: { style: 'thin', color: { argb: "FF000000" } }
+            };
+        });
+    });
 
-  // Create a new workbook and add a worksheet
-  const workbook = new ExcelJS.Workbook();
-  const worksheet = workbook.addWorksheet('Sheet1');
+    // Set column widths
+    worksheet.columns.forEach(column => {
+        column.width = 20; // Set all columns to a width of 20
+    });
 
-  // Add filtered data to the worksheet
-  worksheet.addRow(mappedHeaders);
-  filteredData.forEach(row => {
-      worksheet.addRow(headersToInclude.map(header => {
-          const value = row[headerMap[header]];
-          // Format specific columns with peso sign
-          if (header === 'incomePerHectare' || header === 'profitPerHectare' || header === 'price') {
-              return value ? `₱${parseFloat(value).toFixed(2)}` : '';
-          }
-          return value;
-      }));
-  });
+    // Create the new filename
+    const filename = `Map Trends Crops Data Barangay.xlsx`;
 
-  // Define header and data style
-  const headerStyle = {
-      font: {
-          name: "Calibri",
-          size: 12,
-          bold: true,
-          color: { argb: "FFFFFFFF" } // White color
-      },
-      fill: {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: "B1BA4D" } // Green fill color
-      },
-      alignment: { horizontal: 'center', vertical: 'middle' },
-      border: {
-          top: { style: 'thin', color: { argb: "FF000000" } }, // Black border
-          right: { style: 'thin', color: { argb: "FF000000" } },
-          bottom: { style: 'thin', color: { argb: "FF000000" } },
-          left: { style: 'thin', color: { argb: "FF000000" } }
-      }
-  };
+    // Write the workbook and trigger the download
+    workbook.xlsx.writeBuffer().then(buffer => {
+        const blob = new Blob([buffer], { type: 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
 
-  const dataStyle = {
-      font: {
-          name: "Calibri",
-          size: 11
-      },
-      alignment: { horizontal: 'center', vertical: 'middle', wrapText: true },
-      border: {
-          top: { style: 'thin', color: { argb: "FF000000" } }, // Black border
-          right: { style: 'thin', color: { argb: "FF000000" } },
-          bottom: { style: 'thin', color: { argb: "FF000000" } },
-          left: { style: 'thin', color: { argb: "FF000000" } }
-      }
-  };
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    });
 
-  // Apply style to header row
-  const headerRow = worksheet.getRow(1);
-  headerRow.eachCell({ includeEmpty: true }, (cell) => {
-      cell.style = headerStyle;
-  });
-  headerRow.height = 20; // Set header row height
-
-  // Apply style to data rows
-  worksheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
-      if (rowNumber > 1) { // Skip header row
-          row.eachCell({ includeEmpty: true }, (cell) => {
-              cell.style = dataStyle;
-          });
-      }
-  });
-
-  // Set column widths with padding to prevent overflow
-  worksheet.columns = mappedHeaders.map(header => ({
-      width: Math.max(header.length, 10) + 5 // Ensure minimum width
-  }));
-
-  // Write workbook to browser
-  workbook.xlsx.writeBuffer().then(function(buffer) {
-      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      let season = $("#season").val();
-      season = season.charAt(0).toUpperCase() + season.slice(1)
-      a.download = season + "_" + downloadYR + "_" + filename.charAt(0).toUpperCase() + filename.slice(1);
-      a.click();
-      URL.revokeObjectURL(url);
-  });
-  addDownload(filename, 'XLSX');
+    addDownload(filename, 'XLSX');
 }
 
+function downloadPDF(filename) {
+    console.log(printDataMap);
 
-function downloadPDF(filename, data) {
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF();
-    const margin = 10; // Margin from the page edges
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    let currentY = margin + 20;
+    // Store data in sessionStorage
+    sessionStorage.setItem('printDataMap', JSON.stringify(printDataMap));
 
-    // Capture a section and return its image data
-    function captureSection(selector) {
-        return html2canvas(document.querySelector(selector), {
-            background: 'transparent',
-            useCORS: true,
-            scale: 2
-        }).then(canvas => canvas.toDataURL('image/png'));
-    }
+    // Open print page without printing
+    const printWindow = window.open('/print-map-trends', '_blank');
 
-    // Add an image to the PDF
-    function addImageToPDF(imgData, x, y, width, height) {
-        pdf.addImage(imgData, 'PNG', x, y, width, height, undefined, 'NONE');
-    }
-
-    // Add title to the PDF with text size 12
-    function addTitle() {
-        return new Promise((resolve) => {
-            const titleText = document.querySelector('#title').innerText;
-            pdf.setFontSize(12); // Set title font size to 12
-            pdf.setFont('helvetica', 'bold');
-            const titleWidth = pdf.getTextWidth(titleText); // Get the width of the title
-            const titleX = (pageWidth - titleWidth) / 2; // Center the title
-            pdf.text(titleText, titleX, currentY); // Add title text to PDF
-            currentY += 15; // Increase the Y position for the next element
-            resolve(); // Resolve the promise
-        });
-    }
-
-    // Add legend card to the PDF using html2canvas
-    function addLegendCard() {
-        return captureSection('.legend-card').then(imgData => {
-            const legendWidth = 180 / 3;
-            const legendHeight = 40 / 3;
-            const legendX = (pageWidth - legendWidth) / 2; // Center legend
-            addImageToPDF(imgData, legendX, currentY, legendWidth, legendHeight);
-            currentY += legendHeight + 10; // Update current Y position
-        });
-    }
-
-    // Add map to the PDF with adjusted size
-    function addMap() {
-        return captureSection('#map').then(imgData => {
-            const imgWidth = 120; // Adjusted width for the map
-            const imgHeight = 90; // Adjusted height for the map
-            const mapX = (pageWidth - imgWidth) / 2; // Center the map horizontally
-            addImageToPDF(imgData, mapX, currentY, imgWidth, imgHeight);
-            currentY += imgHeight + 10; // Update current Y position
-        });
-    }
-
-    // Add interpretation text as an image to the PDF
-    function addInterpretationText() {
-        return captureSection('#interpretation').then(imgData => {
-            const imgWidth = pageWidth - 2 * margin; // Full width minus margins
-            const imgHeight = (imgWidth / 2); // Maintain aspect ratio, adjust height as needed
-            const interpretationX = (pageWidth - imgWidth) / 2; // Center horizontally
-            addImageToPDF(imgData, interpretationX, currentY, imgWidth, imgHeight);
-            currentY += imgHeight + 10; // Update current Y position
-        });
-    }
-
-    // Add a table to the next page in the PDF
-    function addTable() {
-        pdf.addPage(); // Start a new page for the table
-        const keys = Object.keys(data[0]).filter(key => key !== 'remarks');
-        const rows = data.map(item => keys.map(key => item[key]));
-
-        pdf.autoTable({
-            head: [['Barangay (Area)', 'Rating']],
-            body: rows,
-            startY: margin,
-            margin: { left: margin, right: margin },
-            theme: 'grid',
-            styles: {
-                cellPadding: 2,
-                fontSize: 10 // Smaller font size for table
-            },
-            headStyles: {
-                fillColor: [22, 160, 133], // Custom header color
-                textColor: [255, 255, 255] // White text
-            },
-            alternateRowStyles: {
-                fillColor: [240, 240, 240] // Light gray for alternating rows
-            }
-        });
-    }
-
-    // Prepare filename based on the selected season
-    let season = $("#season").val();
-    season = season.charAt(0).toUpperCase() + season.slice(1);
-    filename = season + "_" + downloadYR + "_" + filename.charAt(0).toUpperCase() + filename.slice(1);
-
-    try {
-        addTitle() // Add title at the start of the PDF
-            .then(addLegendCard) // Add legend card
-            .then(addMap) // Add map
-            .then(addInterpretationText) // Add interpretation text
-            .then(addTable) // Add table on the next page
-            .finally(() => pdf.save(filename))
-            .catch(err => console.error('Error generating PDF:', err));
-    } catch (err) {
-        console.error('Error generating PDF:', err);
-    }
-
+    // Add download functionality (assuming addDownload is defined elsewhere)
     addDownload(filename, 'PDF');
 }
+
+
+async function main() {
+    try {
+        let production = await getProduction();
+        // let price = await getPrice("", season);
+        // let pest = await getPest("", season);
+        // let disease = await getDisease("", season);
+
+        production = production.map(entry => ({ ...entry}));
+        // price = price.map(entry => ({ ...entry, type }));
+        // pest = pest.map(entry => ({ ...entry, type }));
+        // disease = disease.map(entry => ({ ...entry, type }));
+
+        return await stats.aggregateDataBarangay(production);
+    } catch (error) {
+        console.error('An error occurred in the main function:', error);
+    }
+}
+
+
+main().then(result => {
+    console.log(result);
+    downloadData = result;
+}).catch(error => {
+    console.error('Error occurred:', error);
+});
