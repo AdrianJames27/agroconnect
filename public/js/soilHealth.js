@@ -5,6 +5,7 @@ $(document).ready(function() {
   let vegetablesData, riceData, fruitsData;
   let currentDataType;
   let yearRange;
+  let printDownload = [];
   
   $(document).ready(function() {
     $('#infoBtn').click(function() {
@@ -260,40 +261,86 @@ $(document).ready(function() {
             }
         };
         
-        
-        const breakdownHtml = `
-        <div class="container mt-4">
-            <h4>${type.charAt(0).toUpperCase() + type.slice(1)} Nutrients</h4>
-            <hr />
-            <div class="card mb-3">
-                <div class="card-body">
-                    <p><strong>Nitrogen:</strong> <span class="small">${averages.nitrogen.value}</span> <span class="badge bg-info">${averages.nitrogen.percentage}%</span></p>
+      // Function to get background color based on the nutrient value
+function getNutrientColor(value) {
+    switch (value) {
+        case 'Low':
+            return { background: 'bg-red', textColor: 'text-white' }; // Red for Low
+        case 'Moderately Low':
+            return { background: 'bg-yellow', textColor: 'text-dark' }; // Yellow for Moderately Low
+        case 'Moderately High':
+            return { background: 'bg-aero', textColor: 'text-white' }; // Blue for Moderately High
+        case 'High':
+            return { background: 'bg-success', textColor: 'text-white' }; // Green for High
+        default:
+            return { background: 'bg-light', textColor: 'text-dark' }; // Default light background if none matches
+    }
+}
+
+// Build the HTML with the dynamic background colors
+const breakdownHtml = `
+    <div class="container mt-4">
+        <h4>${type.charAt(0).toUpperCase() + type.slice(1)} Nutrients</h4>
+        <hr />
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="${getNutrientColor(averages.nitrogen.value).background} ${getNutrientColor(averages.nitrogen.value).textColor} p-2">
+                    <p><strong>Nitrogen:</strong> <span class="small">${averages.nitrogen.value}</span> <span class="badge text-white bg-secondary">${averages.nitrogen.percentage}%</span></p>
                     <p class="small">${recommendations[type].npk.nitrogen.description}</p>
                     <p class="small"><strong>Recommended Level:</strong> ${recommendations[type].npk.nitrogen.level}</p>
-                    <hr />
+                </div>
+                <hr />
 
-                    <p><strong>Phosphorus:</strong> <span class="small">${averages.phosphorus.value}</span> <span class="badge bg-info">${averages.phosphorus.percentage}%</span></p>
+                <div class="${getNutrientColor(averages.phosphorus.value).background} ${getNutrientColor(averages.phosphorus.value).textColor} p-2">
+                    <p><strong>Phosphorus:</strong> <span class="small">${averages.phosphorus.value}</span> <span class="badge text-white bg-secondary">${averages.phosphorus.percentage}%</span></p>
                     <p class="small">${recommendations[type].npk.phosphorus.description}</p>
                     <p class="small"><strong>Recommended Level:</strong> ${recommendations[type].npk.phosphorus.level}</p>
-                    <hr />
-                    
-                    <p><strong>Potassium:</strong> <span class="small">${averages.potassium.value}</span> <span class="badge bg-info">${averages.potassium.percentage}%</span></p>
+                </div>
+                <hr />
+                
+                <div class="${getNutrientColor(averages.potassium.value).background} ${getNutrientColor(averages.potassium.value).textColor} p-2">
+                    <p><strong>Potassium:</strong> <span class="small">${averages.potassium.value}</span> <span class="badge text-white bg-secondary">${averages.potassium.percentage}%</span></p>
                     <p class="small">${recommendations[type].npk.potassium.description}</p>
                     <p class="small"><strong>Recommended Level:</strong> ${recommendations[type].npk.potassium.level}</p>
-                    <hr />
-                    
-                    <p><strong>pH:</strong> <span class="small">${averages.ph.value}</span> <span class="badge bg-info">${averages.ph.percentage}%</span></p>
+                </div>
+                <hr />
+                
+                <div class="${getNutrientColor(averages.ph.value).background} ${getNutrientColor(averages.ph.value).textColor} p-2">
+                    <p><strong>pH:</strong> <span class="small">${averages.ph.value}</span> <span class="badge text-white bg-secondary">${averages.ph.percentage}%</span></p>
                     <p class="small">${recommendations[type].ph.description}</p>
                     <p class="small"><strong>Recommended Level:</strong> ${recommendations[type].ph.level}</p>
-                    <hr />
-                    
-                    <p><strong>General Rating:</strong> <span class="small">${averages.generalRating.value}</span> <span class="badge bg-info">${averages.generalRating.percentage}%</span></p>
+                </div>
+                <hr />
+                
+                <div class="${getNutrientColor(averages.generalRating.value).background} ${getNutrientColor(averages.generalRating.value).textColor} p-2">
+                    <p><strong>General Rating:</strong> <span class="small">${averages.generalRating.value}</span> <span class="badge text-white bg-secondary">${averages.generalRating.percentage}%</span></p>
                     <p class="small">${recommendations[type].generalRating.description}</p>
                     <p class="small"><strong>Recommended Level:</strong> ${recommendations[type].generalRating.rating}</p>
                 </div>
             </div>
         </div>
-    `;
+    </div>
+`;
+
+
+
+        // Create an object for printDataSoil
+        let printDataSoil = {
+            config,
+            breakdownHtml
+        };
+
+        // Switch statement to determine the type and push the data into the printDownload array
+        switch(type) {
+            case 'vegetables':
+            case 'rice':
+            case 'fruits':
+                printDownload.push({
+                    type,
+                    printDataSoil
+                });
+                break;
+        }
     
    
           breakdownContainer.append(breakdownHtml);
@@ -356,42 +403,26 @@ $(document).ready(function() {
     } else if (format === 'xlsx') {
       downloadExcel(filename, data);
     } else if (format === 'pdf') {
-      downloadPDF(filename, data, itemType);
+      downloadPDF(filename, itemType);
     }
   }
   
   function downloadCSV(filename, data) {
-    // Define the header mapping
-    const headerMap = {
-      barangay: 'Barangay / Area',
-      fieldType: 'Type',
-      phosphorusContent: 'Phosphorus',
-      nitrogenContent: 'Nitrogen',
-      potassiumContent: 'Potassium',
-      pH: 'pH',
-      generalRating: 'General Rating',
-      monthYear: 'Data Observed',
-      season: 'Season Collected',
-  };
+    // Define the filename with 'Soil Health' and capitalize the first letter
+    filename = 'Soil Health_' + yearRange + "_" + filename.charAt(0).toUpperCase() + filename.slice(1);
 
-  // Define the order of headers
-  const headersToInclude = [
-      'barangay',
-      'fieldType',
-      'phosphorusContent',
-      'nitrogenContent',
-      'potassiumContent',
-      'pH',
-      'generalRating',
-      'monthYear',
-      'season',
-  ];
+    // Automatically extract headers from the first data row and remove the last two columns
+    const headers = Object.keys(data[0]).slice(0, -2);
 
+    // Remove the first two rows and the last two rows from the data
+    const filteredData = data.slice(2, -2);
 
-  filename = 'Soil Health_' + yearRange + "_" + filename.charAt(0).toUpperCase() + filename.slice(1);
-
-    // Map headers to the desired names
-    const headers = headersToInclude.map(key => headerMap[key]);
+    // Sort the data by monthYear field
+    const sortedData = filteredData.sort((a, b) => {
+        const dateA = new Date(a.monthYear); // Convert monthYear to a Date object
+        const dateB = new Date(b.monthYear);
+        return dateA - dateB; // Sort in ascending order
+    });
 
     // Helper function to escape CSV values
     function escapeCSVValue(value) {
@@ -402,15 +433,12 @@ $(document).ready(function() {
         return value;
     }
 
-    // Filter data to match the new headers and format values
+    // Format the data rows for CSV, removing the last two columns from each row
     const csvRows = [
-        headers.join(','),
-        ...data.map(row => 
-            headersToInclude.map(key => {
+        headers.join(','), // Join headers to form the first row
+        ...sortedData.map(row => 
+            headers.map(key => {
                 const value = row[key] !== undefined ? row[key] : ''; // Ensure non-null values
-                if (key === 'incomePerHectare' || key === 'benefitPerHectare' || key === 'price') {
-                    return value !== '' ? `₱${parseFloat(value).toFixed(2)}` : '';
-                }
                 return escapeCSVValue(value);
             }).join(',')
         )
@@ -430,61 +458,32 @@ $(document).ready(function() {
     // Optional: Log download action
     addDownload(filename, 'CSV');
 }
-  
-  function downloadExcel(filename, data) {
-    // Define the header mapping
-    const headerMap = {
-        barangay: 'Barangay / Area',
-        fieldType: 'Type',
-        phosphorusContent: 'Phosphorus',
-        nitrogenContent: 'Nitrogen',
-        potassiumContent: 'Potassium',
-        pH: 'pH',
-        generalRating: 'General Rating',
-        monthYear: 'Data Observed',
-        season: 'Season Collected',
-    };
 
-    // Define the order of headers
-    const headersToInclude = [
-        'barangay',
-        'fieldType',
-        'phosphorusContent',
-        'nitrogenContent',
-        'potassiumContent',
-        'pH',
-        'generalRating',
-        'monthYear',
-        'season',
-    ];
-
-
+function downloadExcel(filename, data) {
+    // Define the filename with 'Soil Health' and capitalize the first letter
     filename = 'Soil Health_' + yearRange + "_" + filename.charAt(0).toUpperCase() + filename.slice(1);
 
-    // Map headers to the desired names
-    const mappedHeaders = headersToInclude.map(key => headerMap[key]);
+    // Automatically extract headers from the first data row, removing first two and last two columns
+    const headers = Object.keys(data[0]).slice(2, -2);
 
-    // Filter data to match the new headers
-    const filteredData = data.map(row => {
-        const filteredRow = {};
-        headersToInclude.forEach(key => {
-            filteredRow[headerMap[key]] = row[key];
-        });
-        return filteredRow;
+    // Sort the data by monthYear field
+    const sortedData = data.slice(2, -2).sort((a, b) => {
+        const dateA = new Date(a.monthYear); // Convert monthYear to Date object
+        const dateB = new Date(b.monthYear);
+        return dateA - dateB; // Sort in ascending order
     });
 
     // Create a new workbook and add a worksheet
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Sheet1');
 
-    // Add filtered data to the worksheet
-    worksheet.addRow(mappedHeaders);
-    filteredData.forEach(row => {
-        worksheet.addRow(headersToInclude.map(header => {
-            const value = row[headerMap[header]];
+    // Add headers to the worksheet
+    worksheet.addRow(headers);
 
-            return value;
-        }));
+    // Add data rows to the worksheet
+    sortedData.forEach(row => {
+        const rowData = headers.map(header => row[header]);
+        worksheet.addRow(rowData);
     });
 
     // Define header and data style
@@ -540,7 +539,7 @@ $(document).ready(function() {
     });
 
     // Set column widths with padding to prevent overflow
-    worksheet.columns = mappedHeaders.map(header => ({
+    worksheet.columns = headers.map(header => ({
         width: Math.max(header.length, 10) + 5 // Ensure minimum width
     }));
 
@@ -554,94 +553,33 @@ $(document).ready(function() {
         a.click();
         URL.revokeObjectURL(url);
     });
+
+    // Optional: Log download action
     addDownload(filename, 'XLSX');
-} 
-
-function downloadPDF(filename, data, type) { 
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('p', 'pt', 'a4'); // A4 size
-    const margin = 10;
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-
-    const addImageToPDF = (canvas, x, y, width, height) => {
-        const imgData = canvas.toDataURL('image/png');
-        doc.addImage(imgData, 'PNG', x, y, width, height);
-    };
-
-    const addHTMLToPDF = (element, x, y) => {
-        return html2canvas(element, {
-            scale: 2, // Increase scale for higher resolution
-            useCORS: true,
-            width: 800, // Set a fixed width for the canvas
-            height: 600, // Set a fixed height for the canvas
-        }).then(canvas => {
-            addImageToPDF(canvas, x, y, pageWidth - 2 * margin, (canvas.height * (pageWidth - 2 * margin)) / canvas.width);
-        });
-    };
-
-    const addTitle = (title) => {
-        doc.setFontSize(18);
-        doc.setFont('helvetica', 'bold');
-        doc.text(title, margin, margin + 10);
-        doc.line(margin, margin + 12, pageWidth - margin, margin + 12);
-    };
-
-    filename = `${type.charAt(0).toUpperCase() + type.slice(1)}_${filename.charAt(0).toUpperCase() + filename.slice(1)}`;
-
-    addTitle(`${type.charAt(0).toUpperCase() + type.slice(1)} Performance Analysis`);
-
-    const chartPromises = [
-        html2canvas(document.getElementById('vegetablesChart'), {
-            scale: 2,
-            useCORS: true,
-            width: 800, // Fixed width for chart
-            height: 400 // Fixed height for chart
-        }).then(canvas1 => {
-            const chartWidth = pageWidth - 2 * margin;
-            const chartHeight = canvas1.height * (chartWidth / canvas1.width) * 0.75;
-            addImageToPDF(canvas1, margin, margin + 20, chartWidth, chartHeight);
-        }),
-    ];
-
-    Promise.all(chartPromises).then(() => {
-        let currentY = margin + 220;
-
-        const interpretationElement = document.querySelector('#vegetablesBreakdown');
-        addHTMLToPDF(interpretationElement, margin, currentY).then(() => {
-            doc.addPage();
-
-            addTitle(`${type.charAt(0).toUpperCase() + type.slice(1)} Data Table`);
-
-            doc.autoTable({
-                head: [['Barangay', 'Type', 'Phosphorus', 'Nitrogen', 'Potassium', 'pH', 'General Rating', 'Date Observed', 'Season Collected']],
-                body: data.map(record => [
-                    record.barangay,
-                    record.fieldType,
-                    record.phosphorusContent,
-                    record.nitrogenContent,
-                    record.potassiumContent,
-                    record.pH,
-                    record.generalRating,
-                    record.monthYear,
-                    record.season,
-                ]),
-                startY: 30,
-                margin: { top: 10, right: 10, bottom: 10, left: 10 },
-                theme: 'grid',
-            });
-
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'normal');
-            const footerText = "Generated by Cabuyao Agriculture System";
-            const footerWidth = doc.getTextWidth(footerText);
-            doc.text(footerText, pageWidth - footerWidth - margin, pageHeight - margin);
-            
-            doc.save(filename);
-        });
-    });
 }
 
+function downloadPDF(filename, type) {
+    console.log(type);
+    
+    // Retrieve the correct printDataSoil based on the type from printDownload array
+    const printDataSoilEntry = printDownload.find(entry => entry.type === type);
 
+    // Check if the entry exists
+    if (printDataSoilEntry) {
+        // Store the corresponding printDataSoil in sessionStorage
+        sessionStorage.setItem('printDataSoil', JSON.stringify(printDataSoilEntry.printDataSoil));
+
+        // Open print page
+        const printWindow = window.open('/print-soil-health', '_blank');
+        printWindow.onload = function() {
+            printWindow.print();
+        };
+
+        // Call addDownload function with the filename and type
+        addDownload(filename, 'PDF');
+    } else {
+        console.error('No print data found for type:', type);
+    }
+}
 
 });  

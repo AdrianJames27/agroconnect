@@ -37,6 +37,10 @@ Route::get('/print-seasonal-trends', function () {
     return file_get_contents(public_path('components/print/seasonalTrends.html'));
 })->name('print-seasonal-trends');
 
+Route::get('/print-soil-health', function () {
+    return file_get_contents(public_path('components/print/soilHealth.html'));
+})->name('print-soil-health');
+
 Route::middleware([TrimTrailingSlashes::class])->group(function () {
     Route::get('/greet/me', function () {
         return view('greet');

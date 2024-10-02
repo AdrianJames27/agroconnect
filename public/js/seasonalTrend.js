@@ -714,6 +714,15 @@ function download(format, type, data) {
         return;
     }
 
+    // Helper function to escape CSV values
+    function escapeCSVValue(value) {
+        if (value === undefined || value === null) return '';
+        if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
+            value = `"${value.replace(/"/g, '""')}"`;
+        }
+        return value;
+    }
+
     // Sort the data by monthYear
     data.sort((a, b) => new Date(a.monthYear) - new Date(b.monthYear));
 
@@ -961,6 +970,8 @@ function downloadExcel(data) {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     });
+
+    addDownload(filename, 'XLSX');
 }
 
 
@@ -975,6 +986,8 @@ function downloadPDF(filename) {
     printWindow.onload = function() {
         printWindow.print();
     };
+
+    addDownload(filename, 'PDF');
 }
 
 

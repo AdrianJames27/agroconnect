@@ -457,89 +457,110 @@ function escapeCSVValue(value) {
   return `"${value}"`; // Enclose each value in double quotes
 }
 
-function downloadCSV(filename, data) {
-  // Define the header mapping
-  const headerMap = {
-      barangay: 'Barangay / Area',
-      cropName: 'Crop Name',
-      season: 'Season',
-      volumeProductionPerHectare: 'Average Volume Production (mt/ha)',
-      incomePerHectare: 'Average Income / ha',
-      profitPerHectare: 'Average Profit / ha',
-      price: 'Price (kg)',
-      pestOccurrence: 'Pest Observed',
-      diseaseOccurrence: 'Disease Observed',
-      totalPlanted: 'Total Planted'
-  };
+  function downloadCSV(data) {
+    // Ensure there is data to process
+    if (!data || data.length === 0) {
+        console.error('No data available to download.');
+        return;
+    }
 
-  // Always include these three headers
-  const alwaysIncludedHeaders = ['barangay', 'cropName', 'season'];
+    // Helper function to escape CSV values
+    function escapeCSVValue(value) {
+        if (value === undefined || value === null) return '';
+        if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
+            value = `"${value.replace(/"/g, '""')}"`;
+        }
+        return value;
+    }
 
-  // Dynamically include other headers based on filename
-  const additionalHeaders = [];
+    // Sort the data by monthYear
+    data.sort((a, b) => new Date(a.monthYear) - new Date(b.monthYear));
 
-  const filenameLower = filename.toLowerCase();
+    // Extract all keys from the first data object for headers
+    const headersToInclude = Object.keys(data[0]);
 
-  if (filenameLower.includes('volumeproductionperhectare')) {
-      additionalHeaders.push('volumeProductionPerHectare');
-  }
-  if (filenameLower.includes('incomeperhectare')) {
-      additionalHeaders.push('incomePerHectare');
-  }
-  if (filenameLower.includes('profitperhectare')) {
-      additionalHeaders.push('profitPerHectare');
-  }
-  if (filenameLower.includes('price')) {
-      additionalHeaders.push('price');
-  }
-  if (filenameLower.includes('pestoccurrence')) {
-      additionalHeaders.push('pestOccurrence');
-  }
-  if (filenameLower.includes('diseaseoccurrence')) {
-      additionalHeaders.push('diseaseOccurrence');
-  }
-  if (filenameLower.includes('totalplanted')) {
-      additionalHeaders.push('totalPlanted');
-  }
+    // ======= MONTHLY DATA SECTION =======
+    const monthlyCSVData = [
+        'Monthly Data',
+        headersToInclude.join(','), // Use the keys directly as headers
+        ...data.map(row => 
+            headersToInclude.map(key => {
+                const value = row[key];
+                // Format specific columns with peso sign
+                if (key === 'incomePerHectare' || key === 'profitPerHectare' || key === 'price') {
+                    return value ? `"₱${parseFloat(value).toFixed(2)}"` : '';
+                }
+                return escapeCSVValue(value);
+            }).join(',')
+        )
+    ].join('\n');
 
-  // Define the order of headers to include (first three + dynamically added)
-  const headersToInclude = [...alwaysIncludedHeaders, ...additionalHeaders];
+    // ======= YEARLY DATA SECTION =======
+    const yearlyData = {};
+    data.forEach(row => {
+        const year = new Date(row.monthYear).getFullYear();
+        const cropSeasonKey = `${row.cropName}-${row.season}`;
 
-  // Map headers to the desired names
-  const mappedHeaders = headersToInclude.map(key => headerMap[key]);
+        if (!yearlyData[year]) {
+            yearlyData[year] = {};
+        }
 
-  // Convert data to CSV format
-  const csvData = [
-      // Add the header row
-      mappedHeaders.join(','),
-      // Add the data rows
-      ...data.map(row => headersToInclude.map(key => {
-          const value = row[key];
+        if (!yearlyData[year][cropSeasonKey]) {
+            yearlyData[year][cropSeasonKey] = {
+                cropName: row.cropName,
+                season: row.season,
+                count: 0,
+                sums: {}
+            };
+            headersToInclude.forEach(header => {
+                yearlyData[year][cropSeasonKey].sums[header] = 0;
+            });
+        }
 
-          // Format specific columns with peso sign
-          if (key === 'incomePerHectare' || key === 'profitPerHectare' || key === 'price') {
-              return value ? `"₱${parseFloat(value).toFixed(2)}"` : '';
-          }
-          // Escape and format other values
-          return escapeCSVValue(value);
-      }).join(','))
-  ].join('\n');
+        yearlyData[year][cropSeasonKey].count++;
+        headersToInclude.forEach(header => {
+            yearlyData[year][cropSeasonKey].sums[header] += parseFloat(row[header]) || 0;
+        });
+    });
 
-  // Create CSV download
-  const blob = new Blob([csvData], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  let season = $("#season").val();
-  season = season.charAt(0).toUpperCase() + season.slice(1);
-  a.download = season + "_" + downloadYR + "_" + filename.charAt(0).toUpperCase() + filename.slice(1) + ".csv";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  addDownload(filename, 'CSV');
+    const yearlyCSVData = [
+        '\nYearly Data',
+        ['Year', 'Crop Name', 'Season', ...headersToInclude.slice(3)].join(','), // Include the necessary headers
+        ...Object.entries(yearlyData).flatMap(([year, cropSeasons]) =>
+            Object.values(cropSeasons).map(cropSeason => {
+                const row = [year, cropSeason.cropName, cropSeason.season];
+                headersToInclude.slice(3).forEach(header => { // Skip the first three headers
+                    const average = (cropSeason.sums[header] / cropSeason.count).toFixed(2);
+                    row.push(average);
+                });
+                return row.join(',');
+            })
+        )
+    ].join('\n');
+
+    // Combine monthly and yearly data into a single CSV
+    const completeCSVData = [monthlyCSVData, yearlyCSVData].join('\n');
+
+    // Determine year range
+    const years = data.map(row => new Date(row.monthYear).getFullYear());
+    const yearRange = `${Math.min(...years)}-${Math.max(...years)}`;
+
+    // Create the new filename
+    const filename = `Seasonal Crops Data ${yearRange}.csv`;
+
+    // Create CSV download
+    const blob = new Blob([completeCSVData], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    
+    a.download = filename; // Use the new filename format
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    addDownload(filename, 'CSV');
 }
-
 
 function downloadExcel(filename, data) {
   // Define the header mapping
