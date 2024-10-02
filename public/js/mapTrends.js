@@ -450,14 +450,8 @@ function formatHeader(key) {
             .replace(/\b\w/g, char => char.toUpperCase());
 }
 
-function escapeCSVValue(value) {
-  if (typeof value === 'string' && (value.includes(',') || value.includes('\n') || value.includes('"'))) {
-    value = '"' + value.replace(/"/g, '""') + '"';
-  }
-  return `"${value}"`; // Enclose each value in double quotes
-}
 
-  function downloadCSV(data) {
+function downloadCSV(filename, data) {
     // Ensure there is data to process
     if (!data || data.length === 0) {
         console.error('No data available to download.');
@@ -473,15 +467,11 @@ function escapeCSVValue(value) {
         return value;
     }
 
-    // Sort the data by monthYear
-    data.sort((a, b) => new Date(a.monthYear) - new Date(b.monthYear));
-
     // Extract all keys from the first data object for headers
     const headersToInclude = Object.keys(data[0]);
 
-    // ======= MONTHLY DATA SECTION =======
-    const monthlyCSVData = [
-        'Monthly Data',
+    // ======= CSV DATA SECTION =======
+    const csvData = [
         headersToInclude.join(','), // Use the keys directly as headers
         ...data.map(row => 
             headersToInclude.map(key => {
@@ -495,61 +485,11 @@ function escapeCSVValue(value) {
         )
     ].join('\n');
 
-    // ======= YEARLY DATA SECTION =======
-    const yearlyData = {};
-    data.forEach(row => {
-        const year = new Date(row.monthYear).getFullYear();
-        const cropSeasonKey = `${row.cropName}-${row.season}`;
-
-        if (!yearlyData[year]) {
-            yearlyData[year] = {};
-        }
-
-        if (!yearlyData[year][cropSeasonKey]) {
-            yearlyData[year][cropSeasonKey] = {
-                cropName: row.cropName,
-                season: row.season,
-                count: 0,
-                sums: {}
-            };
-            headersToInclude.forEach(header => {
-                yearlyData[year][cropSeasonKey].sums[header] = 0;
-            });
-        }
-
-        yearlyData[year][cropSeasonKey].count++;
-        headersToInclude.forEach(header => {
-            yearlyData[year][cropSeasonKey].sums[header] += parseFloat(row[header]) || 0;
-        });
-    });
-
-    const yearlyCSVData = [
-        '\nYearly Data',
-        ['Year', 'Crop Name', 'Season', ...headersToInclude.slice(3)].join(','), // Include the necessary headers
-        ...Object.entries(yearlyData).flatMap(([year, cropSeasons]) =>
-            Object.values(cropSeasons).map(cropSeason => {
-                const row = [year, cropSeason.cropName, cropSeason.season];
-                headersToInclude.slice(3).forEach(header => { // Skip the first three headers
-                    const average = (cropSeason.sums[header] / cropSeason.count).toFixed(2);
-                    row.push(average);
-                });
-                return row.join(',');
-            })
-        )
-    ].join('\n');
-
-    // Combine monthly and yearly data into a single CSV
-    const completeCSVData = [monthlyCSVData, yearlyCSVData].join('\n');
-
-    // Determine year range
-    const years = data.map(row => new Date(row.monthYear).getFullYear());
-    const yearRange = `${Math.min(...years)}-${Math.max(...years)}`;
-
     // Create the new filename
-    const filename = `Seasonal Crops Data ${yearRange}.csv`;
+    const filename = `Map Trends Crops Data.csv`;
 
     // Create CSV download
-    const blob = new Blob([completeCSVData], { type: 'text/csv' });
+    const blob = new Blob([csvData], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -561,6 +501,7 @@ function escapeCSVValue(value) {
     URL.revokeObjectURL(url);
     addDownload(filename, 'CSV');
 }
+
 
 function downloadExcel(filename, data) {
   // Define the header mapping
