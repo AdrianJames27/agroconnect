@@ -270,3 +270,7 @@ html, body {
     scroll-snap-type: y proximity;
     padding: 20px;
 }
+
+.highlighted-field {
+    border: 2px solid #FFD700; /* Example: gold border */
+}

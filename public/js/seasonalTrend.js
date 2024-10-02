@@ -492,6 +492,8 @@ function interpretData(data) {
         cropData.total[field] = 0;
         cropData.monthlyData[field] = {};
     });
+
+    console.log(numericFields);
     
     // Group data by monthYear and calculate totals
     data.forEach((item) => {
@@ -529,155 +531,191 @@ function interpretData(data) {
     
     // Sort months for proper comparison
     cropData.months.sort((a, b) => new Date(a) - new Date(b));
-    
-    // Extract the latest year from the months array
-    const latestMonthString = cropData.months[cropData.months.length - 1]; // Get the last month string
-    const latestYear = latestMonthString.split(' ')[1]; // Split by space and take the second element, which is the year
 
-    // Filter months to include only those from the latest year
-    let latestYearMonths = cropData.months.filter(month => month.endsWith(latestYear)); // Check if the month ends with the latestYear
+    // Filter the months to include up to 5, ensuring at least 2 months
+    let selectedMonths = cropData.months.slice(-5); // Get the last 5 months
 
-    // If not enough data for the latest year, fallback to the previous year
-    if (latestYearMonths.length < 2) {
-        const previousYear = (parseInt(latestYear) - 1).toString(); // Get the previous year as a string
-        latestYearMonths = cropData.months.filter(month => month.endsWith(previousYear)); // Filter for the previous year
+    // If there are fewer than 2 months, return early
+    if (selectedMonths.length < 2) {
+        return; // Exit if fewer than 2 months are available
     }
 
-console.log(latestMonthString, latestYear, latestYearMonths);
-
-    // Calculate monthly averages for each numeric field for the latest year
+    // Calculate monthly averages for each numeric field for the selected months
     const monthlyAverages = {};
     numericFields.forEach((field) => {
-        const totalMonths = latestYearMonths.length;
+        const totalMonths = selectedMonths.length; // Use selectedMonths instead of latestYearMonths
         monthlyAverages[field] = Array(totalMonths).fill(0);
-        latestYearMonths.forEach((month, index) => {
+        
+        selectedMonths.forEach((month, index) => {
             monthlyAverages[field][index] = cropData.monthlyData[field][month].reduce((a, b) => a + b, 0) / (cropData.monthlyData[field][month].length || 1);
         });
     });
 
-    // Calculate month-to-month growth rates for each field for the latest year
+    // Calculate month-to-month growth rates for each field for the selected months
     const growthRates = {};
     numericFields.forEach((field) => {
         growthRates[field] = [];
-        if (latestYearMonths.length >= 2) {
-            for (let i = 1; i < latestYearMonths.length; i++) {
+        
+        if (selectedMonths.length >= 2) {
+            for (let i = 1; i < selectedMonths.length; i++) {
                 const previousMonthAvg = monthlyAverages[field][i - 1];
                 const currentMonthAvg = monthlyAverages[field][i];
-                const growthRate = Math.round(((currentMonthAvg - previousMonthAvg) / previousMonthAvg) * 100);
+                const growthRate = previousMonthAvg !== 0 
+                    ? Math.round(((currentMonthAvg - previousMonthAvg) / previousMonthAvg) * 100)
+                    : null; // Avoid division by zero
                 growthRates[field].push(growthRate);
             }
         }
     });
 
-    // Handle edge cases for overall growth rates for the latest year
+    // Handle edge cases for overall growth rates for the selected months
     const overallGrowthRates = {};
     numericFields.forEach((field) => {
-        overallGrowthRates[field] = latestYearMonths.length >= 2
+        overallGrowthRates[field] = selectedMonths.length >= 2
             ? Math.round(((monthlyAverages[field][monthlyAverages[field].length - 1] - monthlyAverages[field][0]) / monthlyAverages[field][0]) * 100)
             : null; // Use null or a meaningful value
     });
-    
-    // Calculate results
-    const results = {};
-    numericFields.forEach((field) => {
-        const latestGrowthRate = growthRates[field][growthRates[field].length - 1] || 0; // Get the latest growth rate
 
-        results[field] = {
-            average: cropData.total[field] / (data.length || 1), // Avoid division by zero
-            growthRateOverall: overallGrowthRates[field],
-            growthRateLatestMonth: latestGrowthRate,
-            performance: latestGrowthRate > 0 
-                ? 'Increase' 
-                : latestGrowthRate < 0 
-                ? 'Decrease' 
-                : 'Stable', // Performance based on latest growth rate
-        };
-    });
- 
-
-    // Construct interpretation text
-    const uniqueMonths = Array.from(new Set(data.map(entry => entry.monthYear))).sort((a, b) => new Date(a) - new Date(b));
-    const monthRange = uniqueMonths.length === 1
-        ? uniqueMonths[0]
-        : `${uniqueMonths[0]} - ${uniqueMonths[uniqueMonths.length - 1]}`;
     
-        let interpretation = `
-        <h3 class="text-primary" style="font-size: 2rem; font-weight: bold;">Crop Performance Analysis for <strong>${cropName}</strong></h3>
-        <p style="font-size: 1.1rem; color: #333;">Period: <span class="text-success">${monthRange}</span>. Below is a detailed breakdown of the crop's performance during the specified period, focusing on the latest years with sufficient records:</p>
+// Calculate results
+const results = {};
+numericFields.forEach((field) => {
+    const latestGrowthRate = growthRates[field][growthRates[field].length - 1] || 0; // Get the latest growth rate
+
+    results[field] = {
+        average: cropData.total[field] / (data.length || 1), // Avoid division by zero
+        growthRateOverall: overallGrowthRates[field],
+        growthRateLatestMonth: latestGrowthRate,
+        performance: latestGrowthRate > 0 
+            ? 'Increase' 
+            : latestGrowthRate < 0 
+            ? 'Decrease' 
+            : 'Stable', // Performance based on latest growth rate
+    };
+});
+
+// Construct interpretation text
+const uniqueMonths = Array.from(new Set(data.map(entry => entry.monthYear))).sort((a, b) => new Date(a) - new Date(b));
+const monthRange = uniqueMonths.length === 1
+    ? uniqueMonths[0]
+    : `${uniqueMonths[0]} - ${uniqueMonths[uniqueMonths.length - 1]}`;
+
+let interpretation = `
+    <h3 class="text-primary" style="font-size: 2rem; font-weight: bold;">Crop Performance Analysis for <strong>${cropName}</strong></h3>
+    <p style="font-size: 1.1rem; color: #333;">Period: <span class="text-success">${monthRange}</span>. Below is a detailed breakdown of the crop's performance during the specified period, focusing on the latest years with sufficient records:</p>
+`;
+
+// Highlight the last field in numericFields
+const highlightedField = numericFields[numericFields.length - 1]; // Get the last item
+
+// Add explanation for highlighted field performance
+const highlightedPerformance = results[highlightedField].performance;
+const formattedHighlightedFieldName = highlightedField.replace(/([A-Z])/g, ' $1').toLowerCase(); // Format the highlighted field name
+let performanceExplanation;
+
+if (highlightedPerformance === 'Increase') {
+    performanceExplanation = `The crop's <strong>${formattedHighlightedFieldName}</strong> has shown a positive trend, indicating growth in performance compared to the previous period.`;
+} else if (highlightedPerformance === 'Decrease') {
+    performanceExplanation = `The crop's <strong>${formattedHighlightedFieldName}</strong> has experienced a decline in performance, suggesting potential issues that may need addressing.`;
+} else {
+    performanceExplanation = `The crop's <strong>${formattedHighlightedFieldName}</strong> performance has remained stable, indicating consistency in production levels.`;
+}
+
+
+// Add performance explanation above the cards
+interpretation += `
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-info" role="alert" style="border-radius: 10px;">
+                <strong>Performance Summary:</strong> ${performanceExplanation}
+            </div>
+        </div>
+    </div>
+`;
+
+interpretation += `<div class="row" style="margin-bottom: 20px;">`;
+// Reverse iterate over numericFields
+numericFields.slice().reverse().forEach((field) => {
+    const formattedFieldName = field.replace(/([A-Z])/g, ' $1').toLowerCase();
+    const growthRateOverall = results[field].growthRateOverall;
+    const growthRateLatestMonth = results[field].growthRateLatestMonth;
+
+    // Determine card color based on performance
+    const cardClass = results[field].performance === 'Increase' ? 'bg-success' :
+                      results[field].performance === 'Decrease' ? 'bg-danger' : 'bg-warning';
+
+    // Use Font Awesome icons for trend performance
+    const icon = results[field].performance === 'Increase' 
+        ? '<i class="fas fa-arrow-up"></i>' 
+        : results[field].performance === 'Decrease' 
+        ? '<i class="fas fa-arrow-down"></i>' 
+        : '<i class="fas fa-minus"></i>'; // Stable icon
+
+    // Highlight the last field
+    const fieldHighlightClass = field === highlightedField ? 'highlighted-field' : '';
+
+    interpretation += ` 
+        <div class="col-md-4 mb-4"> <!-- Adjust the number of columns here --> 
+            <div class="card ${cardClass} ${fieldHighlightClass}" style="border-radius: 15px; color: white; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);"> 
+                <div class="card-body"> 
+                    <h5 class="card-title" style="font-size: 1.25rem;"><strong>${icon} ${formattedFieldName.charAt(0).toUpperCase() + formattedFieldName.slice(1)}</strong></h5> 
+                    <ul class="text-center" style="list-style-type: none; padding: 0; color: white;"> 
+                        <li style="margin: 5px 0;">Average: <strong>${results[field].average.toFixed(2)}</strong></li> 
+                        <li style="margin: 5px 0;">Overall Growth Rate: <strong>${growthRateOverall}%</strong></li> 
+                        <li style="margin: 5px 0;">Growth Rate in Latest Month: <strong>${growthRateLatestMonth}%</strong></li> 
+                        <li style="margin: 5px 0;">Performance: <strong>${results[field].performance}</strong></li> 
+                    </ul> 
+                </div> 
+            </div> 
+        </div>
     `;
-    
-    interpretation += `<div class="row" style="margin-bottom: 20px;">`;
-    
-    numericFields.forEach((field) => {
-        const formattedFieldName = field.replace(/([A-Z])/g, ' $1').toLowerCase();
-        const growthRateOverall = results[field].growthRateOverall;
-        const growthRateLatestMonth = results[field].growthRateLatestMonth;
-    
-        // Determine card color based on performance
-        const cardClass = results[field].performance === 'Increase' ? 'bg-success' :
-                          results[field].performance === 'Decrease' ? 'bg-danger' : 'bg-warning';
-    
-        interpretation += `
-            <div class="col-md-4 mb-4"> <!-- Adjust the number of columns here -->
-                <div class="card ${cardClass}" style="border-radius: 15px; color: white; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);">
-                    <div class="card-body">
-                        <h5 class="card-title" style="font-size: 1.25rem;"><strong>${formattedFieldName.charAt(0).toUpperCase() + formattedFieldName.slice(1)}</strong></h5>
-                        <ul class="text-center" style="list-style-type: none; padding: 0; color: white;">
-                            <li style="margin: 5px 0;">Average: <strong>${results[field].average.toFixed(2)}</strong></li>
-                            <li style="margin: 5px 0;">Overall Growth Rate: <strong>${growthRateOverall}%</strong></li>
-                            <li style="margin: 5px 0;">Growth Rate in Latest Month: <strong>${growthRateLatestMonth}%</strong></li>
-                            <li style="margin: 5px 0;">Performance: <strong>${results[field].performance}</strong></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        `;
-    });
-    
-    interpretation += `</div>`; // Closing the row
-    
-    // Conditionally display pest occurrences
-    if (Object.keys(cropData.pestOccurrences).length > 0) {
-        const pestItems = Object.entries(cropData.pestOccurrences)
-            .map(([name, occurrence]) => `
-                <li style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f9f9f9;">
-                    ${name}: <strong>${occurrence}</strong>
-                </li>
-            `).join('');
-    
-        interpretation += `
-            <div style="margin-top: 20px;">
-                <h5 style="color: #d9534f;">Pest Occurrences:</h5>
-                <ul style="list-style-type: none; padding: 0; border: 1px solid #ccc; border-radius: 5px; background-color: #fff;">
-                    ${pestItems}
-                </ul>
-            </div>
-        `;
-    }
-    
-    // Conditionally display disease occurrences
-    if (Object.keys(cropData.diseaseOccurrences).length > 0) {
-        const diseaseItems = Object.entries(cropData.diseaseOccurrences)
-            .map(([name, occurrence]) => `
-                <li style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f9f9f9;">
-                    ${name}: <strong>${occurrence}</strong>
-                </li>
-            `).join('');
-    
-        interpretation += `
-            <div style="margin-top: 20px;">
-                <h5 style="color: #d9534f;">Disease Occurrences:</h5>
-                <ul style="list-style-type: none; padding: 0; border: 1px solid #ccc; border-radius: 5px; background-color: #fff;">
-                    ${diseaseItems}
-                </ul>
-            </div>
-        `;
-    }
-    
-    interpretation += `<p style="margin-top: 20px; font-size: 1rem; color: #333;">This analysis provides a detailed breakdown of the crop's performance over time, highlighting trends, growth rates, and performance levels to support informed decision-making.</p>`;
-    interpretation += `<small class="text-muted">Note: Findings are based on available data only.</small>`;
-    
-        return interpretation;
+});
+
+interpretation += `</div>`; // Closing the row
+
+// Conditionally display pest occurrences
+if (Object.keys(cropData.pestOccurrences).length > 0) {
+    const pestItems = Object.entries(cropData.pestOccurrences)
+        .map(([name, occurrence]) => `
+            <li style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f9f9f9;">
+                ${name}: <strong>${occurrence}</strong>
+            </li>
+        `).join('');
+
+    interpretation += `
+        <div style="margin-top: 20px;">
+            <h5 style="color: #d9534f;">Pest Occurrences:</h5>
+            <ul style="list-style-type: none; padding: 0; border: 1px solid #ccc; border-radius: 5px; background-color: #fff;">
+                ${pestItems}
+            </ul>
+        </div>
+    `;
+}
+
+// Conditionally display disease occurrences
+if (Object.keys(cropData.diseaseOccurrences).length > 0) {
+    const diseaseItems = Object.entries(cropData.diseaseOccurrences)
+        .map(([name, occurrence]) => `
+            <li style="padding: 10px; border-bottom: 1px solid #ddd; background-color: #f9f9f9;">
+                ${name}: <strong>${occurrence}</strong>
+            </li>
+        `).join('');
+
+    interpretation += `
+        <div style="margin-top: 20px;">
+            <h5 style="color: #d9534f;">Disease Occurrences:</h5>
+            <ul style="list-style-type: none; padding: 0; border: 1px solid #ccc; border-radius: 5px; background-color: #fff;">
+                ${diseaseItems}
+            </ul>
+        </div>
+    `;
+}
+
+interpretation += `<p style="margin-top: 20px; font-size: 1rem; color: #333;">This analysis provides a detailed breakdown of the crop's performance over time, highlighting trends, growth rates, and performance levels to support informed decision-making.</p>`;
+interpretation += `<small class="text-muted">Note: Findings are based on available data only.</small>`;
+
+return interpretation;
+
                            
 }
 
