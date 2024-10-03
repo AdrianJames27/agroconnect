@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CropController;
+use App\Http\Controllers\CropVarietyController;
 use App\Http\Controllers\BarangayController;
 use App\Http\Controllers\FarmerController;
 use App\Http\Controllers\RecordController;
@@ -22,6 +23,7 @@ Route::get('/users', [UserController::class, 'index']);
 Route::post('/login', [UserController::class, 'login']);
 
 Route::get('/crops', [CropController::class, 'index']);
+Route::get('/crop-varieties', [CropVarietyController::class, 'index']);
 Route::get('/barangays', [BarangayController::class, 'index']);
 Route::get('/farmers', [FarmerController::class, 'index']);
 Route::get('/records', [RecordController::class, 'index']);
@@ -57,6 +59,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/crops/{id}', [CropController::class, 'show']);
     Route::put('/crops/{id}', [CropController::class, 'update']);
     Route::delete('/crops/{id}', [CropController::class, 'destroy']);
+
+    // Api for crop varieties
+    Route::post('/crop-varieties', [CropVarietyController::class, 'store']);    // Create a new crop variety
+    Route::get('/crop-varieties/{id}', [CropVarietyController::class, 'show']); // Get details of a specific crop variety
+    Route::put('/crop-varieties/{id}', [CropVarietyController::class, 'update']); // Update a specific crop variety
+    Route::delete('/crop-varieties/{id}', [CropVarietyController::class, 'destroy']); // Delete a specific crop variety
 
     // Api for barangays
     Route::post('/barangays', [BarangayController::class, 'store']);
@@ -157,4 +165,7 @@ Route::get('check-user', function (Request $request) {
     ]);
 })->middleware('check.user');
 
+
+// Crops Selection Api
 Route::get('/unique-crop-names', [CropController::class, 'getUniqueCropNames']);
+Route::get('/crop-varieties/by-crop/{cropId}', [CropVarietyController::class, 'getVarietiesByCrop']);

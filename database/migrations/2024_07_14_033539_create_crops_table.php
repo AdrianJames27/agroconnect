@@ -12,13 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('crops', function (Blueprint $table) {
-            $table->id('cropId');
-            $table->string('cropName', 255);
-            $table->string('variety', 255)->nullable();
-            $table->string('priceWeight', 255);
-            $table->string('type', 255);
-            $table->longText('cropImg')->nullable();
-            $table->longText('description')->nullable();;
+            $table->id('cropId');  // Primary key
+            $table->string('cropName', 100);
+            $table->string('cropType', 100);
+            $table->string('scientificName', 150)->nullable();
+            $table->string('plantingSeason', 50)->nullable();
+            $table->integer('growthDuration')->nullable();  // Growth duration in days
+            $table->string('unit', 20)->default('kg');  // Unit of weight (e.g., kg, lbs)
+            $table->decimal('weight', 10, 2)->default(0.00);  // Weight in decimal, optional
+            $table->string('cropImg')->nullable();  // Image URL for the crop variety
             $table->timestamps();
         });
     }

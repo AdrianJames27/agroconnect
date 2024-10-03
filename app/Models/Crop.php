@@ -13,16 +13,24 @@ class Crop extends Model
 
     protected $fillable = [
         'cropName',
-        'variety',
-        'priceWeight',
-        'type',
-        'cropImg',
-        'description',
+        'cropType',
+        'scientificName',    // Added scientific name
+        'plantingSeason',    // Added planting season
+        'growthDuration',    // Added growth duration in days
+        'unit',              // Added unit (e.g., kg, lbs)
+        'weight',            // Added weight
+        'cropImg'
     ];
 
     // Define relationship with Production model
     public function productions()
     {
-        return $this->hasMany(Production::class, 'cropName', 'cropName');
+        return $this->hasMany(Production::class, 'cropId', 'cropId');
+    }
+
+    // Define relationship with CropVariety model
+    public function varieties()
+    {
+        return $this->hasMany(CropVariety::class, 'cropId', 'cropId');
     }
 }

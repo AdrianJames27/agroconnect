@@ -1,76 +1,92 @@
 // MaintenanceMenu.js
-import { initializeMethodsCrop } from '../classes/Crop.js';
-import { initializeMethodsBarangay } from '../classes/Barangay.js';
-import { initializeMethodsFarmer, getBarangayNames } from '../classes/Farmer.js';
-import { initializeMethodsRecord } from '../classes/Record.js';
-import Dialog from '../helpers/Dialog.js';
-
-
+import { initializeMethodsCrop } from "../classes/Crop.js";
+import { initializeMethodsCropVariety } from "../classes/CropVariety.js";
+import { initializeMethodsBarangay } from "../classes/Barangay.js";
+import {
+    initializeMethodsFarmer,
+    getBarangayNames,
+} from "../classes/Farmer.js";
+import { initializeMethodsRecord } from "../classes/Record.js";
+import Dialog from "../helpers/Dialog.js";
 
 function loadMonthYear() {
-    $(document).ready(function() {
-      // Get the current year
-      var currentYear = new Date().getFullYear();
-      
-      // Initialize the select element
-      var $yearSelect = $('#yearSelect');
-      
-      // Loop to add options from the current year to 10 years ago
-      for (var year = currentYear; year >= currentYear - 10; year--) {
-          $yearSelect.append($('<option>', {
-              value: year,
-              text: year
-          }));
-      }
-  });
-  $(document).ready(function() {
-    // Array of month names to match with the options in the select element
-    var months = [
-        "January", "February", "March", "April", "May", "June", 
-        "July", "August", "September", "October", "November", "December"
-    ];
+    $(document).ready(function () {
+        // Get the current year
+        var currentYear = new Date().getFullYear();
 
-    // Get the current month as a number (0-11)
-    var currentMonthIndex = new Date().getMonth();
+        // Initialize the select element
+        var $yearSelect = $("#yearSelect");
 
-    // Get the current month name from the array
-    var currentMonthName = months[currentMonthIndex];
+        // Loop to add options from the current year to 10 years ago
+        for (var year = currentYear; year >= currentYear - 10; year--) {
+            $yearSelect.append(
+                $("<option>", {
+                    value: year,
+                    text: year,
+                })
+            );
+        }
+    });
+    $(document).ready(function () {
+        // Array of month names to match with the options in the select element
+        var months = [
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
+        ];
 
-    // Set the current month as selected in the select element
-    $('#monthPicker select').val(currentMonthName);
-  });
+        // Get the current month as a number (0-11)
+        var currentMonthIndex = new Date().getMonth();
+
+        // Get the current month name from the array
+        var currentMonthName = months[currentMonthIndex];
+
+        // Set the current month as selected in the select element
+        $("#monthPicker select").val(currentMonthName);
+    });
 }
-
 
 // Function to initialize the maintenance menu view
 function initializeMaintenanceMenu(option) {
     // Clear previous content
-    $('#maintenance-content').empty();
+    $("#maintenance-content").empty();
 
     // Switch based on selected option
     switch (option) {
-        case 'crop':
+        case "crop":
             initializeCropView();
             break;
-        case 'barangay':
+        case "crop_variety":
+            initializeCropVarietyView();
+            break;
+        case "barangay":
             initializeBarangayView();
             break;
-        case 'farmer':
+        case "farmer":
             initializeFarmerView();
             break;
-        case 'production':
+        case "production":
             initializeProductionView();
             break;
-        case 'price':
+        case "price":
             initializePriceMonitoringView();
             break;
-        case 'pestDisease':
+        case "pestDisease":
             initializePestReportsView();
             break;
-        case 'damage':
-          initializeDamageReportsView();
-          break;
-        case 'soilHealth':
+        case "damage":
+            initializeDamageReportsView();
+            break;
+        case "soilHealth":
             initializeSoilHealthView();
             break;
         default:
@@ -81,113 +97,222 @@ function initializeMaintenanceMenu(option) {
 // Function to initialize Barangay Records view
 function initializeCropView() {
     // Example content for Crop Records
-    $('#maintenance-content').html(`
-      <div class="row d-flex justify-content-between align-items-center mt-5">
-        <div class="col-md-4">
-          <form id="cropForm">
-            <input type="hidden" class="form-control" id="cropId" name="cropId">
-            
-            <div class="mb-3">
-              <input placeholder="Crop Name" type="text" class="form-control" id="cropName" name="cropName" required>
-            </div>
-            
-            <div class="mb-3">
-              <input placeholder="Variety (optional)" type="text" class="form-control" id="variety" name="variety">
-            </div>
-            
-            <div class="mb-3">
-              <select class="form-control" id="type" name="type" required>
-                <option value="" disabled selected>Select Type</option>
-                <option value="Vegetables">Vegetables</option>
-                <option value="Rice">Rice</option>
-                <option value="Fruits">Fruits</option>
-              </select>
-            </div>
-            
-            <div class="mb-3">
-              <select class="form-control" id="priceWeight" name="priceWeight" required>
-                <option value="" disabled selected>Select Price Weight (kg/pc)</option>
-                <option value="kg">kilogram</option>
-                <option value="pc">piece</option>
-              </select>
-            </div>
-            
-            <div class="mb-3">
-              <input style="display: none;" placeholder="Kilogram per piece" type="text" class="form-control" id="pcToKg" name="pcToKg">
-            </div>
-            <div  class="mb-3">
-                <label id="lblCropImg">
-                  Upload Image:
-                </label>
-                <div class="input-group mb-3" style="width: 100%;">
-                  <input type="file" class="form-control" id="cropImg" name="cropImg" accept="image/*">
-                  <div class="input-group-append">
-                    <label class="input-group-text" for="cropImg">
-                      <i class="fas fa-upload"></i>
-                    </label>
-                  </div>
-                </div>
-            </div>
-            <div class="mb-3">
-              <textarea placeholder="Description (optional)" class="form-control" id="description" name="description" rows="3"></textarea>
-            </div>
-            
-            <button type="button" class="btn btn-custom" id="submitBtn">Add Crop</button>
-            <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
-          </form>
-        </div>
-    
-        <div class="col-md-8 actionBtn">
-          <div class="d-flex justify-content-end align-items-center mb-2">
-            <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
-            <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
-          </div>
-    
-          <div class="table-responsive">
-            <table id="cropTable" class="table table-custom text-center">
-              <thead>
-                <tr style="background-color: #2774E9; color: white;">
-                  <th scope="col">Crop Image</th>
-                  <th scope="col">Crop Name</th>
-                  <th scope="col">Variety</th>
-                  <th scope="col">Type</th>
-                  <th scope="col">Price Weight (pc/kg)</th>
-                  <th scope="col">Action</th>
-                </tr>
-              </thead>
-              <tbody id="cropTableBody">
-                <!-- Table rows will be dynamically added here -->
-              </tbody>
-            </table>
+    $("#maintenance-content").html(`
+    <div class="row d-flex justify-content-between align-items-center mt-5">
+      <div class="col-md-4">
+        <form id="cropForm">
+          <input type="hidden" class="form-control" id="cropId" name="cropId">
+          
+          <div class="mb-3">
+            <input placeholder="Crop Name" type="text" class="form-control" id="cropName" name="cropName" required>
           </div>
           
-          <div class="text-right">
-            <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
-            <button id="nextBtn" class="btn btn-green">Next</button>
+          <div class="mb-3">
+            <input placeholder="Variety (optional)" type="text" class="form-control" id="variety" name="variety">
           </div>
+          
+          <div class="mb-3">
+            <select class="form-control" id="type" name="type" required>
+              <option value="" disabled selected>Select Type</option>
+              <option value="Vegetables">Vegetables</option>
+              <option value="Rice">Rice</option>
+              <option value="Fruits">Fruits</option>
+            </select>
+          </div>
+          
+          <div class="mb-3">
+            <select class="form-control" id="priceWeight" name="priceWeight" required>
+              <option value="" disabled selected>Select Price Weight</option>
+              <option value="kg">kilogram</option>
+              <option value="pc">piece</option>
+              <option value="bundle">bundle</option>
+            </select>
+          </div>
+          
+          <div class="mb-3" id="weightDiv" style="display: none;">
+            <input placeholder="Weight (optional)" type="text" class="form-control" id="weight" name="weight">
+          </div>
+
+          <div class="mb-3">
+            <label id="lblCropImg">Upload Image:</label>
+            <div class="input-group mb-3" style="width: 100%;">
+              <input type="file" class="form-control" id="cropImg" name="cropImg" accept="image/*">
+              <div class="input-group-append">
+                <label class="input-group-text" for="cropImg">
+                  <i class="fas fa-upload"></i>
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <textarea placeholder="Description (optional)" class="form-control" id="description" name="description" rows="3"></textarea>
+          </div>
+          
+          <button type="button" class="btn btn-custom" id="submitBtn">Add Crop</button>
+          <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
+        </form>
+      </div>
+  
+      <div class="col-md-8 actionBtn">
+        <div class="d-flex justify-content-end align-items-center mb-2">
+          <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
+          <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
+        </div>
+  
+        <div class="table-responsive">
+          <table id="cropTable" class="table table-custom text-center">
+            <thead>
+              <tr style="background-color: #2774E9; color: white;">
+                <th scope="col" style="display: none;">Crop ID</th>
+                <th scope="col">Crop Image</th>
+                <th scope="col">Crop Name</th>
+                <th scope="col">Variety</th>
+                <th scope="col">Type</th>
+                <th scope="col">Scientific Name</th> <!-- New Column -->
+                <th scope="col">Planting Season</th> <!-- New Column -->
+                <th scope="col">Growth Duration</th> <!-- New Column -->
+                <th scope="col">Unit</th> <!-- New Column -->
+                <th scope="col">Weight</th> <!-- New Column -->
+                <th scope="col">Action</th>
+              </tr>
+            </thead>
+            <tbody id="cropTableBody">
+              <!-- Table rows will be dynamically added here -->
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="text-right">
+          <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
+          <button id="nextBtn" class="btn btn-green">Next</button>
         </div>
       </div>
-    `); 
-  $(document).ready(function() {
-      $('#pcToKg').hide();
-      $('#priceWeight').change(function() {
-          if ($(this).val() === 'pc') {
-              $('#pcToKg').show();
-          } else {
-              $('#pcToKg').hide();
-          }
-      });
-  });
+    </div>
+  `);
 
-  initializeMethodsCrop();
-  createDeleteModal();
-  createEditModal();  
+    initializeMethodsCrop();
+    createDeleteModal();
+    createEditModal();
+
+    // Event listener to show/hide the weight input based on the selected unit
+    $("#priceWeight").change(function () {
+        const selectedUnit = $(this).val();
+        if (selectedUnit === "kg") {
+            $("#weightDiv").hide(); // Hide weight input if unit is kg
+        } else {
+            $("#weightDiv").show(); // Show weight input for other units
+        }
+    });
+}
+
+// Function to initialize Crop Variety Records view
+function initializeCropVarietyView() {
+    // Example content for Crop Variety Records
+    $("#maintenance-content").html(`
+      <div class="row d-flex justify-content-between align-items-center mt-5">
+          <div class="col-md-4">
+              <form id="cropVarietyForm">
+                  <input type="hidden" class="form-control" id="varietyId" name="varietyId">
+                  
+                  <div class="mb-3">
+                      <input placeholder="Variety Name" type="text" class="form-control" id="varietyName" name="varietyName" required>
+                  </div>
+                  
+                  <div class="mb-3">
+                      <select class="form-control" id="cropId" name="cropId" required>
+                          <option value="" disabled selected>Select Associated Crop</option>
+                          <!-- Populate this dropdown with crop options -->
+                      </select>
+                  </div>
+                  
+                  <div class="mb-3">
+                      <input placeholder="Color" type="text" class="form-control" id="color" name="color" required>
+                  </div>
+
+                  <div class="mb-3">
+                      <input placeholder="Size" type="text" class="form-control" id="size" name="size" required>
+                  </div>
+
+                  <div class="mb-3">
+                      <input placeholder="Flavor" type="text" class="form-control" id="flavor" name="flavor" required>
+                  </div>
+
+                  <div class="mb-3">
+                      <textarea placeholder="Growth Conditions" class="form-control" id="growthConditions" name="growthConditions" rows="3" required></textarea>
+                  </div>
+
+                  <div class="mb-3">
+                      <textarea placeholder="Pest/Disease Resistance" class="form-control" id="pestDiseaseResistance" name="pestDiseaseResistance" rows="3" required></textarea>
+                  </div>
+
+                  <div class="mb-3">
+                      <textarea placeholder="Recommended Practices" class="form-control" id="recommendedPractices" name="recommendedPractices" rows="3" required></textarea>
+                  </div>
+
+                  <div class="mb-3">
+                      <label id="lblCropVarietyImg">Upload Image:</label>
+                      <div class="input-group mb-3" style="width: 100%;">
+                          <input type="file" class="form-control" id="cropVarietyImg" name="cropVarietyImg" accept="image/*">
+                          <div class="input-group-append">
+                              <label class="input-group-text" for="cropVarietyImg">
+                                  <i class="fas fa-upload"></i>
+                              </label>
+                          </div>
+                      </div>
+                  </div>
+                  
+                  <button type="button" class="btn btn-custom" id="submitVarietyBtn">Add Variety</button>
+                  <button type="button" class="btn btn-custom mt-2" id="cancelVarietyBtn" style="display: none;">Cancel</button>
+              </form>
+          </div>
+
+          <div class="col-md-8 actionBtn">
+              <div class="d-flex justify-content-end align-items-center mb-2">
+                  <button id="editVarietyBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
+                  <button id="deleteVarietyBtn" class="btn btn-danger" disabled>Delete</button>
+              </div>
+
+              <div class="table-responsive">
+                  <table id="cropVarietyTable" class="table table-custom text-center">
+                      <thead>
+                          <tr style="background-color: #2774E9; color: white;">
+                              <th scope="col" style="display: none;">Variety ID</th>
+                              <th scope="col">Crop Image</th>
+                              <th scope="col">Variety Name</th>
+                              <th scope="col">Crop ID</th>
+                              <th scope="col">Color</th>
+                              <th scope="col">Size</th>
+                              <th scope="col">Flavor</th>
+                              <th scope="col">Growth Conditions</th>
+                              <th scope="col">Pest/Disease Resistance</th>
+                              <th scope="col">Recommended Practices</th>
+                              <th scope="col">Action</th>
+                          </tr>
+                      </thead>
+                      <tbody id="cropVarietyTableBody">
+                          <!-- Table rows will be dynamically added here -->
+                      </tbody>
+                  </table>
+              </div>
+              
+              <div class="text-right">
+                  <button id="prevVarietyBtn" class="btn btn-green mr-2">Previous</button>
+                  <button id="nextVarietyBtn" class="btn btn-green">Next</button>
+              </div>
+          </div>
+      </div>
+  `);
+
+    // Initialize methods for crop varieties and create modals
+    initializeMethodsCropVariety();
+    createDeleteVarietyModal();
+    createEditVarietyModal();
 }
 
 // Function to initialize Barangay Records view
 function initializeBarangayView() {
     // Example content for Barangay Records
-$('#maintenance-content').html(`
+    $("#maintenance-content").html(`
   <div class="row d-flex justify-content-between align-items-center mt-5">
     <div class="col-md-4">
       <form id="barangayForm">
@@ -227,12 +352,12 @@ $('#maintenance-content').html(`
 
     initializeMethodsBarangay();
     createDeleteModal();
-    createEditModal();  
+    createEditModal();
 }
 
 // Function to initialize Farmer Records view
 function initializeFarmerView() {
-  $('#maintenance-content').html(`
+    $("#maintenance-content").html(`
     <div class="row d-flex justify-content-between align-items-center mt-5">
       <div class="col-md-4">
         <form id="farmerForm">
@@ -307,7 +432,6 @@ function initializeFarmerView() {
     </div>
   `);
 
-  
     getBarangayNames();
     initializeMethodsFarmer();
     createDeleteModal();
@@ -316,7 +440,7 @@ function initializeFarmerView() {
 
 // Function to initialize Supply and Market view
 function initializeProductionView() {
-  $('#maintenance-content').html(`
+    $("#maintenance-content").html(`
     <div class="row d-flex justify-content-between align-items-center mt-5">
       <div class="col-md-4">
         <form id="recordForm" enctype="multipart/form-data">
@@ -403,10 +527,10 @@ function initializeProductionView() {
       </div>
     </div>
   `);
-  
-    $(document).ready(function() {
-      $('#infoBtn').click(function() {
-        let htmlScript = `
+
+    $(document).ready(function () {
+        $("#infoBtn").click(function () {
+            let htmlScript = `
 <p>To upload your records successfully, please follow the instructions below using the provided template:</p>
 
 <ol>
@@ -442,10 +566,10 @@ function initializeProductionView() {
 <p>By adhering to these instructions and utilizing the provided template, you ensure that your data is recorded accurately and efficiently.</p>
 `;
 
-        Dialog.showInfoModal(htmlScript);
-      });
+            Dialog.showInfoModal(htmlScript);
+        });
     });
-    initializeMethodsRecord('production');
+    initializeMethodsRecord("production");
     createDeleteModal();
     createEditModal();
     loadMonthYear();
@@ -453,8 +577,8 @@ function initializeProductionView() {
 
 // Function to initialize Crop Price Monitoring view
 function initializePriceMonitoringView() {
-      // Example content for Price Monitoring
-      $('#maintenance-content').html(`
+    // Example content for Price Monitoring
+    $("#maintenance-content").html(`
         <div class="row d-flex justify-content-between align-items-center mt-5">
           <div class="col-md-4">
             <form id="recordForm" enctype="multipart/form-data">
@@ -541,10 +665,10 @@ function initializePriceMonitoringView() {
           </div>
         </div>
       `);
-      
-      $(document).ready(function() {
-        $('#infoBtn').click(function() {
-          let htmlScript = `
+
+    $(document).ready(function () {
+        $("#infoBtn").click(function () {
+            let htmlScript = `
   <p>To upload your price records successfully, please follow the instructions below using the provided template:</p>
 
 <ol>
@@ -571,21 +695,20 @@ function initializePriceMonitoringView() {
 
 <p>By adhering to these instructions and utilizing the provided template, you ensure that your price data is recorded accurately and efficiently.</p>
 `;
-  
-          Dialog.showInfoModal(htmlScript);
+
+            Dialog.showInfoModal(htmlScript);
         });
-      });
-      initializeMethodsRecord('price');
-      createDeleteModal();
-      createEditModal();
-      loadMonthYear();
-    
+    });
+    initializeMethodsRecord("price");
+    createDeleteModal();
+    createEditModal();
+    loadMonthYear();
 }
 
 // Function to initialize Pest and Disease Reports view
 function initializePestReportsView() {
     // Example content for Pest and Disease Reports
-    $('#maintenance-content').html(`
+    $("#maintenance-content").html(`
       <div class="row d-flex justify-content-between align-items-center mt-5">
         <div class="col-md-4">
           <form id="recordForm" enctype="multipart/form-data">
@@ -672,10 +795,10 @@ function initializePestReportsView() {
         </div>
       </div>
     `);
-    
-    $(document).ready(function() {
-      $('#infoBtn').click(function() {
-        let htmlScript = `
+
+    $(document).ready(function () {
+        $("#infoBtn").click(function () {
+            let htmlScript = `
 <p>To upload your pest and disease records successfully, please follow the instructions below using the provided template:</p>
 
 <ol>
@@ -712,19 +835,18 @@ function initializePestReportsView() {
 <p>By adhering to these instructions and utilizing the provided template, you ensure that your pest and disease data is recorded accurately and efficiently.</p>
 `;
 
-        Dialog.showInfoModal(htmlScript);
-      });
+            Dialog.showInfoModal(htmlScript);
+        });
     });
-    initializeMethodsRecord('pestDisease');
+    initializeMethodsRecord("pestDisease");
     createDeleteModal();
     createEditModal();
     loadMonthYear();
-  
 }
 
 // Function to initialize Damage Reports view
 function initializeDamageReportsView() {
-  $('#maintenance-content').html(`
+    $("#maintenance-content").html(`
     <div class="row d-flex justify-content-between align-items-center mt-5">
       <div class="col-md-4">
         <form id="recordForm" enctype="multipart/form-data">
@@ -811,10 +933,10 @@ function initializeDamageReportsView() {
       </div>
     </div>
   `);
-  
-  $(document).ready(function() {
-    $('#infoBtn').click(function() {
-      let htmlScript = `
+
+    $(document).ready(function () {
+        $("#infoBtn").click(function () {
+            let htmlScript = `
 <p style="margin-bottom: 15px;">To upload your damage reports successfully, please follow the instructions below using the provided template:</p>
 
 <ol style="margin-bottom: 15px;">
@@ -846,20 +968,18 @@ function initializeDamageReportsView() {
 <p style="margin-bottom: 15px;">By adhering to these instructions and utilizing the provided template, you ensure that your damage reports are recorded accurately and efficiently.</p>
 `;
 
-      Dialog.showInfoModal(htmlScript);
+            Dialog.showInfoModal(htmlScript);
+        });
     });
-  });
-  initializeMethodsRecord('damage');
-  createDeleteModal();
-  createEditModal();
-  loadMonthYear();
-
+    initializeMethodsRecord("damage");
+    createDeleteModal();
+    createEditModal();
+    loadMonthYear();
 }
-
 
 // Function to initialize Soil Health Records view
 function initializeSoilHealthView() {
-  $('#maintenance-content').html(`
+    $("#maintenance-content").html(`
     <div class="row d-flex justify-content-between align-items-center mt-5">
       <div class="col-md-4">
         <form id="recordForm" enctype="multipart/form-data">
@@ -946,10 +1066,10 @@ function initializeSoilHealthView() {
       </div>
     </div>
   `);
-  
-  $(document).ready(function() {
-    $('#infoBtn').click(function() {
-      let htmlScript = `
+
+    $(document).ready(function () {
+        $("#infoBtn").click(function () {
+            let htmlScript = `
 <p>To upload your soil health records successfully, please follow the instructions below using the provided template:</p>
 
 <ol>
@@ -987,15 +1107,13 @@ function initializeSoilHealthView() {
 <p>By adhering to these instructions and utilizing the provided template, you ensure that your soil health data is recorded accurately and efficiently.</p>
 `;
 
-      Dialog.showInfoModal(htmlScript);
+            Dialog.showInfoModal(htmlScript);
+        });
     });
-  });
-  initializeMethodsRecord('soilHealth');
-  createDeleteModal();
-  createEditModal();
-  loadMonthYear();
-
+    initializeMethodsRecord("soilHealth");
+    createDeleteModal();
+    createEditModal();
+    loadMonthYear();
 }
 
 export { initializeMaintenanceMenu };
-
