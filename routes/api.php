@@ -23,6 +23,7 @@ Route::get('/users', [UserController::class, 'index']);
 Route::post('/login', [UserController::class, 'login']);
 
 Route::get('/crops', [CropController::class, 'index']);
+Route::get('/crops/{id}', [CropController::class, 'show']);
 Route::get('/crop-varieties', [CropVarietyController::class, 'index']);
 Route::get('/barangays', [BarangayController::class, 'index']);
 Route::get('/farmers', [FarmerController::class, 'index']);
@@ -56,7 +57,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Api for crops
     Route::post('/crops', [CropController::class, 'store']);
-    Route::get('/crops/{id}', [CropController::class, 'show']);
     Route::put('/crops/{id}', [CropController::class, 'update']);
     Route::delete('/crops/{id}', [CropController::class, 'destroy']);
 

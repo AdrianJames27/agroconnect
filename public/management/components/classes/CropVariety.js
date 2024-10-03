@@ -249,12 +249,12 @@ function initializeMethodsCropVariety() {
                         <td><img src="${variety.cropImg}" alt="${variety.varietyName}" class="img-thumbnail" width="50" height="50"></td>
                         <td>${variety.varietyName}</td>
                         <td>${cropName}</td> <!-- Display the associated cropName -->
-                        <td>${variety.color}</td>
-                        <td>${variety.size}</td>
-                        <td>${variety.flavor}</td>
-                        <td>${variety.growthConditions}</td>
-                        <td>${variety.pestDiseaseResistance}</td>
-                        <td>${variety.recommendedPractices}</td>
+                        <td class="crop-cell" title="${variety.color}">${variety.color}</td>
+                        <td class="crop-cell" title="${variety.size}">${variety.size}</td>
+                        <td class="crop-cell" title="${variety.flavor}">${variety.flavor}</td>
+                        <td class="crop-cell" title="${variety.growthConditions}">${variety.growthConditions}</td>
+                        <td class="crop-cell" title="${variety.pestDiseaseResistanc}">${variety.pestDiseaseResistance}</td>
+                        <td class="crop-cell" title="${variety.recommendedPractices}">${variety.recommendedPractices}</td>
                     </tr>
                 `);
             }

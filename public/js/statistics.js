@@ -1334,15 +1334,7 @@ function calculateDisasterImpactOnYieldLoss(data) {
 }
 
 // Function to get crop data with price parsing
-function getCropData(
-    production,
-    price,
-    pest,
-    disease,
-    crops,
-    cropType,
-    variety
-) {
+function getCropData(production, price, pest, disease, crops, cropType) {
     if (
         !Array.isArray(production) ||
         !Array.isArray(price) ||
@@ -1361,10 +1353,10 @@ function getCropData(
         return map;
     }, {});
 
-    // Filter production data based on the specified cropType and variety (if available)
+    // Filter production data based on the specified cropType
     const filteredProduction = production.filter((item) => {
-        const cropType = cropTypeMap[item.cropName];
-        return cropType === cropType && (!variety || item.variety === variety);
+        const cropTypeForItem = cropTypeMap[item.cropName];
+        return cropTypeForItem === cropType;
     });
 
     // Filter price, pest, and disease data based on the specified cropType only
@@ -1384,7 +1376,6 @@ function getCropData(
     filteredProduction.forEach((item) => {
         const {
             cropName,
-            variety,
             areaPlanted,
             volumeSold,
             volumeProduction,
@@ -1392,13 +1383,13 @@ function getCropData(
             productionCost,
         } = item;
 
-        // Create a unique key for each crop variety combination
-        const key = `${cropName}|${variety || "default"}`;
+        // Create a unique key for each crop
+        const key = cropName;
 
         if (!cropDataMap.has(key)) {
             cropDataMap.set(key, {
                 cropName,
-                variety: variety || "",
+                cropType: cropTypeMap[cropName], // Include cropType here
                 totalPlanted: 0,
                 totalArea: 0,
                 totalVolume: 0,
@@ -1420,13 +1411,14 @@ function getCropData(
             (volumeSold * 1000 || 0) * (parsePrice(price) || 0) -
             (productionCost || 0);
     });
+
     // Process filteredPrice to accumulate total prices and counts
     filteredPrice.forEach((item) => {
         const { cropName, price } = item;
         const parsedPrice = parsePrice(price);
 
         cropDataMap.forEach((value, key) => {
-            if (key.includes(cropName)) {
+            if (key === cropName) {
                 // Initialize the value in cropDataMap if not present
                 if (!value.totalPrice) {
                     value.totalPrice = 0;
@@ -1444,11 +1436,7 @@ function getCropData(
         const { cropName } = item;
 
         cropDataMap.forEach((value, mapKey) => {
-            if (mapKey.includes(cropName)) {
-                // Initialize the pestOccurrence field if not present
-                if (!value.pestOccurrence) {
-                    value.pestOccurrence = 0;
-                }
+            if (mapKey === cropName) {
                 // Increment pest occurrences
                 value.pestOccurrence += 1;
             }
@@ -1460,11 +1448,7 @@ function getCropData(
         const { cropName } = item;
 
         cropDataMap.forEach((value, mapKey) => {
-            if (mapKey.includes(cropName)) {
-                // Initialize the diseaseOccurrence field if not present
-                if (!value.diseaseOccurrence) {
-                    value.diseaseOccurrence = 0;
-                }
+            if (mapKey === cropName) {
                 // Increment disease occurrences
                 value.diseaseOccurrence += 1;
             }
@@ -1476,16 +1460,6 @@ function getCropData(
         if (value.count > 0) {
             // Calculate and update the average price
             value.price = value.totalPrice / value.count;
-            // Remove temporary properties if needed
-            delete value.totalPrice;
-            delete value.count;
-        }
-    });
-
-    // Update cropDataMap with average prices
-    cropDataMap.forEach((value, key) => {
-        if (value.count > 0) {
-            value.price = value.totalPrice / value.count; // Calculate average price
             // Remove temporary properties if needed
             delete value.totalPrice;
             delete value.count;

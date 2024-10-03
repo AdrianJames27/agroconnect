@@ -15,10 +15,10 @@ return new class extends Migration
             $table->id('varietyId');  // Primary key
             $table->unsignedBigInteger('cropId');
             $table->foreign('cropId')->references('cropId')->on('crops');
-            $table->string('varietyName', 100);  // Name of the specific crop variety
-            $table->string('color', 50)->nullable();  // Color characteristic
-            $table->string('size', 50)->nullable();  // Size characteristic
-            $table->string('flavor', 100)->nullable();  // Flavor profile
+            $table->string('varietyName');  // Name of the specific crop variety
+            $table->longText('color')->nullable();  // Color characteristic
+            $table->longText('size')->nullable();  // Size characteristic
+            $table->longText('flavor')->nullable();  // Flavor profile
             $table->longText('growthConditions')->nullable();  // Growth conditions
             $table->longText('pestDiseaseResistance')->nullable();  // Pest/disease resistance
             $table->longText('recommendedPractices')->nullable();  // Recommended farming practices

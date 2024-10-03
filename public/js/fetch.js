@@ -6,8 +6,37 @@ async function getCrop(type = "") {
             dataType: "json",
         });
         return response.filter(
-            (crop) => !type || crop.type.toLowerCase() === type.toLowerCase()
+            (crop) =>
+                !type || crop.croptype.toLowerCase() === type.toLowerCase()
         );
+    } catch (error) {
+        console.error("An error occurred while fetching the crop data:", error);
+        throw error;
+    }
+}
+
+async function getCropName(id) {
+    try {
+        const response = await $.ajax({
+            url: `api/crops/${id}`, // Adjust if needed
+            type: "GET",
+            dataType: "json",
+        });
+        return response.cropName;
+    } catch (error) {
+        console.error("An error occurred while fetching the crop data:", error);
+        throw error;
+    }
+}
+
+async function getCropVarieties(type = "") {
+    try {
+        const response = await $.ajax({
+            url: "api/crop-varieties", // Adjust if needed
+            type: "GET",
+            dataType: "json",
+        });
+        return response;
     } catch (error) {
         console.error("An error occurred while fetching the crop data:", error);
         throw error;
@@ -362,4 +391,6 @@ export {
     getDownloadCount,
     getUniqueCropNames,
     addDownload,
+    getCropVarieties,
+    getCropName,
 };
