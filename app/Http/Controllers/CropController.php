@@ -24,10 +24,9 @@ class CropController extends Controller
             'cropType' => 'required|string',
             'scientificName' => 'nullable|string', // Optional field
             'plantingSeason' => 'nullable|string', // Optional field
-            'growthDuration' => 'nullable|integer', // Optional field
+            'growthDuration' => 'nullable|string', // Optional field
             'unit' => 'nullable|string',
             'weight' => 'nullable|numeric',
-            'type' => 'required|string',
             'cropImg' => 'nullable|string',  // Optional field
         ]);
 
@@ -40,7 +39,6 @@ class CropController extends Controller
             'growthDuration' => $request->input('growthDuration'),
             'unit' => $request->input('unit'),
             'weight' => $request->input('weight'),
-            'type' => $request->input('type'),
             'cropImg' => $request->input('cropImg'),
         ]);
 
@@ -68,17 +66,16 @@ class CropController extends Controller
             'cropType' => 'required|string',
             'scientificName' => 'nullable|string',
             'plantingSeason' => 'nullable|string',
-            'growthDuration' => 'nullable|integer',
+            'growthDuration' => 'nullable|string',
             'unit' => 'nullable|string',
             'weight' => 'nullable|numeric',
-            'type' => 'required|string',
             'cropImg' => 'nullable|string',  // Optional field
         ]);
 
         // Update crop attributes
         $crop->fill($request->only([
             'cropName', 'cropType', 'scientificName', 'plantingSeason', 'growthDuration',
-            'unit', 'weight', 'type', 'cropImg'
+            'unit', 'weight', 'cropImg'
         ]));
 
         // Save updated crop to the database

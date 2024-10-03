@@ -1,15 +1,16 @@
-import { initializeMaintenanceMenu } from './MaintenanceMenu.js';
-import { user } from '../HeaderSidebar.js'
+import { initializeMaintenanceMenu } from "./MaintenanceMenu.js";
+import { user } from "../HeaderSidebar.js";
 
 export default function initDashboard() {
-    $(document).ready(function() {
+    $(document).ready(function () {
         // Function to initialize the maintenance view
         function initializeMaintenanceView() {
             var optionsHtml;
 
-            if (user.role === 'admin') {
+            if (user.role === "admin") {
                 optionsHtml = `
                     <option value="crop">Crop Records</option>
+                     <option value="crop_variety">Crop Variety Records</option>
                     <option value="barangay">Barangay Records</option>
                     <option value="farmer">Farmer Records</option>
                     <option value="production">Production Reports</option>
@@ -18,7 +19,7 @@ export default function initDashboard() {
                     <option value="damage">Damage Reports</option>
                     <option value="soilHealth">Soil Health Records</option>
                 `;
-            } else if (user.role === 'agriculturist') {
+            } else if (user.role === "agriculturist") {
                 optionsHtml = `
                     <option value="production">Production Reports</option>
                     <option value="price">Crop Price Monitoring</option>
@@ -28,7 +29,7 @@ export default function initDashboard() {
                 `;
             }
 
-            $('#main-content').html(`
+            $("#main-content").html(`
                 <div class="loader-overlay" id="loader">
                     <div class="spinner"></div>
                     <div class="progress-message text-center" id="progressMessage">Uploading 0-0/0</div>
@@ -53,22 +54,23 @@ export default function initDashboard() {
             `);
 
             // Retrieve stored values
-            var fromDashboard = sessionStorage.getItem('fromDashboard') === 'true'; // Convert back to boolean
-            var optionValue = sessionStorage.getItem('optionValue');
-            if(fromDashboard) {
+            var fromDashboard =
+                sessionStorage.getItem("fromDashboard") === "true"; // Convert back to boolean
+            var optionValue = sessionStorage.getItem("optionValue");
+            if (fromDashboard) {
                 console.log(optionValue);
-                $('#maintenance-option').val(optionValue);
+                $("#maintenance-option").val(optionValue);
                 initializeMaintenanceMenu(optionValue);
-                sessionStorage.removeItem('fromDashboard');
-                sessionStorage.removeItem('optionValue');
-            } else {       
+                sessionStorage.removeItem("fromDashboard");
+                sessionStorage.removeItem("optionValue");
+            } else {
                 // Initialize default maintenance option view
-                var defaultOption = $('#maintenance-option').val();
+                var defaultOption = $("#maintenance-option").val();
                 initializeMaintenanceMenu(defaultOption);
             }
 
             // Handle change in maintenance option select
-            $('#maintenance-option').change(function() {
+            $("#maintenance-option").change(function () {
                 var selectedOption = $(this).val();
                 initializeMaintenanceMenu(selectedOption);
             });

@@ -17,10 +17,10 @@ return new class extends Migration
             $table->string('cropType', 100);
             $table->string('scientificName', 150)->nullable();
             $table->string('plantingSeason', 50)->nullable();
-            $table->integer('growthDuration')->nullable();  // Growth duration in days
+            $table->string('growthDuration')->nullable();  // Growth duration in days
             $table->string('unit', 20)->default('kg');  // Unit of weight (e.g., kg, lbs)
             $table->decimal('weight', 10, 2)->default(0.00);  // Weight in decimal, optional
-            $table->string('cropImg')->nullable();  // Image URL for the crop variety
+            $table->text('cropImg')->nullable(); // Image URL for the crop variety
             $table->timestamps();
         });
     }

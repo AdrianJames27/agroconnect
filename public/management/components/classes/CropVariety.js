@@ -1,4 +1,5 @@
 import Dialog from "../helpers/Dialog.js";
+import { getCrop } from "../../../js/fetch.js";
 
 // CropVariety.js
 let cropVarieties = [];
@@ -47,7 +48,7 @@ class CropVariety {
 
         try {
             await $.ajax({
-                url: "/api/cropVarieties",
+                url: "/api/crop-varieties",
                 type: "POST",
                 contentType: "application/json",
                 data: JSON.stringify(cropVariety),
@@ -96,7 +97,7 @@ class CropVariety {
                 : variety
         );
 
-        fetch(`/api/cropVarieties/${updatedCropVariety.varietyId}`, {
+        fetch(`/api/crop-varieties/${updatedCropVariety.varietyId}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -113,7 +114,7 @@ class CropVariety {
     }
 
     removeCropVariety(varietyId) {
-        fetch(`/api/cropVarieties/${varietyId}`, {
+        fetch(`/api/crop-varieties/${varietyId}`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
@@ -151,7 +152,7 @@ function getCropVarieties() {
 
     // Fetch crops from Laravel backend
     $.ajax({
-        url: "/api/crop_varieties", // Endpoint to fetch crops
+        url: "/api/crop-varieties", // Endpoint to fetch crops
         method: "GET",
         success: function (response) {
             // Assuming response is an array of crops
@@ -166,7 +167,7 @@ function getCropVarieties() {
     });
 }
 
-getCrop();
+getCropVarieties();
 
 function searchCropVariey(varietyName) {
     const foundCropVarieties = cropVarieties.filter((variety) =>
@@ -180,7 +181,7 @@ function initializeMethodsCropVariety() {
     var pageSize = 5;
     var currentPage = 1;
     var isEdit = false;
-    var crop = null;
+    var variety = null;
 
     async function displayCropVarieties(varietyName = null) {
         // Simulate a delay of 1 second
@@ -188,6 +189,15 @@ function initializeMethodsCropVariety() {
 
         // Clear the table body
         $("#cropVarietyTableBody").empty();
+
+        // Fetch crop names once using getCrop()
+        const crops = await getCrop(); // Assumes getCrop returns a list of { cropId, cropName }
+
+        // Create a map of cropId to cropName for easy lookup
+        const cropMap = crops.reduce((map, crop) => {
+            map[crop.cropId] = crop.cropName;
+            return map;
+        }, {});
 
         var startIndex = (currentPage - 1) * pageSize;
         var endIndex = startIndex + pageSize;
@@ -201,18 +211,19 @@ function initializeMethodsCropVariety() {
             );
             if (foundVarieties.length > 0) {
                 foundVarieties.forEach((variety) => {
+                    const cropName = cropMap[variety.cropId] || "Unknown Crop"; // Get cropName or fallback to 'Unknown Crop'
                     $("#cropVarietyTableBody").append(`
                         <tr data-index=${variety.varietyId} class="text-center">
                             <td style="display: none;">${variety.varietyId}</td>
                             <td><img src="${variety.cropImg}" alt="${variety.varietyName}" class="img-thumbnail" width="50" height="50"></td>
                             <td>${variety.varietyName}</td>
-                            <td>${variety.cropId}</td> <!-- Display the associated cropId -->
-                            <td>${variety.color}</td> <!-- Display color characteristic -->
-                            <td>${variety.size}</td> <!-- Display size characteristic -->
-                            <td>${variety.flavor}</td> <!-- Display flavor profile -->
-                            <td>${variety.growthConditions}</td> <!-- Display growth conditions -->
-                            <td>${variety.pestDiseaseResistance}</td> <!-- Display pest/disease resistance -->
-                            <td>${variety.recommendedPractices}</td> <!-- Display recommended practices -->
+                            <td>${cropName}</td> <!-- Display the associated cropName -->
+                            <td>${variety.color}</td>
+                            <td>${variety.size}</td>
+                            <td>${variety.flavor}</td>
+                            <td>${variety.growthConditions}</td>
+                            <td>${variety.pestDiseaseResistance}</td>
+                            <td>${variety.recommendedPractices}</td>
                         </tr>
                     `);
                 });
@@ -231,18 +242,19 @@ function initializeMethodsCropVariety() {
                     break;
                 }
                 var variety = cropVarieties[i];
+                const cropName = cropMap[variety.cropId] || "Unknown Crop"; // Get cropName or fallback to 'Unknown Crop'
                 $("#cropVarietyTableBody").append(`
                     <tr data-index=${variety.varietyId} class="text-center">
                         <td style="display: none;">${variety.varietyId}</td>
                         <td><img src="${variety.cropImg}" alt="${variety.varietyName}" class="img-thumbnail" width="50" height="50"></td>
                         <td>${variety.varietyName}</td>
-                        <td>${variety.cropId}</td> <!-- Display the associated cropId -->
-                        <td>${variety.color}</td> <!-- Display color characteristic -->
-                        <td>${variety.size}</td> <!-- Display size characteristic -->
-                        <td>${variety.flavor}</td> <!-- Display flavor profile -->
-                        <td>${variety.growthConditions}</td> <!-- Display growth conditions -->
-                        <td>${variety.pestDiseaseResistance}</td> <!-- Display pest/disease resistance -->
-                        <td>${variety.recommendedPractices}</td> <!-- Display recommended practices -->
+                        <td>${cropName}</td> <!-- Display the associated cropName -->
+                        <td>${variety.color}</td>
+                        <td>${variety.size}</td>
+                        <td>${variety.flavor}</td>
+                        <td>${variety.growthConditions}</td>
+                        <td>${variety.pestDiseaseResistance}</td>
+                        <td>${variety.recommendedPractices}</td>
                     </tr>
                 `);
             }
@@ -315,20 +327,20 @@ function initializeMethodsCropVariety() {
                 );
 
                 if (selectedRow !== null && isEdit) {
-                    variety.updateVariety(variety);
+                    variety.updateCropVariety(variety);
                     selectedRow = null;
-                    $("#submitBtn").text("Add crop variety");
+                    $("#submitBtn").text("Add Crop Variety");
                     $("#cancelBtn").hide();
                     isEdit = false;
                 } else {
-                    variety.createVariety(variety);
+                    variety.createCropVariety(variety);
                 }
 
                 getCropVarieties(); // Ensure this function is defined for getting varieties
                 displayCropVarieties(); // Call the function to display varieties
 
                 // Clear form fields after submission
-                $("#cropForm")[0].reset();
+                $("#cropVarietyForm")[0].reset();
                 $("#cropVarietyTableBody tr").removeClass("selected-row");
             };
 
@@ -350,9 +362,9 @@ function initializeMethodsCropVariety() {
                     recommendedPractices,
                     prevCropVarietyImg
                 );
-                variety.updateVariety(variety);
+                variety.updateCropVariety(variety);
                 selectedRow = null;
-                $("#submitBtn").text("Add crop variety");
+                $("#submitBtn").text("Add Crop Variety");
                 $("#cancelBtn").hide();
                 isEdit = false;
             } else {
@@ -368,7 +380,7 @@ function initializeMethodsCropVariety() {
                     recommendedPractices,
                     null
                 );
-                variety.createVariety(variety);
+                variety.createCropVariety(variety);
             }
 
             getCropVarieties(); // Ensure this function is defined for getting varieties
@@ -376,7 +388,7 @@ function initializeMethodsCropVariety() {
             prevCropVarietyImg = "";
 
             // Clear form fields after submission
-            $("#cropForm")[0].reset();
+            $("#cropVarietyForm")[0].reset();
             $("#lblCropImg").val("Upload Image:");
             $("#cropVarietyTableBody tr").removeClass("selected-row");
             $("#editBtn").prop("disabled", true);
@@ -415,7 +427,7 @@ function initializeMethodsCropVariety() {
             $("#pestDiseaseResistance").val(variety.pestDiseaseResistance); // New input for pest/disease resistance
             $("#recommendedPractices").val(variety.recommendedPractices); // New input for recommended practices
 
-            prevCropImg = variety.cropImg; // Store the previous image for updates
+            prevCropVarietyImg = variety.cropImg; // Store the previous image for updates
             $("#lblCropImg").text("Upload New Image (Optional):");
             isEdit = true;
 
@@ -437,7 +449,7 @@ function initializeMethodsCropVariety() {
     // Cancel button click handler
     $("#cancelBtn").click(function () {
         selectedRow = null;
-        $("#cropForm")[0].reset();
+        $("#cropVarietyForm")[0].reset();
         $("#submitBtn").text("Add Crop Variety");
         $("#cancelBtn").hide();
         $("#cropVarietyTableBody tr").removeClass("selected-row");
@@ -455,10 +467,10 @@ function initializeMethodsCropVariety() {
 
         // Check if the user clicked OK
         if (result.operation === 1) {
-            let cropToDelete = new Crop();
-            cropToDelete.removeCrop(crop.cropId);
-            getCrop();
-            displayCrops();
+            let varietyToDelete = new CropVariety();
+            varietyToDelete.removeCropVariety(variety.varietyId);
+            getCropVarieties();
+            displayCropVarieties();
             resetFields();
         } else {
             // If Cancel is clicked, do nothing or add additional handling if needed
@@ -473,7 +485,7 @@ function initializeMethodsCropVariety() {
     $("#cropVarietyTableBody").on("click", "tr", function () {
         var $this = $(this);
         var varietyId = $this.data("index");
-        cropVariety = cropVarieties.find((u) => u.varietyId === varietyId);
+        variety = cropVarieties.find((u) => u.varietyId === varietyId);
         selectedRow = varietyId;
         // Highlight selected row
         if (selectedRow !== null) {

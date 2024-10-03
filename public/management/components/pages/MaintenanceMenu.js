@@ -1,5 +1,6 @@
 // MaintenanceMenu.js
 import { initializeMethodsCrop } from "../classes/Crop.js";
+import { getCrop } from "../../../js/fetch.js";
 import { initializeMethodsCropVariety } from "../classes/CropVariety.js";
 import { initializeMethodsBarangay } from "../classes/Barangay.js";
 import {
@@ -106,13 +107,21 @@ function initializeCropView() {
           <div class="mb-3">
             <input placeholder="Crop Name" type="text" class="form-control" id="cropName" name="cropName" required>
           </div>
-          
+
           <div class="mb-3">
-            <input placeholder="Variety (optional)" type="text" class="form-control" id="variety" name="variety">
+            <input placeholder="Scientific Name" type="text" class="form-control" id="scientificName" name="scientificName" required>
+          </div>
+
+          <div class="mb-3">
+            <input placeholder="Planting Season" type="text" class="form-control" id="plantingSeason" name="plantingSeason" required>
+          </div>
+
+          <div class="mb-3">
+            <input placeholder="Growth Duration" type="text" class="form-control" id="growthDuration" name="growthDuration" required>
           </div>
           
           <div class="mb-3">
-            <select class="form-control" id="type" name="type" required>
+            <select class="form-control" id="cropType" name="cropType" required>
               <option value="" disabled selected>Select Type</option>
               <option value="Vegetables">Vegetables</option>
               <option value="Rice">Rice</option>
@@ -121,7 +130,7 @@ function initializeCropView() {
           </div>
           
           <div class="mb-3">
-            <select class="form-control" id="priceWeight" name="priceWeight" required>
+            <select class="form-control" id="unit" name="unit" required>
               <option value="" disabled selected>Select Price Weight</option>
               <option value="kg">kilogram</option>
               <option value="pc">piece</option>
@@ -130,7 +139,7 @@ function initializeCropView() {
           </div>
           
           <div class="mb-3" id="weightDiv" style="display: none;">
-            <input placeholder="Weight (optional)" type="text" class="form-control" id="weight" name="weight">
+            <input placeholder="Weight (optional)" type="number" class="form-control" id="weight" name="weight" value="1.00" step="0.01" min="0">
           </div>
 
           <div class="mb-3">
@@ -143,9 +152,6 @@ function initializeCropView() {
                 </label>
               </div>
             </div>
-          </div>
-          <div class="mb-3">
-            <textarea placeholder="Description (optional)" class="form-control" id="description" name="description" rows="3"></textarea>
           </div>
           
           <button type="button" class="btn btn-custom" id="submitBtn">Add Crop</button>
@@ -166,14 +172,12 @@ function initializeCropView() {
                 <th scope="col" style="display: none;">Crop ID</th>
                 <th scope="col">Crop Image</th>
                 <th scope="col">Crop Name</th>
-                <th scope="col">Variety</th>
                 <th scope="col">Type</th>
                 <th scope="col">Scientific Name</th> <!-- New Column -->
                 <th scope="col">Planting Season</th> <!-- New Column -->
                 <th scope="col">Growth Duration</th> <!-- New Column -->
                 <th scope="col">Unit</th> <!-- New Column -->
                 <th scope="col">Weight</th> <!-- New Column -->
-                <th scope="col">Action</th>
               </tr>
             </thead>
             <tbody id="cropTableBody">
@@ -195,10 +199,11 @@ function initializeCropView() {
     createEditModal();
 
     // Event listener to show/hide the weight input based on the selected unit
-    $("#priceWeight").change(function () {
+    $("#unit").change(function () {
         const selectedUnit = $(this).val();
         if (selectedUnit === "kg") {
             $("#weightDiv").hide(); // Hide weight input if unit is kg
+            $("#weight").val("1.00"); // Set weight value to 0.00
         } else {
             $("#weightDiv").show(); // Show weight input for other units
         }
@@ -213,16 +218,16 @@ function initializeCropVarietyView() {
           <div class="col-md-4">
               <form id="cropVarietyForm">
                   <input type="hidden" class="form-control" id="varietyId" name="varietyId">
-                  
-                  <div class="mb-3">
-                      <input placeholder="Variety Name" type="text" class="form-control" id="varietyName" name="varietyName" required>
-                  </div>
-                  
+
                   <div class="mb-3">
                       <select class="form-control" id="cropId" name="cropId" required>
                           <option value="" disabled selected>Select Associated Crop</option>
                           <!-- Populate this dropdown with crop options -->
                       </select>
+                  </div>
+                  
+                  <div class="mb-3">
+                      <input placeholder="Variety Name" type="text" class="form-control" id="varietyName" name="varietyName" required>
                   </div>
                   
                   <div class="mb-3">
@@ -250,26 +255,26 @@ function initializeCropVarietyView() {
                   </div>
 
                   <div class="mb-3">
-                      <label id="lblCropVarietyImg">Upload Image:</label>
+                      <label id="lblCropImg">Upload Image:</label>
                       <div class="input-group mb-3" style="width: 100%;">
-                          <input type="file" class="form-control" id="cropVarietyImg" name="cropVarietyImg" accept="image/*">
+                          <input type="file" class="form-control" id="cropImg" name="cropImg" accept="image/*">
                           <div class="input-group-append">
-                              <label class="input-group-text" for="cropVarietyImg">
+                              <label class="input-group-text" for="cropImg">
                                   <i class="fas fa-upload"></i>
                               </label>
                           </div>
                       </div>
                   </div>
                   
-                  <button type="button" class="btn btn-custom" id="submitVarietyBtn">Add Variety</button>
-                  <button type="button" class="btn btn-custom mt-2" id="cancelVarietyBtn" style="display: none;">Cancel</button>
+                  <button type="button" class="btn btn-custom" id="submitBtn">Add Variety</button>
+                  <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
               </form>
           </div>
 
           <div class="col-md-8 actionBtn">
               <div class="d-flex justify-content-end align-items-center mb-2">
-                  <button id="editVarietyBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
-                  <button id="deleteVarietyBtn" class="btn btn-danger" disabled>Delete</button>
+                  <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
+                  <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
               </div>
 
               <div class="table-responsive">
@@ -286,7 +291,6 @@ function initializeCropVarietyView() {
                               <th scope="col">Growth Conditions</th>
                               <th scope="col">Pest/Disease Resistance</th>
                               <th scope="col">Recommended Practices</th>
-                              <th scope="col">Action</th>
                           </tr>
                       </thead>
                       <tbody id="cropVarietyTableBody">
@@ -303,10 +307,38 @@ function initializeCropVarietyView() {
       </div>
   `);
 
+    $(document).ready(function () {
+        // Call the getCrop function and populate the dropdown
+        getCrop()
+            .then(function (crops) {
+                let $cropDropdown = $("#cropId");
+                // Clear existing options (optional if you are repopulating)
+                $cropDropdown.empty();
+                // Add the default "Select Associated Crop" option
+                $cropDropdown.append(
+                    '<option value="" disabled selected>Select Associated Crop</option>'
+                );
+
+                // Loop through the crops and append each option
+                crops.forEach(function (crop) {
+                    $cropDropdown.append(
+                        '<option value="' +
+                            crop.cropId +
+                            '">' +
+                            crop.cropName +
+                            "</option>"
+                    );
+                });
+            })
+            .catch(function (error) {
+                console.error("Error fetching crops:", error);
+            });
+    });
+
     // Initialize methods for crop varieties and create modals
     initializeMethodsCropVariety();
-    createDeleteVarietyModal();
-    createEditVarietyModal();
+    createDeleteModal();
+    createEditModal();
 }
 
 // Function to initialize Barangay Records view

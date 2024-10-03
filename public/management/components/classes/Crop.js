@@ -34,6 +34,8 @@ class Crop {
             return;
         }
 
+        console.log(crop.unit);
+
         // Show the static uploading message
         $("#progressMessage").text("Uploading...");
         $("#loader").show(); // Show the loader

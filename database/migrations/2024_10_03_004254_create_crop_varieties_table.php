@@ -22,7 +22,7 @@ return new class extends Migration
             $table->text('growthConditions')->nullable();  // Growth conditions
             $table->text('pestDiseaseResistance')->nullable();  // Pest/disease resistance
             $table->text('recommendedPractices')->nullable();  // Recommended farming practices
-            $table->string('cropImg')->nullable();  // Image URL for the crop variety
+            $table->text('cropImg')->nullable();  // Image URL for the crop variety
             $table->timestamps();
         });
     }
