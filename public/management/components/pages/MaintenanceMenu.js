@@ -113,11 +113,11 @@ function initializeCropView() {
           </div>
 
           <div class="mb-3">
-            <input placeholder="Planting Season" type="text" class="form-control" id="plantingSeason" name="plantingSeason" required>
+            <textarea placeholder="Planting Season" type="text" class="form-control" id="plantingSeason" name="plantingSeason" rows="3" required></textarea>
           </div>
 
           <div class="mb-3">
-            <input placeholder="Growth Duration" type="text" class="form-control" id="growthDuration" name="growthDuration" required>
+            <textarea placeholder="Growth Duration" type="text" class="form-control" id="growthDuration" name="growthDuration" rows="3" required></textarea>
           </div>
           
           <div class="mb-3">
@@ -131,7 +131,7 @@ function initializeCropView() {
           
           <div class="mb-3">
             <select class="form-control" id="unit" name="unit" required>
-              <option value="" disabled selected>Select Price Weight</option>
+              <option value="" disabled selected>Select Unit</option>
               <option value="kg">kilogram</option>
               <option value="pc">piece</option>
               <option value="bundle">bundle</option>
@@ -139,7 +139,7 @@ function initializeCropView() {
           </div>
           
           <div class="mb-3" id="weightDiv" style="display: none;">
-            <input placeholder="Weight (optional)" type="number" class="form-control" id="weight" name="weight" value="1.00" step="0.01" min="0">
+            <input placeholder="Weight on kilogram (optional)" type="number" class="form-control" id="weight" name="weight" value="1.00" step="0.01" min="0">
           </div>
 
           <div class="mb-3">

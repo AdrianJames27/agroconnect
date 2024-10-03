@@ -288,7 +288,6 @@ function initializeMethodsCropVariety() {
 
     let prevCropVarietyImg = "";
 
-    // Form submission handler (Add or Update crop variety)
     $("#submitBtn").click(function (event) {
         event.preventDefault();
 
@@ -305,43 +304,60 @@ function initializeMethodsCropVariety() {
         // Get the file input element and the selected file
         var cropImgFile = document.getElementById("cropImg").files[0];
         var cropImgBase64 = null; // Initialize as null
-        console.log(selectedRow);
 
+        console.log(selectedRow);
         if (cropImgFile) {
             var reader = new FileReader();
             reader.onloadend = function () {
-                cropImgBase64 = reader.result; // This is the base64 string
+                var img = new Image();
+                img.src = reader.result;
 
-                // Create the CropVariety object with the base64 image string
-                let variety = new CropVariety(
-                    varietyId,
-                    cropId,
-                    varietyName,
-                    color,
-                    size,
-                    flavor,
-                    growthConditions,
-                    pestDiseaseResistance,
-                    recommendedPractices,
-                    cropImgBase64
-                );
+                img.onload = function () {
+                    // Create a canvas to draw the image on
+                    var canvas = document.createElement("canvas");
+                    var ctx = canvas.getContext("2d");
 
-                if (selectedRow !== null && isEdit) {
-                    variety.updateCropVariety(variety);
-                    selectedRow = null;
-                    $("#submitBtn").text("Add Crop Variety");
-                    $("#cancelBtn").hide();
-                    isEdit = false;
-                } else {
-                    variety.createCropVariety(variety);
-                }
+                    // Set the canvas size to the image size
+                    canvas.width = img.width;
+                    canvas.height = img.height;
 
-                getCropVarieties(); // Ensure this function is defined for getting varieties
-                displayCropVarieties(); // Call the function to display varieties
+                    // Draw the image on the canvas
+                    ctx.drawImage(img, 0, 0);
 
-                // Clear form fields after submission
-                $("#cropVarietyForm")[0].reset();
-                $("#cropVarietyTableBody tr").removeClass("selected-row");
+                    // Convert the canvas image to WebP format (quality can be adjusted)
+                    cropImgBase64 = canvas.toDataURL("image/webp", 0.8); // 0.8 is the quality factor
+
+                    // Create the CropVariety object with the WebP base64 image string
+                    let variety = new CropVariety(
+                        varietyId,
+                        cropId,
+                        varietyName,
+                        color,
+                        size,
+                        flavor,
+                        growthConditions,
+                        pestDiseaseResistance,
+                        recommendedPractices,
+                        cropImgBase64
+                    );
+
+                    if (selectedRow !== null && isEdit) {
+                        variety.updateCropVariety(variety);
+                        selectedRow = null;
+                        $("#submitBtn").text("Add Crop Variety");
+                        $("#cancelBtn").hide();
+                        isEdit = false;
+                    } else {
+                        variety.createCropVariety(variety);
+                    }
+
+                    getCropVarieties(); // Ensure this function is defined for getting varieties
+                    displayCropVarieties(); // Call the function to display varieties
+
+                    // Clear form fields after submission
+                    $("#cropVarietyForm")[0].reset();
+                    $("#cropVarietyTableBody tr").removeClass("selected-row");
+                };
             };
 
             // Read the image file as a data URL (base64)

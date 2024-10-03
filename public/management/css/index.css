@@ -361,3 +361,17 @@ background-color: #f1f1f1;
     height: 100% !important; 
 }
 
+.crop-cell {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px; /* Adjust width */
+    cursor: help; /* Change cursor to pointer */
+    outline: none; /* Remove default focus outline */
+}
+
+.crop-cell:hover  {
+    background-color: #d7d9e0; /* Light blue background on hover */
+}
+
+

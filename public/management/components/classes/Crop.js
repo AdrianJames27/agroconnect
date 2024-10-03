@@ -169,62 +169,57 @@ function initializeMethodsCrop() {
     var crop = null;
 
     async function displayCrops(cropName = null) {
-        // Simulate a delay of 1 second
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        // Clear the table body
         $("#cropTableBody").empty();
 
         var startIndex = (currentPage - 1) * pageSize;
         var endIndex = startIndex + pageSize;
 
         if (cropName) {
-            // Display a single crop if cropName is provided
             const foundCrops = searchCrop(cropName);
             if (foundCrops.length > 0) {
                 foundCrops.forEach((crop) => {
                     $("#cropTableBody").append(`
-                      <tr data-index=${crop.cropId} class="text-center">
-                        <td style="display: none;">${crop.cropId}</td>
-                        <td><img src="${crop.cropImg}" alt="${crop.cropName}" class="img-thumbnail" width="50" height="50"></td>
-                        <td>${crop.cropName}</td>
-                        <td>${crop.cropType}</td>
-                        <td>${crop.scientificName}</td> <!-- Display scientific name -->
-                        <td>${crop.plantingSeason}</td> <!-- Display planting season -->
-                        <td>${crop.growthDuration} days</td> <!-- Display growth duration -->
-                        <td>${crop.unit}</td> <!-- Display unit -->
-                        <td>${crop.weight}</td> <!-- Display weight -->
-                      </tr>
-                  `);
+                        <tr data-index=${crop.cropId} class="text-center">
+                            <td style="display: none;">${crop.cropId}</td>
+                            <td><img src="${crop.cropImg}" alt="${crop.cropName}" class="img-thumbnail" width="50" height="50"></td>
+                            <td>${crop.cropName}</td>
+                            <td>${crop.cropType}</td>
+                            <td>${crop.scientificName}</td>
+                            <td class="crop-cell" title="${crop.plantingSeason}">${crop.plantingSeason}</td>
+                            <td class="crop-cell" title="${crop.growthDuration}">${crop.growthDuration}</td>
+                            <td>${crop.unit}</td>
+                            <td>${crop.weight}</td>
+                        </tr>
+                    `);
                 });
             } else {
-                // Handle case where cropName is not found
                 $("#cropTableBody").append(`
-                  <tr>
-                      <td colspan="9">Crop not found!</td>
-                  </tr>
-              `);
+                    <tr>
+                        <td colspan="9">Crop not found!</td>
+                    </tr>
+                `);
             }
         } else {
-            // Display paginated crops if no cropName is provided
             for (var i = startIndex; i < endIndex; i++) {
                 if (i >= crops.length) {
                     break;
                 }
                 var crop = crops[i];
                 $("#cropTableBody").append(`
-                   <tr data-index=${crop.cropId} class="text-center">
+                    <tr data-index=${crop.cropId} class="text-center">
                         <td style="display: none;">${crop.cropId}</td>
                         <td><img src="${crop.cropImg}" alt="${crop.cropName}" class="img-thumbnail" width="50" height="50"></td>
                         <td>${crop.cropName}</td>
                         <td>${crop.cropType}</td>
-                        <td>${crop.scientificName}</td> <!-- Display scientific name -->
-                        <td>${crop.plantingSeason}</td> <!-- Display planting season -->
-                        <td>${crop.growthDuration} days</td> <!-- Display growth duration -->
-                        <td>${crop.unit}</td> <!-- Display unit -->
-                        <td>${crop.weight}</td> <!-- Display weight -->
-                   </tr>
-              `);
+                        <td>${crop.scientificName}</td>
+                        <td class="crop-cell" title="${crop.plantingSeason}">${crop.plantingSeason}</td>
+                        <td class="crop-cell" title="${crop.growthDuration}">${crop.growthDuration}</td>
+                        <td>${crop.unit}</td>
+                        <td>${crop.weight}</td>
+                    </tr>
+                `);
             }
         }
     }
@@ -256,7 +251,6 @@ function initializeMethodsCrop() {
 
     let prevCropImg = "";
 
-    // Form submission handler (Add or Update crop)
     $("#submitBtn").click(function (event) {
         event.preventDefault();
 
@@ -272,41 +266,59 @@ function initializeMethodsCrop() {
         // Get the file input element and the selected file
         var cropImgFile = document.getElementById("cropImg").files[0];
         var cropImgBase64 = null; // Initialize as null
+
         console.log(selectedRow);
         if (cropImgFile) {
             var reader = new FileReader();
             reader.onloadend = function () {
-                cropImgBase64 = reader.result; // This is the base64 string
+                var img = new Image();
+                img.src = reader.result;
 
-                // Create the Crop object with the base64 image string
-                let crop = new Crop(
-                    cropId,
-                    cropName,
-                    cropType,
-                    scientificName,
-                    plantingSeason,
-                    growthDuration,
-                    unit,
-                    weight,
-                    cropImgBase64
-                );
+                img.onload = function () {
+                    // Create a canvas to draw the image on
+                    var canvas = document.createElement("canvas");
+                    var ctx = canvas.getContext("2d");
 
-                if (selectedRow !== null && isEdit) {
-                    crop.updateCrop(crop);
-                    selectedRow = null;
-                    $("#submitBtn").text("Add crop");
-                    $("#cancelBtn").hide();
-                    isEdit = false;
-                } else {
-                    crop.createCrop(crop);
-                }
+                    // Set the canvas size to the image size
+                    canvas.width = img.width;
+                    canvas.height = img.height;
 
-                getCrop();
-                displayCrops();
+                    // Draw the image on the canvas
+                    ctx.drawImage(img, 0, 0);
 
-                // Clear form fields after submission
-                $("#cropForm")[0].reset();
-                $("#cropTableBody tr").removeClass("selected-row");
+                    // Convert the canvas image to WebP format (quality can be adjusted)
+                    cropImgBase64 = canvas.toDataURL("image/webp", 0.8); // 0.8 is the quality factor
+
+                    // Create the Crop object with the WebP base64 image string
+                    let crop = new Crop(
+                        cropId,
+                        cropName,
+                        cropType,
+                        scientificName,
+                        plantingSeason,
+                        growthDuration,
+                        unit,
+                        weight,
+                        cropImgBase64
+                    );
+
+                    if (selectedRow !== null && isEdit) {
+                        crop.updateCrop(crop);
+                        selectedRow = null;
+                        $("#submitBtn").text("Add crop");
+                        $("#cancelBtn").hide();
+                        isEdit = false;
+                    } else {
+                        crop.createCrop(crop);
+                    }
+
+                    getCrop();
+                    displayCrops();
+
+                    // Clear form fields after submission
+                    $("#cropForm")[0].reset();
+                    $("#cropTableBody tr").removeClass("selected-row");
+                };
             };
 
             // Read the image file as a data URL (base64)

@@ -100,22 +100,22 @@ class CropController extends Controller
     public function getUniqueCropNames(Request $request)
     {
         $season = $request->query('season'); // e.g., 'Dry' or 'Wet'
-        $type = $request->query('type'); // e.g., 'vegetable', 'fruit', 'rice'
+        $type = $request->query('cropType'); // e.g., 'vegetable', 'fruit', 'rice'
 
         // Build query for filtering crops
         $query = Production::select('cropName')
             ->groupBy('cropName')
-            ->havingRaw('COUNT(*) >= 5'); // Only crops with at least 5 records
+            ->havingRaw('COUNT(DISTINCT monthHarvested) >= 2'); // Only crops with at least 2 different monthHarvested values
 
-        // Apply season filter if provided
+        // Apply season filter based on the Production model
         if ($season) {
             $query->where('season', $season);
         }
 
-        // Apply type filter if provided
+        // Apply crop type filter based on the related crop model
         if ($type) {
             $query->whereHas('crop', function ($subQuery) use ($type) {
-                $subQuery->where('type', $type);
+                $subQuery->where('cropType', $type);
             });
         }
 
