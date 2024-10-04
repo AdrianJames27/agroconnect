@@ -206,7 +206,12 @@ class Dialog {
         });
     }
 
-    static async showCropModal(cropImg, description, cropTitle) {
+    static async showCropModal(
+        cropImg,
+        description,
+        cropTitle,
+        varietyDetails
+    ) {
         // Create modal
         const modal = document.createElement("dialog");
         modal.setAttribute("id", "messageDialog");
@@ -214,6 +219,8 @@ class Dialog {
         modal.style.padding = "20px";
         modal.style.textAlign = "center";
         modal.style.borderRadius = "0.5rem"; // Rounded corners
+
+        console.log(varietyDetails);
 
         // Create innerHTML for modal content
         modal.innerHTML = `

@@ -2,6 +2,7 @@ import Dialog from "../management/components/helpers/Dialog.js";
 import {
     getCrop,
     getCropName,
+    getTotalAreaPlanted,
     getCropVarieties,
     getProduction,
     getPrice,
@@ -203,61 +204,157 @@ class TopCrops {
         const tableBody = $("#cropsTable tbody");
         tableBody.empty(); // Clear existing rows
 
-        data.forEach((crop) => {
+        let promises = data.map((crop) => {
             // Find matching crop details
             const cropDetails = crops.find((c) => c.cropName === crop.cropName);
+            if (!cropDetails) return Promise.resolve(null); // Skip if no crop details found
+
             const varietyDetails = varieties.filter(
                 (v) => v.cropId === cropDetails.cropId
-            ); // Return an empty array if not found
+            );
 
-            console.log(varietyDetails);
+            if (varietyDetails.length > 0) {
+                let varietyPromises = varietyDetails.map((variety) => {
+                    return getTotalAreaPlanted(
+                        variety.cropId,
+                        variety.varietyName
+                    ).then((totalAreaPlanted) => {
+                        variety.totalAreaPlanted =
+                            parseFloat(totalAreaPlanted).toFixed(2); // Add totalAreaPlanted
+                        return {
+                            varietyName: variety.varietyName,
+                            totalAreaPlanted: variety.totalAreaPlanted,
+                            cropImg: variety.cropImg,
+                            color: variety.color,
+                            flavor: variety.flavor,
+                            size: variety.size,
+                            growthConditions: variety.growthConditions,
+                            pestDiseaseResistance:
+                                variety.pestDiseaseResistance,
+                            recommendedPractices: variety.recommendedPractices,
+                            // Include any other specific fields you want from the variety
+                        }; // Return only the specific fields needed from variety
+                    });
+                });
 
-            // Default values if no matching crop is found
-            const cropImg = cropDetails ? cropDetails.cropImg : "";
-            const description = `
-            <div class='card m-3 shadow-sm'>
-                <div class='card-header bg-success text-white'>
-                    <h5 class='mb-0'>Crop Details</h5>
-                </div>
-                <div class='card-body'>
-                    <p class='card-text'><strong>Scientific Name:</strong> <span class='text-primary'>${cropDetails.scientificName}</span></p>
-                    <p class='card-text'><strong>Unit:</strong> <span class='text-primary'>${cropDetails.unit}</span></p>
-                    <p class='card-text'><strong>Weight:</strong> <span class='text-primary'>${cropDetails.weight}</span></p>
-                    <p class='card-text'><strong>Planting Season:</strong> <span class='text-primary'>${cropDetails.plantingSeason}</span></p>
-                    <p class='card-text'><strong>Growth Duration:</strong> <span class='text-primary'>${cropDetails.growthDuration}</span></p>
-                </div>
-            </div>
-        `;
+                // After all promises for variety details resolve
+                return Promise.all(varietyPromises).then(
+                    (updatedVarietyDetails) => {
+                        const cropImg = cropDetails.cropImg || "";
+                        const description = `
+                    <div class='card m-3 shadow-sm'>
+                        <div class='card-header bg-success text-white'>
+                            <h5 class='mb-0'>Crop Details</h5>
+                        </div>
+                        <div class='card-body'>
+                            <p class='card-text'><strong>Scientific Name:</strong> <span class='text-primary'>${cropDetails.scientificName}</span></p>
+                            <p class='card-text'><strong>Unit:</strong> <span class='text-primary'>${cropDetails.unit}</span></p>
+                            <p class='card-text'><strong>Weight:</strong> <span class='text-primary'>${cropDetails.weight}</span></p>
+                            <p class='card-text'><strong>Planting Season:</strong> <span class='text-primary'>${cropDetails.plantingSeason}</span></p>
+                            <p class='card-text'><strong>Growth Duration:</strong> <span class='text-primary'>${cropDetails.growthDuration}</span></p>
+                        </div>
+                    </div>
+                `;
 
-            const cropTitle = cropDetails.cropName;
+                        const cropTitle = cropDetails.cropName;
 
-            // Create table row with View button
-            const row = `<tr class="text-center">
-            <td>${crop.cropName}</td>
-            <td>${crop.type}</td>
-            <td>${crop.remarks}</td>
-            <td><button class="btn btn-green view-btn" data-img="${cropImg}" data-description="${description}" data-crop="${cropTitle}">View</button></td>
-            </tr>`;
-            tableBody.append(row);
-        });
+                        // Create table row with View button
+                        const row = `<tr class="text-center">
+                    <td>${crop.cropName}</td>
+                    <td>${crop.type}</td>
+                    <td>${crop.remarks}</td>
+                   <td>
+                        <button class="btn btn-green view-btn" 
+                            data-img="${cropImg}" 
+                            data-description="${description}" 
+                            data-crop="${cropTitle}" 
+                            data-variety='${JSON.stringify(
+                                updatedVarietyDetails
+                            )}'> <!-- Updated to use specific variety details -->
+                            View Information
+                        </button>
+                    </td>
+                    </tr>`;
 
-        // Attach click event handler to View buttons
-        $(".view-btn").on("click", async function () {
-            const imgSrc = $(this).data("img");
-            const desc = $(this).data("description");
-            const cropTitle = $(this).data("crop");
-
-            console.log(cropTitle);
-
-            // Call the custom modal function
-            const res = await Dialog.showCropModal(imgSrc, desc, cropTitle);
-
-            if (res.operation === Dialog.OK_OPTION) {
-                console.log("Modal was closed by the user");
+                        return row; // Return the row to append later
+                    }
+                );
             } else {
-                console.log("Modal was not closed");
+                // If no varieties, return a row with an empty variety array
+                const cropImg = cropDetails.cropImg || "";
+                const description = `
+                <div class='card m-3 shadow-sm'>
+                    <div class='card-header bg-success text-white'>
+                        <h5 class='mb-0'>Crop Details</h5>
+                    </div>
+                    <div class='card-body'>
+                        <p class='card-text'><strong>Scientific Name:</strong> <span class='text-primary'>${cropDetails.scientificName}</span></p>
+                        <p class='card-text'><strong>Unit:</strong> <span class='text-primary'>${cropDetails.unit}</span></p>
+                        <p class='card-text'><strong>Weight:</strong> <span class='text-primary'>${cropDetails.weight}</span></p>
+                        <p class='card-text'><strong>Planting Season:</strong> <span class='text-primary'>${cropDetails.plantingSeason}</span></p>
+                        <p class='card-text'><strong>Growth Duration:</strong> <span class='text-primary'>${cropDetails.growthDuration}</span></p>
+                    </div>
+                </div>
+            `;
+
+                const cropTitle = cropDetails.cropName;
+
+                // Create table row with empty variety details
+                const row = `<tr class="text-center">
+                <td>${crop.cropName}</td>
+                <td>${crop.type}</td>
+                <td>${crop.remarks}</td>
+               <td>
+                    <button class="btn btn-green view-btn" 
+                        data-img="${cropImg}" 
+                        data-description="${description}" 
+                        data-crop="${cropTitle}" 
+                        data-variety='${JSON.stringify(
+                            []
+                        )}'> <!-- Empty array for varieties -->
+                        View Information
+                    </button>
+                </td>
+                </tr>`;
+
+                return row; // Return the row to append later
             }
         });
+
+        // After all crop promises resolve
+        Promise.all(promises)
+            .then((rows) => {
+                rows.forEach((row) => {
+                    if (row) {
+                        tableBody.append(row); // Append valid rows to the table
+                    }
+                });
+
+                // Attach click event handler to View buttons
+                $(".view-btn").on("click", async function () {
+                    const imgSrc = $(this).data("img");
+                    const desc = $(this).data("description");
+                    const cropTitle = $(this).data("crop");
+                    const varietyDetails = $(this).data("variety");
+
+                    // Call the custom modal function
+                    const res = await Dialog.showCropModal(
+                        imgSrc,
+                        desc,
+                        cropTitle,
+                        varietyDetails
+                    );
+
+                    if (res.operation === Dialog.OK_OPTION) {
+                        console.log("Modal was closed by the user");
+                    } else {
+                        console.log("Modal was not closed");
+                    }
+                });
+            })
+            .catch((error) => {
+                console.error("Error fetching crop details:", error);
+            });
     }
 }
 

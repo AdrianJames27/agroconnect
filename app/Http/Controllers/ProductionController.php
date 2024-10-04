@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Production;
+use App\Models\Crop;
 use Illuminate\Http\Request;
 
 class ProductionController extends Controller
@@ -171,5 +172,30 @@ class ProductionController extends Controller
 
         // Return a success response
         return response()->json(['message' => 'MonthYear updated successfully'], 200);
+    }
+
+    public function getTotalAreaPlanted($cropId, $variety)
+    {
+        // Fetch the cropName using the cropId from the Crop model
+        $crop = Crop::find($cropId);
+
+        // Check if the crop exists
+        if (!$crop) {
+            return response()->json([
+                'error' => 'Crop not found',
+            ], 404);
+        }
+
+        // Fetch total areaPlanted for the given cropName and variety
+        $totalAreaPlanted = Production::where('cropName', $crop->cropName)
+            ->where('variety', $variety)
+            ->sum('areaPlanted');
+
+        return response()->json([
+            'cropId' => $cropId,
+            'cropName' => $crop->cropName,
+            'variety' => $variety,
+            'totalAreaPlanted' => $totalAreaPlanted,
+        ]);
     }
 }

@@ -29,6 +29,7 @@ Route::get('/barangays', [BarangayController::class, 'index']);
 Route::get('/farmers', [FarmerController::class, 'index']);
 Route::get('/records', [RecordController::class, 'index']);
 Route::get('/productions', [ProductionController::class, 'index']);
+Route::get('/production/total-area-planted/{cropId}/{variety}', [ProductionController::class, 'getTotalAreaPlanted']);
 Route::get('/prices', [PriceController::class, 'index']);
 Route::get('/pests', [PestController::class, 'index']);
 Route::get('/diseases', [DiseaseController::class, 'index']);

@@ -374,6 +374,25 @@ async function getUniqueCropNames(season = null, type = null) {
     }
 }
 
+function getTotalAreaPlanted(cropId, variety) {
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            url: `/api/production/total-area-planted/${cropId}/${variety}`, // URL to the controller
+            type: "GET", // HTTP method
+            dataType: "json", // The type of data you expect back from the server
+            success: function (response) {
+                let totalAreaPlanted = response.totalAreaPlanted;
+                resolve(totalAreaPlanted); // Resolve the promise with the result
+            },
+            error: function (xhr, status, error) {
+                // Error handler: Handle any error that occurs during the request
+                console.error("Error fetching data:", xhr);
+                reject(error); // Reject the promise if an error occurs
+            },
+        });
+    });
+}
+
 export {
     getCrop,
     getBarangay,
@@ -393,4 +412,5 @@ export {
     addDownload,
     getCropVarieties,
     getCropName,
+    getTotalAreaPlanted,
 };
