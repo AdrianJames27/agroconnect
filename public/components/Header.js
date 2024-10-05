@@ -1,10 +1,9 @@
-$(document).ready(function() {
-
-    $('head').prepend(`
+$(document).ready(function () {
+    $("head").prepend(`
         <link rel="icon" href="../img/logo.png" type="image/png">   
     `);
 
-    $('body').prepend(`
+    $("body").prepend(`
         <!-- Loading screen -->
         <div id="loadingScreen" class="loading-overlay">
             <div class="spinner-container">
@@ -15,18 +14,16 @@ $(document).ready(function() {
             </div>
         </div>
     `);
-    
-    $(window).on('load', function() {
+
+    $(window).on("load", function () {
         // Wait for 2 seconds after all content is fully loaded
-        setTimeout(function() {
+        setTimeout(function () {
             $("#loadingScreen").fadeOut();
         }, 2000); // 2 seconds delay
     });
-    
-    
-    
+
     // Prepend header structure with navigation links to the body
-    $('.header-container').prepend(`
+    $(".header-container").prepend(`
 <div class="container-fluid p-0">
     <header class="navbar navbar-expand-lg navbar-dark" style="background-color: #008000;">
         <a class="navbar-brand d-flex align-items-center" href="#">
