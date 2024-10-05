@@ -143,6 +143,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/concerns/{id}', [ConcernController::class, 'show']);
     Route::put('/concerns/{id}', [ConcernController::class, 'update']);
     Route::delete('/concerns/{id}', [ConcernController::class, 'destroy']);
+    Route::put('/concerns/{id}/status', [ConcernController::class, 'updateStatus']);
 
     // Api for weatherforecasts
     Route::put('/weatherforecasts/{id}', [WeatherForecastController::class, 'update']);

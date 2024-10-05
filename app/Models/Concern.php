@@ -11,10 +11,11 @@ class Concern extends Model
 
     protected $primaryKey = 'concernId'; // Specify the primary key field name
     protected $fillable = [
-        'userId',
+        'name',
         'title',
         'content',
         'attachment',
+        'status',
     ];
 
     // Define relationship with User

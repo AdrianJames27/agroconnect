@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('concerns', function (Blueprint $table) {
             $table->id('concernId');
-            $table->unsignedBigInteger('userId');
-            $table->foreign('userId')->references('userId')->on('users');
+            $table->string('name', 255);
             $table->string('title', 255);
             $table->string('content', 255);
             $table->longText('attachment')->nullable();
+            $table->string('status', 255);
             $table->timestamps();
         });
     }

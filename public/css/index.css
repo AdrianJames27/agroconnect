@@ -152,15 +152,15 @@ h2 {
     font-weight: 600;
 }
 
-.active {
-    background-color: #B1BA4D; /* White background */
+.nav-item.active {
+    background-color: #B1BA4D; /* Light green background */
     border-radius: 5px; /* Adjust the value to change the roundness */
     padding: 4px 8px; /* Padding top and bottom only */
     line-height: 30px; /* Adjust this to match the height of your nav links */
 }
 
 .toast-success-custom {
-    background-color: #28a745; /* Green color for success */
+    background-color: #2774E9; /* Green color for success */
     color: #ffffff; /* White text color */
 }
 

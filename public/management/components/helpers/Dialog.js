@@ -220,7 +220,8 @@ class Dialog {
         modal.style.textAlign = "center";
         modal.style.borderRadius = "0.5rem"; // Rounded corners
 
-        console.log(varietyDetails);
+        // Sort varietyDetails by totalAreaPlanted
+        varietyDetails.sort((a, b) => b.totalAreaPlanted - a.totalAreaPlanted);
 
         // Create innerHTML for modal content
         modal.innerHTML = `
@@ -235,17 +236,43 @@ class Dialog {
             </ul>
             <div class="tab-content">
                 <div class="tab-pane fade show active bg-transparent" id="cropInfoContent" style="text-align: justify; font-size: 0.9rem; margin-top: 15px;">
-                   <div class="text-center">
-                    <div style="background-color: #C9AF94; color: white; padding: 10px; border-radius: 8px; font-weight: bold; font-size: 1.5rem; margin-bottom: 15px;">
+                    <div class="text-center">
+                        <div style="background-color: #C9AF94; color: white; padding: 10px; border-radius: 8px; font-weight: bold; font-size: 1.5rem; margin-bottom: 15px;">
                             ${cropTitle}
                         </div>
                         <img id="cropImg" src="${cropImg}" alt="Crop Image" class="img-fluid border border-primary rounded" style="width: 30rem; height: auto; margin-bottom: 10px;">
                     </div>
-
+    
                     <div class="text-dark mt-2">${description}</div>
                 </div>
-                <div class="tab-pane fade" id="varietyContent" style="text-align: justify; font-size: 0.9rem; color: #333;">
-                    Variety details: Random information here.
+                <div class="tab-pane fade bg-transparent" id="varietyContent" style="text-align: justify; font-size: 0.9rem; color: #333;">
+                    <div class="accordion" id="varietyAccordion">
+                        ${varietyDetails
+                            .map(
+                                (variety, index) => `
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading${index}">
+                                <button class="bg-success accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${index}" aria-expanded="false" aria-controls="collapse${index}">
+                                    ${variety.varietyName} (Total Area Planted: ${variety.totalAreaPlanted})
+                                </button>
+                            </h2>
+                            <div id="collapse${index}" class="accordion-collapse collapse" aria-labelledby="heading${index}" data-bs-parent="#varietyAccordion">
+                                <div class="accordion-body">
+                                    <img src="${variety.cropImg}" alt="${variety.varietyName} Image" class="img-fluid border border-primary rounded" style="width: 20rem; height: auto; margin-bottom: 10px;">
+                                    <p><strong>Characteristics:</strong></p>
+                                    <p><strong>Color:</strong> ${variety.color}</p>
+                                    <p><strong>Size:</strong> ${variety.size}</p>
+                                    <p><strong>Flavor:</strong> ${variety.flavor}</p>
+                                    <p><strong>Growth Conditions:</strong> ${variety.growthConditions}</p>
+                                    <p><strong>Pest/Disease Resistance:</strong> ${variety.pestDiseaseResistance}</p>
+                                    <p><strong>Recommended Practices:</strong> ${variety.recommendedPractices}</p>
+                                </div>
+                            </div>
+                        </div>
+                        `
+                            )
+                            .join("")}
+                    </div>
                 </div>
             </div>
             <div class="d-flex justify-content-center mt-3">
@@ -253,8 +280,6 @@ class Dialog {
             </div>
         </div>
         `;
-
-        $(".active").css("background-color: transparent");
 
         // Append modal to document body
         document.body.append(modal);
