@@ -466,13 +466,11 @@ function downloadCSV(filename, data) {
         price: "Price (kg)",
         pestOccurrence: "Pest Observed",
         diseaseOccurrence: "Disease Observed",
-        totalPlanted: "Total Planted",
     };
 
     // Define the order of headers
     const headersToInclude = [
         "cropName",
-        "variety",
         "type",
         "totalArea",
         "volumeProductionPerHectare",
@@ -481,7 +479,6 @@ function downloadCSV(filename, data) {
         "price",
         "pestOccurrence",
         "diseaseOccurrence",
-        "totalPlanted",
     ];
 
     // Map headers to the desired names
@@ -544,7 +541,6 @@ function downloadExcel(filename, data) {
     // Define the header mapping
     const headerMap = {
         cropName: "Crop Name",
-        variety: "Variety",
         type: "Type",
         totalArea: "Total Area (ha)",
         volumeProductionPerHectare: "Average Volume Production (mt/ha)",
@@ -558,7 +554,6 @@ function downloadExcel(filename, data) {
     // Define the order of headers
     const headersToInclude = [
         "cropName",
-        "variety",
         "type",
         "totalArea",
         "volumeProductionPerHectare",
@@ -686,7 +681,7 @@ function downloadPDF(filename, data) {
     const doc = new jsPDF();
 
     // Specify the columns you want to include in the PDF
-    const columns = ["cropName", "variety", "type", "remarks"];
+    const columns = ["cropName", "type", "remarks"];
     const headers = columns.map(formatHeader);
 
     // Create the table using only the specified columns

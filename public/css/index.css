@@ -155,7 +155,6 @@ h2 {
 .nav-item.active {
     background-color: #B1BA4D; /* Light green background */
     border-radius: 5px; /* Adjust the value to change the roundness */
-    padding: 4px 8px; /* Padding top and bottom only */
     line-height: 30px; /* Adjust this to match the height of your nav links */
 }
 

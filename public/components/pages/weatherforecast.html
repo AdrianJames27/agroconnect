@@ -1,136 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>AgroConnect Cabuyao - Weather Forecasts</title>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AgroConnect Cabuyao - Weather Forecasts</title>
+        <!-- Fonts and Stylesheets -->
+        <link rel="preconnect" href="https://fonts.gstatic.com" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Century+Gothic&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+        />
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="../../css/index.css" />
+        <link rel="stylesheet" href="../../management/css/dialog.css" />
 
-  <!-- Fonts and Stylesheets -->
-  <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link href="https://fonts.googleapis.com/css2?family=Century+Gothic&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <link rel="stylesheet" href="../../css/index.css">
-  <link rel="stylesheet" href="../../management/css/dialog.css">
+        <!-- JavaScript Libraries -->
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Inline Styles -->
+        <style>
+            body {
+                color: white;
+                font-family: "Century Gothic", sans-serif;
+            }
 
-  <!-- JavaScript Libraries -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  <!-- Inline Styles -->
-  <style>
-    body {
-      color: white;
-      font-family: 'Century Gothic', sans-serif;
-    }
+            .card {
+                border-radius: 15px;
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(10px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                border: none;
+            }
 
-    .card {
-      border-radius: 15px;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      border: none;
-    }
+            .card-body {
+                background: rgba(255, 255, 255, 0.25);
+                border-radius: 15px;
+            }
 
-    .card-body {
-      background: rgba(255, 255, 255, 0.25);
-      border-radius: 15px;
-    }
+            .weather-icon {
+                width: 50px;
+                height: 50px;
+            }
 
-    .weather-icon {
-      width: 50px;
-      height: 50px;
-    }
+            .forecast-card {
+                display: flex;
+                flex-direction: column;
+            }
 
-    .forecast-card {
-      display: flex;
-      flex-direction: column;
-    }
+            .forecast-card .card {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+            }
 
-    .forecast-card .card {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
+            .forecast-card .card-body {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+            }
 
-    .forecast-card .card-body {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
+            .container-fluid {
+                padding-left: 15px;
+                padding-right: 15px;
+            }
 
-    .container-fluid {
-      padding-left: 15px;
-      padding-right: 15px;
-    }
+            .bg {
+                position: relative;
+                overflow: hidden;
+            }
 
-    .bg {
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .bg::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 1;
-    }
-    
-    .bg > .content {
-      position: relative;
-      z-index: 2;
-    }
-  </style>
-</head>
+            .bg::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1;
+            }
 
-<body>
-  <div class="header-container">
-    <!-- Include your header content or component here -->
-  </div>
+            .bg > .content {
+                position: relative;
+                z-index: 2;
+            }
+        </style>
+    </head>
 
-  <div class="main-content">
-    <div class="container-fluid ">
-      <div class="card w-100 bg-white">
-        <div id="pageTitle" class="container-fluid text-white d-flex justify-content-center align-items-center py-2 position-relative">
-          <h2 class="w-100 text-center">Weather Forecasts</h2>
-          <button id="infoBtn" class="btn btn-info position-absolute" style="right: 10px;">
-            <i class="fas fa-info-circle"></i>
-          </button>
-        </div> 
-        <div class="bg container-fluid rounded p-5">
-          <div class="content">
-            <h1 class="mb-4">5-Day Forecast for Cabuyao, Laguna, Philippines</h1>
-            <div id="today-forecast" class="mb-4">
-              <h3>Today's Forecast</h3>
-              <div class="card">
-                <div class="card-body" id="today">
-                  <!-- Today's forecast will be injected here -->
-                </div>
-              </div>
-            </div>
-            <h3>Extended Forecast</h3>
-            <div id="forecast" class="row">
-              <!-- 5-day forecast will be injected here -->
-            </div>
-          </div>
+    <body>
+        <div class="header-container">
+            <!-- Include your header content or component here -->
         </div>
-      </div>
-    </div>
-  </div>
 
-  <div class="footer-container">
-    <!-- Include your footer content or component here -->
-  </div>
+        <div class="main-content">
+            <div class="container-fluid">
+                <div class="card w-100 bg-white">
+                    <div
+                        id="pageTitle"
+                        class="container-fluid text-white d-flex justify-content-center align-items-center py-2 position-relative"
+                    >
+                        <h2 class="w-100 text-center">Weather Forecasts</h2>
+                        <button
+                            id="infoBtn"
+                            class="btn btn-info position-absolute"
+                            style="right: 10px"
+                        >
+                            <i class="fas fa-info-circle"></i>
+                        </button>
+                    </div>
+                    <div class="bg container-fluid rounded p-5">
+                        <div class="content">
+                            <h1 class="mb-4">
+                                5-Day Forecast for Cabuyao, Laguna, Philippines
+                            </h1>
+                            <div id="today-forecast" class="mb-4">
+                                <h3>Today's Forecast</h3>
+                                <div class="card">
+                                    <div class="card-body" id="today">
+                                        <!-- Today's forecast will be injected here -->
+                                    </div>
+                                </div>
+                            </div>
+                            <h3>Extended Forecast</h3>
+                            <div id="forecast" class="row">
+                                <!-- 5-day forecast will be injected here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-  <!-- JavaScript Files -->
-  <script src="../../components/Header.js"></script>
-  <script type="module" src="../../components/Footer.js"></script>
-  <script type="module" src="../../js/weatherForecast.js"></script>
-</body>
+        <div class="footer-container">
+            <!-- Include your footer content or component here -->
+        </div>
 
+        <!-- JavaScript Files -->
+        <script src="../../components/Header.js"></script>
+        <script type="module" src="../../components/Footer.js"></script>
+        <script type="module" src="../../js/weatherForecast.js"></script>
+    </body>
 </html>
