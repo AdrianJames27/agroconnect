@@ -273,3 +273,10 @@ html, body {
 .highlighted-field {
     border: 2px solid #FFD700; /* Example: gold border */
 }
+
+#interpretation .card-title {
+    white-space: nowrap; /* Prevent line breaks */
+    overflow: hidden; /* Hide overflow */
+    text-overflow: ellipsis; /* Add ellipsis (...) to truncated text */
+    max-width: 100%; /* Limit the width to the container */
+}

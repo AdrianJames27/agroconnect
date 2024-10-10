@@ -165,7 +165,13 @@ function countAverageAreaPlanted(data) {
 
     // Aggregate data
     const monthCropCounts = data.reduce((acc, item) => {
-        const { monthHarvested, cropName, season, areaPlanted } = item;
+        let { monthHarvested, cropName, season, areaPlanted } = item;
+
+        // Handle months in the format "March-April 2021"
+        if (monthHarvested.includes("-")) {
+            const months = monthHarvested.split("-");
+            monthHarvested = months[1].trim(); // Take the last month in the range
+        }
 
         if (!acc[monthHarvested]) {
             acc[monthHarvested] = {};
@@ -251,13 +257,19 @@ function averageVolumeProduction(data) {
     console.log(data);
 
     const monthCropTotals = data.reduce((acc, item) => {
-        const {
+        let {
             monthHarvested,
             cropName,
             season,
             volumeProduction,
             areaPlanted,
         } = item;
+
+        // Handle months in the format "March-April 2021"
+        if (monthHarvested.includes("-")) {
+            const months = monthHarvested.split("-");
+            monthHarvested = months[1].trim(); // Take the last month in the range
+        }
 
         if (!acc[monthHarvested]) {
             acc[monthHarvested] = {};
@@ -565,7 +577,7 @@ function priceIncomePerHectare(data) {
     }
 
     const monthCropTotals = data.reduce((acc, item) => {
-        const {
+        let {
             monthHarvested,
             cropName,
             season,
@@ -573,6 +585,12 @@ function priceIncomePerHectare(data) {
             areaPlanted,
             price,
         } = item;
+
+        // Handle months in the format "March-April 2021"
+        if (monthHarvested.includes("-")) {
+            const months = monthHarvested.split("-");
+            monthHarvested = months[1].trim(); // Take the last month in the range
+        }
 
         if (!acc[monthHarvested]) {
             acc[monthHarvested] = {};
@@ -672,7 +690,7 @@ function profitPerHectare(data) {
     }
 
     const monthCropTotals = data.reduce((acc, item) => {
-        const {
+        let {
             monthHarvested,
             cropName,
             season,
@@ -681,6 +699,12 @@ function profitPerHectare(data) {
             price,
             productionCost,
         } = item;
+
+        // Handle months in the format "March-April 2021"
+        if (monthHarvested.includes("-")) {
+            const months = monthHarvested.split("-");
+            monthHarvested = months[1].trim(); // Take the last month in the range
+        }
 
         if (!acc[monthHarvested]) {
             acc[monthHarvested] = {};
