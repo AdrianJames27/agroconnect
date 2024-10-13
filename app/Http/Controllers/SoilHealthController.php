@@ -21,6 +21,7 @@ class SoilHealthController extends Controller
         $request->validate([
             'recordId' => 'required|exists:records,recordId',
             'barangay' => 'required|string|max:255',
+            'farmer' => 'required|string|max:255',
             'fieldType' => 'required|string|max:255',
             'nitrogenContent' => 'required|string|max:2',
             'phosphorusContent' => 'required|string|max:2',
@@ -36,6 +37,7 @@ class SoilHealthController extends Controller
         $soilHealth = new SoilHealth([
             'recordId' => $request->input('recordId'),
             'barangay' => $request->input('barangay'),
+            'farmer' => $request->input('farmer'),
             'fieldType' => $request->input('fieldType'),
             'nitrogenContent' => $request->input('nitrogenContent'),
             'phosphorusContent' => $request->input('phosphorusContent'),
@@ -63,6 +65,7 @@ class SoilHealthController extends Controller
             $request->validate([
                 'soilHealthData.*.recordId' => 'required|exists:records,recordId',
                 'soilHealthData.*.barangay' => 'required|string|max:255',
+                'soilHealthData.*.farmer' => 'required|string|max:255',
                 'soilHealthData.*.fieldType' => 'required|string|max:255',
                 'soilHealthData.*.nitrogenContent' => 'required|string|max:2',
                 'soilHealthData.*.phosphorusContent' => 'required|string|max:2',
@@ -73,10 +76,11 @@ class SoilHealthController extends Controller
                 'soilHealthData.*.season' => 'required|string|max:50',
                 'soilHealthData.*.monthYear' => 'required|string|max:255',
             ]);
-            SoilHealth::updateOrCreate(
+            SoilHealth::create(
                 [
                     'recordId' => $soilHealthData['recordId'],
                     'barangay' => $soilHealthData['barangay'],
+                    'farmer' => $soilHealthData['barangay'],
                     'fieldType' => $soilHealthData['fieldType'],
                     'nitrogenContent' => $soilHealthData['nitrogenContent'],
                     'phosphorusContent' => $soilHealthData['phosphorusContent'],

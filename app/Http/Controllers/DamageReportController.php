@@ -71,7 +71,7 @@ class DamageReportController extends Controller
                 'damageData.*.monthYear' => 'required|string|max:255',
             ]);
 
-            DamageReport::updateOrCreate(
+            DamageReport::create(
                 [
                     'recordId' => $damageData['recordId'],
                     'barangay' => $damageData['barangay'],

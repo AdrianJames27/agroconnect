@@ -81,7 +81,7 @@ class ProductionController extends Controller
                 'productionData.*.season' => 'required|string|max:50',
                 'productionData.*.monthYear' => 'required|string|max:255',
             ]);
-            Production::updateOrCreate(
+            Production::create(
                 [
                     'recordId' => $productionData['recordId'],
                     'barangay' => $productionData['barangay'],

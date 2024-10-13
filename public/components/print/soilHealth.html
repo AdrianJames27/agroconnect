@@ -1,127 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Soil Health Nutrients</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
-    <style>
-
-        .bg-red {
-            background-color: #fd5c63;
-        }
-    
-        .bg-yellow {
-            background-color: #F0E68C;
-        }
-
-        .bg-aero {
-            background-color: #007FFF;
-        }
-
-        body {
-            background-color: #f4f7f6;
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            font-size: 0.6rem; /* Reduced font size for print */
-        }
-
-        h1, h4 {
-            font-size: 0.8rem; /* Reduced font size */
-            font-weight: bold;
-            margin: 0;
-            color: #006400;
-            text-align: center;
-        }
-
-        
-
-        #soilHealthChart {
-            width: 50% !important; /* Make the chart fill the container */
-            height: auto !important; /* Ensure it uses full height */
-        }
-
-        #interpretation {
-            margin: 10px auto; /* Center the interpretation section */
-            line-height: 1; /* Adjusted line height */
-        }
-
-        footer {
-            text-align: center;
-            padding: 5px; /* Reduced padding */
-            background-color: #006400;
-            color: #fff;
-            margin-top: 20px;
-            font-size: 10px; /* Reduced font size for footer */
-        }
-
-        @media print {
-        
-            * {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Soil Health Nutrients</title>
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
+        />
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+        <style>
+            .bg-l {
+                background-color: #d73027;
             }
 
+            .bg-ml {
+                background-color: #fc8d59;
+            }
+
+            .bg-mh {
+                background-color: #d9ef8b;
+            }
+
+            .bg-h {
+                background-color: #1a9850;
+            }
             body {
+                background-color: #f4f7f6;
+                font-family: "Arial", sans-serif;
                 margin: 0;
                 padding: 0;
-                font-size: 0.6rem; /* Ensured consistent print font size */
+                font-size: 0.6rem; /* Reduced font size for print */
             }
 
-            .chart-container {
-                page-break-inside: avoid; /* Prevent chart from breaking between pages */
-                break-inside: avoid;
-                height: 300px; /* Set a print-specific height */
+            h1,
+            h4 {
+                font-size: 0.8rem; /* Reduced font size */
+                font-weight: bold;
+                margin: 0;
+                color: #006400;
+                text-align: center;
             }
 
-        }
-    </style>
-</head>
-<body>
-    <div class="container-fluid m-0">
-        <h1>Soil Health Nutrient Levels</h1>
-        <div class="d-flex justify-content-center align-items-center">
-            <canvas id="soilHealthChart"></canvas>
+            #soilHealthChart {
+                width: 50% !important; /* Make the chart fill the container */
+                height: auto !important; /* Ensure it uses full height */
+            }
+
+            #interpretation {
+                margin: 10px auto; /* Center the interpretation section */
+                line-height: 1; /* Adjusted line height */
+            }
+
+            footer {
+                text-align: center;
+                padding: 5px; /* Reduced padding */
+                background-color: #006400;
+                color: #fff;
+                margin-top: 20px;
+                font-size: 10px; /* Reduced font size for footer */
+            }
+
+            @media print {
+                * {
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+
+                body {
+                    margin: 0;
+                    padding: 0;
+                    font-size: 0.6rem; /* Ensured consistent print font size */
+                }
+
+                .chart-container {
+                    page-break-inside: avoid; /* Prevent chart from breaking between pages */
+                    break-inside: avoid;
+                    height: 300px; /* Set a print-specific height */
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container-fluid m-0">
+            <h1>Soil Health Nutrient Levels</h1>
+            <div class="d-flex justify-content-center align-items-center">
+                <canvas id="soilHealthChart"></canvas>
+            </div>
+            <div id="interpretation"></div>
         </div>
-        <div id="interpretation"></div>
-    </div>
 
-    <footer>
-        &copy; 2024 Agroconnect Cabuyao System
-    </footer>
+        <script>
+            window.onload = function () {
+                // Retrieve the printDataSoil from sessionStorage
+                const soilData = JSON.parse(
+                    sessionStorage.getItem("printDataSoil")
+                );
 
-    <script>
-        window.onload = function() {
-            // Retrieve the printDataSoil from sessionStorage
-            const soilData = JSON.parse(sessionStorage.getItem('printDataSoil'));
+                if (!soilData) {
+                    document.getElementById("interpretation").innerHTML =
+                        "<p>No soil data available for display.</p>";
+                    return;
+                }
 
-            if (!soilData) {
-                document.getElementById('interpretation').innerHTML = '<p>No soil data available for display.</p>';
-                return;
-            }
+                const chartConfig = soilData.config;
+                const breakdownHtml = soilData.breakdownHtml;
 
-            const chartConfig = soilData.config;
-            const breakdownHtml = soilData.breakdownHtml;
+                // Display the doughnut chart
+                const soilChart = new Chart(
+                    document.getElementById("soilHealthChart"),
+                    {
+                        type: chartConfig.type,
+                        data: chartConfig.data,
+                        options: chartConfig.options,
+                        plugins: [ChartDataLabels],
+                    }
+                );
 
-            // Display the doughnut chart
-            const soilChart = new Chart(document.getElementById('soilHealthChart'), {
-                type: chartConfig.type,
-                data: chartConfig.data,
-                options: chartConfig.options,
-                plugins: [ChartDataLabels]
-            });
+                // Insert breakdown HTML into the page
+                document.getElementById("interpretation").innerHTML =
+                    breakdownHtml;
 
-            // Insert breakdown HTML into the page
-            document.getElementById('interpretation').innerHTML = breakdownHtml;
-
-            // Trigger print after a short delay to ensure everything is rendered
-            setTimeout(() => {
-                window.print();
-            }, 3000); // Adjust delay as needed
-        };
-    </script>
-</body>
+                // Trigger print after a short delay to ensure everything is rendered
+                setTimeout(() => {
+                    window.print();
+                }, 3000); // Adjust delay as needed
+            };
+        </script>
+    </body>
 </html>

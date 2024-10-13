@@ -26,11 +26,17 @@ $(document).ready(function () {
                                     <i class="fab fa-facebook text-white" data-toggle="tooltip" data-placement="top" title="Facebook Page: Cabuyao Agriculture Office"></i>
                                 </a>
                             </p>
+                            <!-- Add Management Login Link -->
+                            <p class="mb-0 ms-3">
+                                <a href="/management/login" class="text-white" data-toggle="tooltip" data-placement="top" title="Management Login">
+                                    <i class="fas fa-user-cog"></i> <strong>MLogin</strong>
+                                </a>
+                            </p>
                         </div>
                     </div>
                 </footer>
-
             `);
+
             $(document).ready(function () {
                 // Initialize Bootstrap tooltips
                 $('[data-toggle="tooltip"]').tooltip();

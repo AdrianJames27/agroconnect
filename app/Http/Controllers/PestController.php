@@ -69,7 +69,7 @@ class PestController extends Controller
                 'pestData.*.monthYear' => 'required|string|max:255',
             ]);
 
-            Pest::updateOrCreate(
+            Pest::create(
                 [
                     'recordId' => $pestData['recordId'],
                     'barangay' => $pestData['barangay'],

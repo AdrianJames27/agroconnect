@@ -56,7 +56,7 @@ class PriceController extends Controller
                 'priceData.*.monthYear' => 'required|string|max:255',
             ]);
 
-            Price::updateOrCreate(
+            Price::create(
                 [
                     'recordId' => $priceData['recordId'],
                     'cropName' => $priceData['cropName'],

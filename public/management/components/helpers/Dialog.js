@@ -361,9 +361,8 @@ class Dialog {
         // Close button
         closeButton.type = "button";
         closeButton.innerText = "Close";
-        closeButton.className = "btn btn-secondary";
+        closeButton.className = "dialog-close btn btn-secondary";
         closeButton.style.width = "100%";
-        closeButton.style.marginTop = "15px";
         closeButton.addEventListener("click", () => {
             inputDialog.close();
         });
@@ -402,11 +401,11 @@ class Dialog {
 
         // Style and structure modal body
         divButtons.className = "d-grid gap-3"; // Bootstrap's grid gap class for spacing
-        divButtons.append(btnCSV, btnExcel, btnPDF);
+        divButtons.append(btnCSV, btnExcel, btnPDF, closeButton);
 
         // Assemble modal content
         modalContent.className = "text-center";
-        modalContent.append(title, divButtons, closeButton);
+        modalContent.append(title, divButtons);
 
         inputDialog.appendChild(modalContent);
         document.body.appendChild(inputDialog);

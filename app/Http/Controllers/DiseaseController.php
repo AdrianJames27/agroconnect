@@ -70,7 +70,7 @@ class DiseaseController extends Controller
                 'diseaseData.*.monthYear' => 'required|string|max:255',
             ]);
 
-            Disease::updateOrCreate(
+            Disease::create(
                 [
                     'recordId' => $diseaseData['recordId'],
                     'barangay' => $diseaseData['barangay'],

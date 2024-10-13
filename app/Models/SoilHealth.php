@@ -13,6 +13,7 @@ class SoilHealth extends Model
     protected $fillable = [
         'recordId',
         'barangay',
+        'farmer',
         'fieldType',
         'nitrogenContent',
         'phosphorusContent',
