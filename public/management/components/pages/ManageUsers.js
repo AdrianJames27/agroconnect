@@ -191,7 +191,7 @@ export default function initDashboard() {
           selectedRow = null;
           $('#submitBtn').text('Add User');
           $('#cancelBtn').hide(); 
-          $('#password').attr('placeholder', 'Password');
+          $('#password').show();
           $('#password').attr('required', 'required');
           resetFields();
         } else {
@@ -226,7 +226,7 @@ export default function initDashboard() {
         if (result.operation === 1) { 
             $('#editModal').modal('hide');
             $('#cancelBtn').show();
-            $('#password').attr('placeholder', 'Password (optional)');
+            $('#password').hide();
             $('#password').removeAttr('required');
             $('#userId').val(user.userId);
             $('#firstName').val(user.firstName);
@@ -250,8 +250,7 @@ export default function initDashboard() {
         $('#userForm')[0].reset();
         $('#submitBtn').text('Add User');
         $('#cancelBtn').hide();
-        $('#password').attr('placeholder', 'Password');
-        $('#password').attr('required', 'required');
+        $('#password').attr('required', 'required').show();
         $('#userTableBody tr').removeClass('selected-row');
         $('#editBtn').prop('disabled', true);
         $('#deleteBtn').prop('disabled', true);     
@@ -282,29 +281,28 @@ export default function initDashboard() {
     });
 
 
-  // Row click handler (for selecting rows)
-  $('#userTableBody').on('click', 'tr', function() {
-    var $this = $(this);
-    var userId = $this.data('index');
-    user = users.find(u => u.userId === userId);
-    selectedRow = userId;
-    // Highlight selected row
-    if (selectedRow !== null) {
-    $('#userTableBody tr').removeClass('selected-row');
-    $('#userTableBody tr').filter(function() {
-      return parseInt($(this).find('td:eq(0)').text(), 10) === selectedRow;
-    }).addClass('selected-row');
-    $('#editBtn').prop('disabled', false);
-    if (user.role !== 'admin') {
-      $('#deleteBtn').prop('disabled', false);
-    } else {
-      $('#deleteBtn').prop('disabled', true);
-    }
-  } else {
-    $('#userTableBody tr').removeClass('selected-row');
-  }
-
-  });
+    // Row click handler (for selecting rows)
+    $('#userTableBody').on('click', 'tr', function() {
+      var $this = $(this);
+      var userId = $this.data('index');
+      user = users.find(u => u.userId === userId);
+      selectedRow = userId;
+      // Highlight selected row
+      if (selectedRow !== null) {
+          $('#userTableBody tr').removeClass('selected-row');
+          $('#userTableBody tr').filter(function() {
+            return parseInt($(this).find('td:eq(0)').text(), 10) === selectedRow;
+          }).addClass('selected-row');
+          $('#editBtn').prop('disabled', false);
+        if (user.role !== 'admin') {
+          $('#deleteBtn').prop('disabled', false);
+        } else {
+          $('#deleteBtn').prop('disabled', true);
+        }
+      } else {
+        $('#userTableBody tr').removeClass('selected-row');
+      }
+    });
 
   }
     // Initialize manage users view when document is ready
