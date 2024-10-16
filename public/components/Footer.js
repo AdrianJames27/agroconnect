@@ -5,7 +5,7 @@ $(document).ready(function () {
         return new Promise((resolve) => {
             $(".footer-container").append(`
                 <footer class="footer text-white">
-                    <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center py-3">
+                    <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center py-1">
                         <div class="d-flex align-items-center mb-3 mb-md-0">
                             <span class="me-3">&copy; AgroConnect Cabuyao <span id="yearData"></span></span>
                         </div>
@@ -27,7 +27,7 @@ $(document).ready(function () {
                                 </a>
                             </p>
                             <p class="mb-0 ms-4">
-                                <a href="/management/login" class="text-white" data-toggle="tooltip" data-placement="top" title="Management Login">
+                                <a href="/management/login" target="_blank" class="text-white" data-toggle="tooltip" data-placement="top" title="Management Login">
                                     <i class="fas fa-user-cog"></i> <strong>MLogin</strong>
                                 </a>
                             </p>

@@ -71,6 +71,13 @@ export default function initDashboard() {
                       .table-striped {
                           border-collapse: collapse; /* Ensures no double borders */
                       }
+
+                      
+                      .table-striped th {
+                          background-color: var(--color-secondary) !important;
+                          color: #000 !important;
+                      }
+
                       .table-striped th, .table-striped td {
                           border: 1px solid #dee2e6; /* Standard border for table cells */
                           padding: 12px; /* Padding for table cells */
@@ -115,7 +122,7 @@ export default function initDashboard() {
                   </div>
                   <div class="container-fluid">
                       <table class="table table-striped table-hover table-custom">
-                          <thead class="thead-dark">
+                          <thead>
                               <tr>
                                   <th scope="col">Title</th>
                                   <th scope="col">Status</th>

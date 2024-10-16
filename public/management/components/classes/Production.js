@@ -125,7 +125,7 @@ class Production {
     }
   }
 
-function getProduction() {
+async function getProduction() {
   // Fetch productions from Laravel backend
   $.ajaxSetup({
     headers: {
@@ -139,6 +139,7 @@ function getProduction() {
     success: function(response) {
         // Assuming response is an array of productions [{...fields...}, ...]
         productions = response;
+        console.log('ajax get production');
         console.log(productions);
     },
     error: function(xhr, status, error) {
@@ -164,7 +165,7 @@ function initializeMethodsProduction(){
 
   async function displayProduction(searchTerm = null) {
     // Simulate a delay of 1 second
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 3000));
 
     $('#productionTableBody').empty();
 
@@ -530,7 +531,6 @@ function formatHeader(key) {
   };
   return headerMap[key] || key;
 }
-
 
   getProduction();
   displayProduction();

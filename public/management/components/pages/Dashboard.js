@@ -22,6 +22,9 @@ export default function initDashboard() {
         // Generate the dashboard HTML with styles included
         var dashboardHtml = `
       <style>
+         thead #dashboardTable {
+            background-color: #fff !important;
+         }
         .card-box {
           border-radius: 1em;
           margin-bottom: 2em;
@@ -64,14 +67,14 @@ export default function initDashboard() {
         }
         .underline-link {
           text-decoration: underline;
-          color: #ffbd40; /* Color for links */
+          color: #000; /* Color for links */
           font-weight: bold; /* Make the link text bold */
           font-style: italic; /* Italicize the link text */
           transition: color 0.3s, text-decoration-color 0.3s; /* Smooth transition for color changes */
         }
         .underline-link:hover {
-          color: #f57f17; /* Darker shade on hover */
-          text-decoration-color: #f57f17; /* Change underline color on hover */
+          color: #333; /* Darker shade on hover */
+          text-decoration-color: #555; /* Change underline color on hover */
           text-decoration-thickness: 2px; /* Make underline thicker on hover */
         }
         .underline-link:active {
@@ -200,16 +203,18 @@ export default function initDashboard() {
                 </select>
               </div>
             </form>
-            <div class="row justify-content-center">
-              <div id="available" class="col text-center">
-                <canvas id="totalPerYearChart"></canvas>
+           <div class="card">
+              <div class="row justify-content-center">
+                <div id="available" class="col text-center">
+                  <canvas id="totalPerYearChart"></canvas>
+                </div>
+                <div id="unavailable" class="col text-center mb-5">
+                  <p class="h4">We're sorry, but there is no data available at the moment.</p>
+                </div>
               </div>
-              <div id="unavailable" class="col text-center mb-5">
-                <p class="h4">We're sorry, but there is no data available at the moment.</p>
+              <div class="text-center mt-3">
+                <a id="#trendCropsA" href="../seasonal-trends" class="underline-link" target="_blank">View Seasonal Trends</a>
               </div>
-            </div>
-            <div class="text-center mt-3">
-              <a href="../seasonal-trends" class="underline-link" target="_blank">View Seasonal Trends</a>
             </div>
           </div>
           <div class="col-md-4">
@@ -237,24 +242,26 @@ export default function initDashboard() {
                   </div>
                 </div>
               </div>
-              <table class="table table-bordered table-striped table-hover table-sm" id="cropsTable">
-                <thead>
-                  <tr>
-                    <th colspan="2">
-                      <div class="text-center mb-3">
-                        <a href="../top-crops" class="underline-link" target="_blank">View Seasonal Top Crops</a>
-                      </div>
-                    </th>
-                  </tr>
-                  <tr>
-                    <th>Commodity</th>
-                    <th>Variety</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <!-- Table rows will be dynamically added here -->
-                </tbody>
-              </table>
+             <div class="card p-2">
+                <table class="table table-bordered table-striped table-hover table-sm" id="cropsTable">
+                  <thead>
+                    <tr id="dashboardTable">
+                      <th colspan="2">
+                        <div class="text-center mb-3">
+                          <a id="#topCropsA" href="../top-crops" class="underline-link" target="_blank">View Seasonal Top Crops</a>
+                        </div>
+                      </th>
+                    </tr>
+                    <tr>
+                      <th>Commodity</th>
+                      <th>Variety</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Table rows will be dynamically added here -->
+                  </tbody>
+                </table>
+             </div>
             </div>
           </div>
         </div>

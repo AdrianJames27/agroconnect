@@ -1,4 +1,5 @@
 @import url('./bookman-old-style.css');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
 
 :root {
     --font-size-base: 16px; /* Base font size */
@@ -7,10 +8,11 @@
     --font-size-large: calc(var(--font-size-medium) * 1.333); /* Large */
     --font-size-xlarge: calc(var(--font-size-large) * 1.333); /* Extra Large */
     --color-text: #1f2b15; /* Text color */
-    --color-background: #c4d4b5; /* Background color */
+    --color-background: #fffff6; /* Background color */
     --color-primary: #008d00; /* Primary color */
     --color-secondary: #baa863; /* Secondary color */
-    --color-accent: #efed88; /* Accent color */
+    --color-accent: #e0de6d; /* Accent color */
+    --color-card: #dbf4cd;
 }
 
 body {
@@ -22,7 +24,7 @@ body {
     font-size: var(--font-size-small);
 }
 
-.medium {
+.medium-s {
     font-size: var(--font-size-medium);
 }
 
@@ -51,6 +53,7 @@ body {
     display: flex;
     flex-direction: column;
     background-color: var(--color-background);
+    color: var(--color-text);
 }
 
 /* Custom styles */
@@ -106,26 +109,36 @@ body {
     padding-left: 5px;
 }
 
+.bg-success {
+    background-color: var(--color-secondary) !important;
+    border-color: transparent;
+}
+
 .form-select {
     padding: 3px;
-    background-color: #B1BA4D;
+    background-color: var(--color-primary);
     border-radius: 5px;
     text-align: center;
     color: #fff;
 }
 
+select {
+    height: 2.3rem !important;
+}
+
 .btn-custom {
     width: 100%;
     padding: 10px;
-    background-color: #008000;
+    background-color: var(--color-primary) !important;
     border-radius: 3px;
     color: white;
     font-weight: 600;
 }
 
+
 .btn-green {
-    background-color: #B1BA4D;
-    color: white;
+    background-color: var(--color-accent);
+    color: var(--color-text) !important;
     font-weight: 600;
 }
 
@@ -153,9 +166,14 @@ body {
 }
 
 #pageTitle {
-    background-color: #6FC700;
+    background-color: var(--color-primary);
     font-weight: bolder;
     text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+}
+
+#infoBtn {
+    background-color: var(--color-accent) !important;
+    border-color: var(--color-accent);
 }
 
 /* Add spacing between sections */
@@ -171,9 +189,9 @@ h2 {
     font-weight: bolder;
 }
 
-.form-control {
+.form-control:not(input[type="text"]):not(textarea):not(input[type="file"]) {
     padding-left: 20px;
-    background-color: #B1BA4D;
+    background-color: var(--color-primary) !important;
     border-radius: 5px;
     text-align: center;
     color: #fff;
@@ -190,9 +208,14 @@ h2 {
 }
 
 .nav-item.active {
-    background-color: #B1BA4D; /* Light green background */
+    background-color: var(--color-accent); /* Light green background */
     border-radius: 5px; /* Adjust the value to change the roundness */
     line-height: 30px; /* Adjust this to match the height of your nav links */
+}
+
+.active .nav-link {
+    color: var(--color-text) !important;
+    font-weight: 500;
 }
 
 .toast-success-custom {
@@ -233,8 +256,8 @@ h2 {
     font-size: 14px; /* Font size for table data */
   }
   .table th {
-    background-color: #B1BA4D !important; /* Custom header background */
-    color: white !important; /* Header text color */
+    background-color: var(--color-secondary) !important; /* Custom header background */
+    color: #000 !important; /* Header text color */
   }
   .btn {
     margin: 0 5px; /* Spacing between buttons */
@@ -279,33 +302,25 @@ h2 {
     color: #FFC107; /* Golden color for the spinner */
 }
 
-  /* Enable scroll snapping on the body or main container */
-  body {
-    scroll-snap-type: y proximity; /* vertical scrolling with proximity snapping */
+/* Enable scroll snapping on the body or main container */
+body {
     scroll-behavior: smooth; /* Smooth scrolling effect */
 }
 
 /* Each section will snap to the center when in proximity */
 section {
-    scroll-snap-align: center; /* Snap to the top of each section */
+    scroll-snap-align: center; /* Snap to the center of each section */
     margin-bottom: 40px; /* Adjust spacing as needed */
     padding-bottom: 20px;
-    scroll-padding-top: 10px; /* Provides a buffer from the top when snapping */
 }
 
-/* Ensure the body and html are contained and remove extra scrollbars */
+/* Ensure the body and html are contained */
 html, body {
     height: 100%; /* Ensure height is full */
-    overflow: hidden; /* Prevent overflow and extra scrollbar */
+    overflow: auto; /* Allow scrolling */
 }
 
-/* For the scrollable container holding your content */
-.main-content {
-    overflow-y: auto; /* Enable vertical scrolling only */
-    max-height: 100vh; /* Ensure content height fits within the viewport */
-    scroll-snap-type: y proximity;
-    padding: 20px;
-}
+
 
 .highlighted-field {
     border: 2px solid #FFD700; /* Example: gold border */
@@ -316,4 +331,45 @@ html, body {
     overflow: hidden; /* Hide overflow */
     text-overflow: ellipsis; /* Add ellipsis (...) to truncated text */
     max-width: 100%; /* Limit the width to the container */
+}
+
+.card-header {
+    background-color: var(--color-secondary) !important;
+}
+
+.badge {
+    background-color: var(--color-secondary) !important;
+}
+
+.card {
+    margin-bottom: 3rem !important;
+}
+
+.wrapper {
+    background-color: var(--color-card) !important;
+}
+
+#soil-health-page .container-fluid:not(#pageTitle) {
+    background-color: var(--color-card) !important;
+}
+
+/* For the sticky header container */
+/* Sticky header */
+.header-container {
+    position: sticky;
+    top: 0;
+    z-index: 9997;
+    background-color: white;
+    transition: top 0.3s ease; /* Smooth transition when hiding/showing */
+}
+
+/* For the scrollable container holding your content */
+.main-content {
+    scroll-snap-type: y proximity;
+    padding: 20px;
+}
+
+/* Hide the header when scrolling past 100px */
+body.scrolled-down .header-container {
+    top: -100px; /* Moves the header off-screen */
 }

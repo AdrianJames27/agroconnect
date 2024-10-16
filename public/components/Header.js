@@ -62,25 +62,27 @@ $(document).ready(function () {
     </div>
     
     <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        function updateActiveClass() {
-            var path = window.location.pathname;
-            document.querySelectorAll('.nav-link').forEach(function(link) {
-                if (link.pathname === path) {
-                    link.setAttribute('aria-current', 'page');
-                    link.closest('.nav-item').classList.add('active');
-                } else {
-                    link.closest('.nav-item').classList.remove('active');
-                }
+        $(document).ready(function() {
+            function updateActiveClass() {
+                var path = window.location.pathname;
+                $('.nav-link').each(function() {
+                    if (this.pathname === path) {
+                        $(this).attr('aria-current', 'page');
+                        $(this).closest('.nav-item').addClass('active');
+                    } else {
+                        $(this).closest('.nav-item').removeClass('active');
+                    }
+                });
+            }
+        
+            // Call the function on page load
+            updateActiveClass();
+        
+            // Bind the function to the window resize event
+            $(window).resize(function() {
+                updateActiveClass();
             });
-        }
-
-        // Call the function on page load
-        updateActiveClass();
-
-        // Bind the function to the window resize event
-        window.addEventListener('resize', updateActiveClass);
-    });
+        });
     </script>
 `);
 });

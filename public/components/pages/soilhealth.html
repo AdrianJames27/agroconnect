@@ -54,9 +54,6 @@
             .bg-h {
                 background-color: #1a9850;
             }
-            #pageTitle {
-                background-color: #6fc700;
-            }
             .cont {
                 margin: 3.25rem;
                 margin-top: 2rem;
@@ -69,6 +66,10 @@
             .card-header {
                 background-color: #f8f9fa;
                 font-weight: bold;
+            }
+
+            .card {
+                border-color: transparent !important;
             }
 
             .btn-primary {
@@ -91,14 +92,24 @@
         </style>
     </head>
 
-    <body>
+    <body id="soil-health-page">
         <div class="header-container">
             <!-- Include your header content or component here -->
         </div>
 
         <div class="main-content">
-            <h1 class="mt-4 text-center">Cabuyao Soil Health Monitoring</h1>
-            <div class="container-fluid">
+            <div class="container-fluid card">
+               <div class="d-flex justify-content-between align-items-center mx-5">
+                    <h1 class="mt-4">Cabuyao Soil Health Monitoring</h1>
+                    <button
+                        id="infoBtn"
+                        class="btn"
+                    >
+                        <i class="fas fa-info-circle"></i>
+                    </button>
+               </div>
+                 
+            <div>
                 <!-- Vegetables Section -->
                 <div class="cont">
                     <div class="card w-100 bg-white">
@@ -107,13 +118,6 @@
                             class="container-fluid text-white d-flex justify-content-center align-items-center py-2 position-relative"
                         >
                             <h2 class="w-100 text-center">Vegetables</h2>
-                            <button
-                                id="infoBtn"
-                                class="btn btn-info position-absolute"
-                                style="right: 10px"
-                            >
-                                <i class="fas fa-info-circle"></i>
-                            </button>
                         </div>
                         <div class="card">
                             <div
@@ -715,6 +719,7 @@
                     </div>
                 </div>
             </div>
+             </div>
         </div>
 
         <div class="footer-container">

@@ -93,7 +93,8 @@ export default function initDashboard() {
                     <td style="display: none;">${user.userId}</td>
                     <td>${user.firstName}</td>
                     <td>${user.lastName}</td>
-                    <td>${user.username}</td>                 
+                    <td>${user.username}</td>  
+                    <td>${user.role}</td>                      
                     <td><button class="btn btn-sm btn-green">Change Password</button></td>
                   </tr>
                 `);

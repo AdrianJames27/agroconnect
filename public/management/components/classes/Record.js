@@ -272,7 +272,7 @@ function initializeMethodsRecord(dataType) {
 
         if (recordName) {
             // Display a single record if recordName is provided
-            const foundRecords = searchrecord(recordName).filter((record) =>
+            const foundRecords = searchRecord(recordName).filter((record) =>
                 filteredRecords.some((fr) => fr.recordId === record.recordId)
             );
             if (foundRecords.length > 0) {
@@ -320,7 +320,7 @@ function initializeMethodsRecord(dataType) {
 
     $("#search").on("input", function () {
         let recordName = $("#search").val();
-        displayrecords(recordName);
+        displayRecords(recordName);
     });
 
     // Pagination: Previous button click handler

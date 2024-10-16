@@ -96,4 +96,13 @@ h4 {
   .fa-li {
     margin-right: 0.5em;
   }
+
+  .card {
+    background-color: #dbf4cd !important;
+    border-width: 0.2rem;
+  }
   
+
+  .main-content {
+    background-color: #f5f5f5 !important;
+  }
