@@ -1,8 +1,45 @@
+@import url('./bookman-old-style.css');
+
+:root {
+    --font-size-base: 16px; /* Base font size */
+    --font-size-small: calc(var(--font-size-base) / 1.333); /* Small */
+    --font-size-medium: calc(var(--font-size-base) * 1.333); /* Medium */
+    --font-size-large: calc(var(--font-size-medium) * 1.333); /* Large */
+    --font-size-xlarge: calc(var(--font-size-large) * 1.333); /* Extra Large */
+    --color-text: #1f2b15; /* Text color */
+    --color-background: #c4d4b5; /* Background color */
+    --color-primary: #008d00; /* Primary color */
+    --color-secondary: #baa863; /* Secondary color */
+    --color-accent: #efed88; /* Accent color */
+}
+
+body {
+    font-size: var(--font-size-base);
+    line-height: 1.5; /* Adjust line height for readability */
+}
+
+.small {
+    font-size: var(--font-size-small);
+}
+
+.medium {
+    font-size: var(--font-size-medium);
+}
+
+.large {
+    font-size: var(--font-size-large);
+}
+
+.xlarge {
+    font-size: var(--font-size-xlarge);
+}
+
+
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Century Gothic', Arial, sans-serif;
+    font-family: 'Poppins', sans-serif;
 }
 
 body, html {
@@ -13,7 +50,7 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background-color: #F5F5F5;
+    background-color: var(--color-background);
 }
 
 /* Custom styles */
