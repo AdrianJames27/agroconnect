@@ -114,37 +114,14 @@ class TopCrops {
             return [];
         }
 
-        // Define the weights for each metric (adjust these based on importance)
-        const weights = {
-            plantedWeight: 0.35,
-            volumeWeight: 0.35,
-            priceWeight: 0.1,
-            pestWeight: -0.05, // Negative weight since higher pest occurrence is bad
-            diseaseWeight: -0.05, // Negative weight since higher disease occurrence is bad
-            incomeWeight: 0.1,
-            profitWeight: 0.1,
-        };
-
         // Process each crop entry
         const processedCrops = cropData.map((item) => {
             // Calculate per-hectare values where applicable
             const volumeProductionPerHectare =
                 item.totalArea > 0 ? item.totalVolume / item.totalArea : 0;
-            const incomePerHectare =
-                item.totalArea > 0 ? item.totalIncome / item.totalArea : 0;
-            const profitPerHectare =
-                item.totalArea > 0 ? item.totalProfit / item.totalArea : 0;
-            let totalPlanted = item.totalPlanted; // Total planted area or similar context
 
-            // Calculate composite score based on total values
-            const compositeScore =
-                item.totalArea * weights.plantedWeight +
-                item.totalVolume * weights.volumeWeight +
-                item.price * weights.priceWeight +
-                item.pestOccurrence * weights.pestWeight +
-                item.diseaseOccurrence * weights.diseaseWeight +
-                item.totalIncome * weights.incomeWeight +
-                item.totalProfit * weights.profitWeight;
+            // Calculate composite score based only on total values
+            const compositeScore = item.totalVolume + item.totalArea;
 
             return {
                 cropName: item.cropName,
@@ -165,29 +142,28 @@ class TopCrops {
                         item.pestOccurrence
                     }</strong>, which is <strong>${calculateOccurrencePercentage(
                         item.pestOccurrence,
-                        totalPlanted
+                        item.totalPlanted
                     ).toFixed(2)}%</strong> of the total planted area. ` +
                     `Disease occurrences are <strong>${
                         item.diseaseOccurrence
                     }</strong>, representing <strong>${calculateOccurrencePercentage(
                         item.diseaseOccurrence,
-                        totalPlanted
+                        item.totalPlanted
                     ).toFixed(2)}%</strong> of the total planted area. ` +
-                    `Additionally, the average income per hectare is <strong>₱${incomePerHectare.toFixed(
-                        2
-                    )}</strong>, ` +
-                    `while the average profit per hectare amounts to <strong>₱${profitPerHectare.toFixed(
-                        2
-                    )}</strong>.`,
+                    `Additionally, the average income per hectare is <strong>₱${(
+                        item.totalIncome / item.totalArea
+                    ).toFixed(2)}</strong>, ` +
+                    `while the average profit per hectare amounts to <strong>₱${(
+                        item.totalProfit / item.totalArea
+                    ).toFixed(2)}</strong>.`,
 
                 volumeProductionPerHectare:
                     volumeProductionPerHectare.toFixed(2),
-                incomePerHectare: incomePerHectare.toFixed(2),
-                profitPerHectare: profitPerHectare.toFixed(2),
                 price: item.price.toFixed(2),
                 pestOccurrence: item.pestOccurrence,
                 diseaseOccurrence: item.diseaseOccurrence,
                 totalArea: item.totalArea,
+                totalVolume: item.totalVolume,
             };
         });
 

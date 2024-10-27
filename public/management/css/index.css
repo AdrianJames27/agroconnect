@@ -453,3 +453,14 @@ select option:disabled {
 }
 
 
+/* Default for all screens */
+.form-spacing {
+    margin-top: 3rem; /* Adjust this for larger screens */
+}
+
+/* For smaller screens */
+@media (max-width: 767.98px) {
+    .form-spacing {
+        margin-top: 0; /* No margin on small screens */
+    }
+}

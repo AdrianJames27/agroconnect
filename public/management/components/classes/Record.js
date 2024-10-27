@@ -238,10 +238,20 @@ window.confirmDownload = async function (link, filename) {
     }
 };
 
-function searchRecord(recordName) {
-    const foundRecords = records.filter((record) =>
-        record.recordName.includes(recordName)
-    );
+function searchRecord(searchTerm) {
+    if (!searchTerm) return []; // Return empty if no search term is provided
+
+    const lowerCaseSearchTerm = searchTerm.toLowerCase(); // Convert search term to lowercase for case-insensitive search
+
+    // Filter records based on the search term
+    const foundRecords = records.filter((record) => {
+        // Check only the record name or a specific property you want to search
+        return (
+            record.nameString &&
+            record.nameString.toLowerCase().includes(lowerCaseSearchTerm)
+        );
+    });
+
     return foundRecords;
 }
 
@@ -270,47 +280,62 @@ function initializeMethodsRecord(dataType) {
                 ? records
                 : records.filter((record) => record.userId === userId);
 
+        // If a record name is provided, search for matching records
         if (recordName) {
-            // Display a single record if recordName is provided
             const foundRecords = searchRecord(recordName).filter((record) =>
                 filteredRecords.some((fr) => fr.recordId === record.recordId)
             );
-            if (foundRecords.length > 0) {
-                foundRecords.forEach((record) => {
+
+            // Apply pagination to the found records
+            const paginatedFoundRecords = foundRecords.slice(
+                startIndex,
+                endIndex
+            );
+
+            if (paginatedFoundRecords.length > 0) {
+                paginatedFoundRecords.forEach((record) => {
                     $("#recordTableBody").append(`
-                      <tr data-index=${record.recordId}>
-                          <td style="display: none;">${record.recordId}</td>
-                          <td>${record.fileSize}</td>
-                          <td>${record.nameString}</td>
-                          <td>${record.downloadButton}</td>
-                      </tr>
-                  `);
+                        <tr data-index=${record.recordId}>
+                            <td style="display: none;">${record.recordId}</td>
+                            <td>${record.nameString}</td>
+                            <td>${record.fileSize}</td>
+                            <td>${record.downloadButton}</td>
+                        </tr>
+                    `);
                 });
             } else {
-                // Handle case where recordName is not provided
+                // Handle case where no records are found
                 $("#recordTableBody").append(`
-                  <tr>
-                      <td colspan="4">Record not found!</td>
-                  </tr>
-              `);
+                    <tr>
+                        <td colspan="4">Record not found!</td>
+                    </tr>
+                `);
             }
         } else {
             // Display paginated records if no recordName is provided
-            for (var i = startIndex; i < endIndex; i++) {
-                if (i >= filteredRecords.length) {
-                    break;
-                }
-                var record = filteredRecords[i];
+            const paginatedRecords = filteredRecords.slice(
+                startIndex,
+                endIndex
+            );
+
+            if (paginatedRecords.length > 0) {
+                paginatedRecords.forEach((record) => {
+                    $("#recordTableBody").append(`
+                        <tr data-index=${record.recordId}>
+                            <td style="display: none;">${record.recordId}</td>
+                            <td>${record.nameString}</td>
+                            <td>${record.fileSize}</td>
+                            <td>${record.downloadButton}</td>
+                        </tr>
+                    `);
+                });
+            } else {
+                // Handle case where no records are available
                 $("#recordTableBody").append(`
-                  <tr data-index=${record.recordId}>
-                      <td style="display: none;">${record.recordId}</td>
-                      <td>${record.nameString}</td>
-                      <td>
-                        ${record.fileSize} 
-                        <span style="margin-left: 1em;">${record.downloadButton}</span>
-                      </td>
-                  </tr>
-              `);
+                    <tr>
+                        <td colspan="4">No records available!</td>
+                    </tr>
+                `);
             }
         }
     }

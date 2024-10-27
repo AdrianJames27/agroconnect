@@ -488,48 +488,52 @@ function initializeMethodsSoilHealth() {
 
     function downloadPDF(filename, data) {
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
+        const doc = new jsPDF("landscape"); // Specify landscape orientation
 
-        // Specify the columns you want to include in the PDF
-        const columns = [
-            "barangay",
-            "fieldType",
-            "nitrogenContent",
-            "phosphorusContent",
-            "potassiumContent",
-            "pH",
-            "generalRating",
-            "recommendations",
-            "season",
-            "monthYear",
-        ];
+        // Extract all unique keys from the data
+        const allKeys = [...new Set(data.flatMap(Object.keys))];
+
+        // Filter out keys containing "id" and the last two keys
+        const filteredKeys = allKeys.filter(
+            (key) => !key.toLowerCase().includes("id")
+        );
+        const columns = filteredKeys.slice(0, filteredKeys.length - 2);
+
+        // Format headers
         const headers = columns.map(formatHeader);
 
-        // Create the table using only the specified columns
+        // Function to format numerical values
+        const formatValue = (value) => {
+            if (typeof value === "number") {
+                return value.toFixed(2); // Format numbers to 2 decimal places
+            }
+            return value;
+        };
+
+        // Create the table using all columns and formatted values
         doc.autoTable({
             head: [headers],
-            body: data.map((row) => columns.map((key) => row[key] || "")),
+            body: data.map((row) =>
+                columns.map((key) => {
+                    let value = row[key];
+                    return formatValue(value);
+                })
+            ),
             theme: "striped",
         });
 
+        // Save the PDF
         doc.save(filename);
         addDownload(filename, "PDF");
     }
 
-    function formatHeader(key) {
-        const headerMap = {
-            barangay: "Barangay",
-            fieldType: "Field Type",
-            nitrogenContent: "Nitrogen",
-            phosphorusContent: "Phosphorus",
-            potassiumContent: "Potassium",
-            pH: "pH",
-            generalRating: "General Rating",
-            recommendations: "Recommendations",
-            season: "Season",
-            monthYear: "Month Year",
-        };
-        return headerMap[key] || key;
+    function formatHeader(header) {
+        return header
+            .replace(/([a-z])([A-Z])/g, "$1 $2") // Insert space before each capital letter
+            .replace(/_/g, " ") // Replace underscores with spaces if any
+            .split(" ")
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" ");
     }
 
     getSoilHealth();

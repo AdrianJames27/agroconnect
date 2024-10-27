@@ -165,108 +165,112 @@ export default function initDashboard() {
         }
 
         dashboardHtml += `
-        </div>
-        <div class="row equal-height mt-4">
-          <div class="col-md-7">
-            <form class="form-row justify-content-center mb-3">
-              <div class="form-group col-md-4">
-                <label for="season">Season:</label>
-                <select id="season" class="form-control">
-                  <option value="dry">Dry</option>
-                  <option value="wet">Wet</option>
-                </select>
-              </div>
-              <div class="form-group col-md-4">
-                <label for="type">Type:</label>
-                <select id="type" class="form-control">
-                  <option value="Vegetables">Vegetable</option>
-                  <option value="Fruits">Fruits</option>
-                </select>
-              </div>
-              <div class="form-group col-md-4">
-                <label for="crop">Crop:</label>
-                <select id="crop" class="form-control">
-                  <!-- Options will be dynamically added here -->
-                </select>
-              </div>
-              <div class="form-group col-md-4">
-                <label for="category">Category:</label>
-                <select id="category" class="form-control">
-                    <option value="usage_level">Production Usage Level</option>
-                    <option value="production_volume">Average Production Volume</option>
-                    <option value="price_income_per_hectare">Average Income</option>
-                    <option value="profit_per_hectare">Average Profit</option>
-                    <option value="area_planted">Average Area Planted</option>
-                    <option value="price">Average Price</option>
-                    <option value="pest_occurrence">Pest Occurrence</option>
-                    <option value="disease_occurrence">Disease Occurrence</option>
-                </select>
-              </div>
-            </form>
-           <div class="card">
-              <div class="row justify-content-center">
-                <div id="available" class="col text-center">
-                  <canvas id="totalPerYearChart"></canvas>
-                </div>
-                <div id="unavailable" class="col text-center mb-5">
-                  <p class="h4">We're sorry, but there is no data available at the moment.</p>
-                </div>
-              </div>
-              <div class="text-center mt-3">
-                <a id="#trendCropsA" href="../seasonal-trends" class="underline-link" target="_blank">View Seasonal Trends</a>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="container">
-              <div class="mb-4">
-                <div class="row">
-                  <div class="col-md-12">
-                    <div class="form-group">
-                      <label for="seasonSelect">Season</label>
-                      <select class="form-control" id="seasonSelect">
-                        <option value="Dry">Dry</option>
-                        <option value="Wet">Wet</option>
-                      </select>
+        <div class="container-fluid mt-4">
+          <div class="row">
+            <div class="col-md-8">
+              <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                  <form class="form-row mb-3">
+                    <div class="col-md-6">
+                      <div class="form-group">
+                        <label for="season">Season</label>
+                        <select id="season" class="form-control">
+                          <option value="dry">Dry</option>
+                          <option value="wet">Wet</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-group">
+                        <label for="type">Type</label>
+                        <select id="type" class="form-control">
+                          <option value="Vegetables">Vegetables</option>
+                          <option value="Fruits">Fruits</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-group">
+                        <label for="crop">Crop</label>
+                        <select id="crop" class="form-control">
+                          <!-- Options will be dynamically added here -->
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" class="form-control">
+                          <option value="usage_level">Production Usage Level</option>
+                          <option value="production_volume">Average Production Volume</option>
+                          <option value="price_income_per_hectare">Average Income</option>
+                          <option value="profit_per_hectare">Average Profit</option>
+                          <option value="area_planted">Average Area Planted</option>
+                          <option value="price">Average Price</option>
+                          <option value="pest_occurrence">Pest Occurrence</option>
+                          <option value="disease_occurrence">Disease Occurrence</option>
+                        </select>
+                      </div>
+                    </div>
+                  </form>
+                  <div class="row justify-content-center">
+                    <div id="available" class="col text-center">
+                      <canvas id="totalPerYearChart"></canvas>
+                    </div>
+                    <div id="unavailable" class="col text-center mb-5 d-none">
+                      <p class="h4">We're sorry, but there is no data available at the moment.</p>
                     </div>
                   </div>
-                  <div class="col-md-12">
-                    <div class="form-group">
-                      <label for="typeSelect">Type</label>
-                      <select class="form-control" id="typeSelect">
-                        <option value="Vegetables">Vegetables</option>
-                        <option value="Fruits">Fruits</option>
-                        <option value="Rice">Rice</option>
-                      </select>
-                    </div>
+                  <div class="text-center mt-3 ml-4 w-100">
+                    <a id="trendCropsA" href="../seasonal-trends" class="btn btn-primary" target="_blank">View Seasonal Trends</a>
                   </div>
                 </div>
               </div>
-             <div class="card p-2">
-                <table class="table table-bordered table-striped table-hover table-sm" id="cropsTable">
-                  <thead>
-                    <tr id="dashboardTable">
-                      <th colspan="2">
-                        <div class="text-center mb-3">
-                          <a id="#topCropsA" href="../top-crops" class="underline-link" target="_blank">View Seasonal Top Crops</a>
-                        </div>
-                      </th>
-                    </tr>
-                    <tr>
-                      <th>Commodity</th>
-                      <th>Variety</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <!-- Table rows will be dynamically added here -->
-                  </tbody>
-                </table>
-             </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                  <div class="form-group">
+                    <label for="seasonSelect">Season</label>
+                    <select class="form-control" id="seasonSelect">
+                      <option value="Dry">Dry</option>
+                      <option value="Wet">Wet</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="typeSelect">Type</label>
+                    <select class="form-control" id="typeSelect">
+                      <option value="Vegetables">Vegetables</option>
+                      <option value="Fruits">Fruits</option>
+                      <option value="Rice">Rice</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="card shadow-sm">
+                <div class="card-body p-2">
+                  <table class="table table-bordered table-striped table-hover table-sm" id="cropsTable">
+                    <thead>
+                      <tr id="dashboardTable" class="m-2">
+                        <th colspan="2" class="text-center w-100">
+                          <a id="topCropsA" href="../top-crops" class="btn btn-primary" target="_blank">View Seasonal Top Crops</a>
+                        </th>
+                      </tr>
+                      <tr>
+                        <th>Commodity</th>
+                        <th>Variety</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <!-- Table rows will be dynamically added here -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    `;
+        `;
 
         // Set the HTML content
         $("#main-content").html(dashboardHtml);

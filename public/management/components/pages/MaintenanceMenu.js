@@ -99,100 +99,102 @@ function initializeMaintenanceMenu(option) {
 function initializeCropView() {
     // Example content for Crop Records
     $("#maintenance-content").html(`
-    <div class="row d-flex justify-content-between align-items-center mt-5">
-      <div class="col-md-4">
-        <form id="cropForm">
-          <input type="hidden" class="form-control" id="cropId" name="cropId">
-          
-          <div class="mb-3">
-            <input placeholder="Crop Name" type="text" class="form-control" id="cropName" name="cropName" required>
-          </div>
-
-          <div class="mb-3">
-            <input placeholder="Scientific Name" type="text" class="form-control" id="scientificName" name="scientificName" required>
-          </div>
-
-          <div class="mb-3">
-            <textarea placeholder="Planting Season" type="text" class="form-control" id="plantingSeason" name="plantingSeason" rows="3" required></textarea>
-          </div>
-
-          <div class="mb-3">
-            <textarea placeholder="Growth Duration" type="text" class="form-control" id="growthDuration" name="growthDuration" rows="3" required></textarea>
-          </div>
-          
-          <div class="mb-3">
-            <select class="form-control" id="cropType" name="cropType" required>
-              <option value="" disabled selected>Select Type</option>
-              <option value="Vegetables">Vegetables</option>
-              <option value="Rice">Rice</option>
-              <option value="Fruits">Fruits</option>
-            </select>
-          </div>
-          
-          <div class="mb-3">
-            <select class="form-control" id="unit" name="unit" required>
-              <option value="" disabled selected>Select Unit</option>
-              <option value="kg">kilogram</option>
-              <option value="pc">piece</option>
-              <option value="bundle">bundle</option>
-            </select>
-          </div>
-          
-          <div class="mb-3" id="weightDiv" style="display: none;">
-            <input placeholder="Weight on kilogram (optional)" type="number" class="form-control" id="weight" name="weight" value="1.00" step="0.01" min="0">
-          </div>
-
-          <div class="mb-3">
-            <label id="lblCropImg">Upload Image:</label>
-            <div class="input-group mb-3" style="width: 100%;">
-              <input type="file" class="form-control" id="cropImg" name="cropImg" accept="image/*">
-              <div class="input-group-append">
-                <label class="input-group-text" for="cropImg">
-                  <i class="fas fa-upload"></i>
-                </label>
-              </div>
-            </div>
-          </div>
-          
-          <button type="button" class="btn btn-custom" id="submitBtn">Add Crop</button>
-          <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
-        </form>
-      </div>
-  
-      <div class="col-md-8 actionBtn">
-        <div class="d-flex justify-content-end align-items-center mb-2">
-          <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
-          <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
+  <div class="row d-flex align-items-start mt-5"> <!-- Aligns items at the top -->
+    <div class="col-md-4">
+      <form id="cropForm" class="form-spacing"> <!-- Add class for spacing -->
+        <input type="hidden" class="form-control" id="cropId" name="cropId">
+        
+        <div class="mb-3">
+          <input placeholder="Crop Name" type="text" class="form-control" id="cropName" name="cropName" required>
         </div>
-  
-        <div class="table-responsive">
-          <table id="cropTable" class="table table-custom text-center">
-            <thead>
-              <tr style="background-color: #2774E9; color: white;">
-                <th scope="col" style="display: none;">Crop ID</th>
-                <th scope="col">Crop Image</th>
-                <th scope="col">Crop Name</th>
-                <th scope="col">Type</th>
-                <th scope="col">Scientific Name</th> <!-- New Column -->
-                <th scope="col">Planting Season</th> <!-- New Column -->
-                <th scope="col">Growth Duration</th> <!-- New Column -->
-                <th scope="col">Unit</th> <!-- New Column -->
-                <th scope="col">Weight</th> <!-- New Column -->
-              </tr>
-            </thead>
-            <tbody id="cropTableBody">
-              <!-- Table rows will be dynamically added here -->
-            </tbody>
-          </table>
+
+        <div class="mb-3">
+          <input placeholder="Scientific Name" type="text" class="form-control" id="scientificName" name="scientificName" required>
+        </div>
+
+        <div class="mb-3">
+          <textarea placeholder="Planting Season" class="form-control" id="plantingSeason" name="plantingSeason" rows="3" required></textarea>
+        </div>
+
+        <div class="mb-3">
+          <textarea placeholder="Growth Duration" class="form-control" id="growthDuration" name="growthDuration" rows="3" required></textarea>
         </div>
         
-        <div class="text-right">
-          <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
-          <button id="nextBtn" class="btn btn-green">Next</button>
+        <div class="mb-3">
+          <select class="form-control" id="cropType" name="cropType" required>
+            <option value="" disabled selected>Select Type</option>
+            <option value="Vegetables">Vegetables</option>
+            <option value="Rice">Rice</option>
+            <option value="Fruits">Fruits</option>
+          </select>
         </div>
+        
+        <div class="mb-3">
+          <select class="form-control" id="unit" name="unit" required>
+            <option value="" disabled selected>Select Unit</option>
+            <option value="kg">kilogram</option>
+            <option value="pc">piece</option>
+            <option value="bundle">bundle</option>
+          </select>
+        </div>
+        
+        <div class="mb-3" id="weightDiv" style="display: none;">
+          <input placeholder="Weight on kilogram (optional)" type="number" class="form-control" id="weight" name="weight" value="1.00" step="0.01" min="0">
+        </div>
+
+        <div class="mb-3">
+          <label id="lblCropImg">Upload Image:</label>
+          <div class="input-group mb-3" style="width: 100%;">
+            <input type="file" class="form-control" id="cropImg" name="cropImg" accept="image/*">
+            <div class="input-group-append">
+              <label class="input-group-text" for="cropImg">
+                <i class="fas fa-upload"></i>
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="d-flex justify-content-between">
+          <button type="button" class="btn btn-custom" id="submitBtn">Add Crop</button>
+          <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="col-md-8 actionBtn">
+      <div class="d-flex justify-content-end align-items-center mb-2">
+        <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
+        <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
+      </div>
+
+      <div class="table-responsive">
+        <table id="cropTable" class="table table-custom text-center">
+          <thead>
+            <tr style="background-color: #2774E9; color: white;">
+              <th scope="col" style="display: none;">Crop ID</th>
+              <th scope="col">Crop Image</th>
+              <th scope="col">Crop Name</th>
+              <th scope="col">Type</th>
+              <th scope="col">Scientific Name</th>
+              <th scope="col">Planting Season</th>
+              <th scope="col">Growth Duration</th>
+              <th scope="col">Unit</th>
+              <th scope="col">Weight</th>
+            </tr>
+          </thead>
+          <tbody id="cropTableBody">
+            <!-- Table rows will be dynamically added here -->
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="text-right">
+        <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
+        <button id="nextBtn" class="btn btn-green">Next</button>
       </div>
     </div>
-  `);
+  </div>
+`);
 
     initializeMethodsCrop();
     createDeleteModal();
@@ -214,9 +216,9 @@ function initializeCropView() {
 function initializeCropVarietyView() {
     // Example content for Crop Variety Records
     $("#maintenance-content").html(`
-      <div class="row d-flex justify-content-between align-items-center mt-5">
+      <div class="row d-flex justify-content-between align-items-start mt-5">
           <div class="col-md-4">
-              <form id="cropVarietyForm">
+              <form id="cropVarietyForm" class="form-spacing">
                   <input type="hidden" class="form-control" id="varietyId" name="varietyId">
 
                   <div class="mb-3">
@@ -284,7 +286,7 @@ function initializeCropVarietyView() {
                               <th scope="col" style="display: none;">Variety ID</th>
                               <th scope="col">Crop Image</th>
                               <th scope="col">Variety Name</th>
-                              <th scope="col">Crop ID</th>
+                              <th scope="col">Crop Name</th>
                               <th scope="col">Color</th>
                               <th scope="col">Size</th>
                               <th scope="col">Flavor</th>
@@ -345,9 +347,9 @@ function initializeCropVarietyView() {
 function initializeBarangayView() {
     // Example content for Barangay Records
     $("#maintenance-content").html(`
-  <div class="row d-flex justify-content-between align-items-center mt-5">
+  <div class="row d-flex justify-content-between align-items-start mt-5">
     <div class="col-md-4">
-      <form id="barangayForm">
+      <form id="barangayForm" class="form-spacing">
         <input type="hidden" class="form-control" id="barangayId" name="barangayId">
         <div class="mb-3">
           <input placeholder="Barangay" type="text" class="form-control" id="barangayName" name="barangayName" required>
@@ -390,9 +392,9 @@ function initializeBarangayView() {
 // Function to initialize Farmer Records view
 function initializeFarmerView() {
     $("#maintenance-content").html(`
-    <div class="row d-flex justify-content-between align-items-center mt-5">
+    <div class="row d-flex justify-content-between align-items-start mt-5">
       <div class="col-md-4">
-        <form id="farmerForm">
+        <form id="farmerForm" class="form-spacing">
           <input type="hidden" class="form-control" id="farmerId" name="farmerId">
           
           <div class="mb-3">
@@ -473,9 +475,9 @@ function initializeFarmerView() {
 // Function to initialize Supply and Market view
 function initializeProductionView() {
     $("#maintenance-content").html(`
-    <div class="row d-flex justify-content-between align-items-center mt-5">
+    <div class="row d-flex justify-content-between align-items-start mt-5">
       <div class="col-md-4">
-        <form id="recordForm" enctype="multipart/form-data">
+        <form id="recordForm" enctype="multipart/form-data" class="form-spacing">
           <input type="hidden" class="form-control" id="recordId" name="recordId">
           <input type="hidden" class="form-control" id="userId" name="userId">
           
@@ -544,6 +546,7 @@ function initializeProductionView() {
               <tr style="background-color: #2774E9; color: white;">
                 <th scope="col">File Name</th>
                 <th scope="col">File Size</th>
+                <th scope="col">Action</th>
               </tr>
             </thead>
             <tbody id="recordTableBody">
@@ -611,9 +614,9 @@ function initializeProductionView() {
 function initializePriceMonitoringView() {
     // Example content for Price Monitoring
     $("#maintenance-content").html(`
-        <div class="row d-flex justify-content-between align-items-center mt-5">
+        <div class="row d-flex justify-content-between align-items-start mt-5">
           <div class="col-md-4">
-            <form id="recordForm" enctype="multipart/form-data">
+            <form id="recordForm" enctype="multipart/form-data" class="form-spacing">
               <input type="hidden" class="form-control" id="recordId" name="recordId">
               <input type="hidden" class="form-control" id="userId" name="userId">
               
@@ -682,6 +685,7 @@ function initializePriceMonitoringView() {
                   <tr style="background-color: #2774E9; color: white;">
                     <th scope="col">File Name</th>
                     <th scope="col">File Size</th>
+                    <th scope="col">Action</th>
                   </tr>
                 </thead>
                 <tbody id="recordTableBody">
@@ -741,9 +745,9 @@ function initializePriceMonitoringView() {
 function initializePestReportsView() {
     // Example content for Pest and Disease Reports
     $("#maintenance-content").html(`
-      <div class="row d-flex justify-content-between align-items-center mt-5">
+      <div class="row d-flex justify-content-between align-items-start mt-5">
         <div class="col-md-4">
-          <form id="recordForm" enctype="multipart/form-data">
+          <form id="recordForm" enctype="multipart/form-data" class="form-spacing">
             <input type="hidden" class="form-control" id="recordId" name="recordId">
             <input type="hidden" class="form-control" id="userId" name="userId">
             
@@ -812,6 +816,7 @@ function initializePestReportsView() {
                 <tr style="background-color: #2774E9; color: white;">
                   <th scope="col">File Name</th>
                   <th scope="col">File Size</th>
+                  <th scope="col">Action</th>
                 </tr>
               </thead>
               <tbody id="recordTableBody">
@@ -879,9 +884,9 @@ function initializePestReportsView() {
 // Function to initialize Damage Reports view
 function initializeDamageReportsView() {
     $("#maintenance-content").html(`
-    <div class="row d-flex justify-content-between align-items-center mt-5">
+    <div class="row d-flex justify-content-between align-items-start mt-5">
       <div class="col-md-4">
-        <form id="recordForm" enctype="multipart/form-data">
+        <form id="recordForm" enctype="multipart/form-data" class="form-spacing">
           <input type="hidden" class="form-control" id="recordId" name="recordId">
           <input type="hidden" class="form-control" id="userId" name="userId">
           
@@ -950,6 +955,7 @@ function initializeDamageReportsView() {
               <tr style="background-color: #2774E9; color: white;">
                 <th scope="col">File Name</th>
                 <th scope="col">File Size</th>
+                <th scope="col">Action</th>
               </tr>
             </thead>
             <tbody id="recordTableBody">
@@ -1012,9 +1018,9 @@ function initializeDamageReportsView() {
 // Function to initialize Soil Health Records view
 function initializeSoilHealthView() {
     $("#maintenance-content").html(`
-    <div class="row d-flex justify-content-between align-items-center mt-5">
+    <div class="row d-flex justify-content-between align-items-start mt-5">
       <div class="col-md-4">
-        <form id="recordForm" enctype="multipart/form-data">
+        <form id="recordForm" enctype="multipart/form-data" class="form-spacing">
           <input type="hidden" class="form-control" id="recordId" name="recordId">
           <input type="hidden" class="form-control" id="userId" name="userId">
           
@@ -1083,6 +1089,7 @@ function initializeSoilHealthView() {
               <tr style="background-color: #2774E9; color: white;">
                 <th scope="col">File Name</th>
                 <th scope="col">File Size</th>
+                <th scope="col">Action</th>
               </tr>
             </thead>
             <tbody id="recordTableBody">

@@ -169,7 +169,7 @@ function getCropVarieties() {
 
 getCropVarieties();
 
-function searchCropVariey(varietyName) {
+function searchCropVariety(varietyName) {
     const foundCropVarieties = cropVarieties.filter((variety) =>
         variety.varietyName.toLowerCase().includes(varietyName.toLowerCase())
     );
@@ -203,27 +203,23 @@ function initializeMethodsCropVariety() {
         var endIndex = startIndex + pageSize;
 
         if (varietyName) {
-            // Display a single crop variety if varietyName is provided
-            const foundVarieties = cropVarieties.filter(
-                (variety) =>
-                    variety.varietyName.toLowerCase() ===
-                    varietyName.toLowerCase()
-            );
+            // Use the searchCropVariety function to find matching varieties
+            const foundVarieties = searchCropVariety(varietyName);
             if (foundVarieties.length > 0) {
                 foundVarieties.forEach((variety) => {
                     const cropName = cropMap[variety.cropId] || "Unknown Crop"; // Get cropName or fallback to 'Unknown Crop'
                     $("#cropVarietyTableBody").append(`
-                        <tr data-index=${variety.varietyId} class="text-center">
+                        <tr data-index="${variety.varietyId}" class="text-center">
                             <td style="display: none;">${variety.varietyId}</td>
                             <td><img src="${variety.cropImg}" alt="${variety.varietyName}" class="img-thumbnail" width="50" height="50"></td>
                             <td>${variety.varietyName}</td>
                             <td>${cropName}</td> <!-- Display the associated cropName -->
-                            <td>${variety.color}</td>
-                            <td>${variety.size}</td>
-                            <td>${variety.flavor}</td>
-                            <td>${variety.growthConditions}</td>
-                            <td>${variety.pestDiseaseResistance}</td>
-                            <td>${variety.recommendedPractices}</td>
+                            <td class="crop-cell" title="${variety.color}">${variety.color}</td>
+                            <td class="crop-cell" title="${variety.size}">${variety.size}</td>
+                            <td class="crop-cell" title="${variety.flavor}">${variety.flavor}</td>
+                            <td class="crop-cell" title="${variety.growthConditions}">${variety.growthConditions}</td>
+                            <td class="crop-cell" title="${variety.pestDiseaseResistance}">${variety.pestDiseaseResistance}</td>
+                            <td class="crop-cell" title="${variety.recommendedPractices}">${variety.recommendedPractices}</td>
                         </tr>
                     `);
                 });
@@ -231,7 +227,7 @@ function initializeMethodsCropVariety() {
                 // Handle case where varietyName is not found
                 $("#cropVarietyTableBody").append(`
                     <tr>
-                        <td colspan="9">Crop variety not found!</td>
+                        <td colspan="10">Crop variety not found!</td>
                     </tr>
                 `);
             }
@@ -244,7 +240,7 @@ function initializeMethodsCropVariety() {
                 var variety = cropVarieties[i];
                 const cropName = cropMap[variety.cropId] || "Unknown Crop"; // Get cropName or fallback to 'Unknown Crop'
                 $("#cropVarietyTableBody").append(`
-                    <tr data-index=${variety.varietyId} class="text-center">
+                    <tr data-index="${variety.varietyId}" class="text-center">
                         <td style="display: none;">${variety.varietyId}</td>
                         <td><img src="${variety.cropImg}" alt="${variety.varietyName}" class="img-thumbnail" width="50" height="50"></td>
                         <td>${variety.varietyName}</td>
@@ -253,7 +249,7 @@ function initializeMethodsCropVariety() {
                         <td class="crop-cell" title="${variety.size}">${variety.size}</td>
                         <td class="crop-cell" title="${variety.flavor}">${variety.flavor}</td>
                         <td class="crop-cell" title="${variety.growthConditions}">${variety.growthConditions}</td>
-                        <td class="crop-cell" title="${variety.pestDiseaseResistanc}">${variety.pestDiseaseResistance}</td>
+                        <td class="crop-cell" title="${variety.pestDiseaseResistance}">${variety.pestDiseaseResistance}</td>
                         <td class="crop-cell" title="${variety.recommendedPractices}">${variety.recommendedPractices}</td>
                     </tr>
                 `);
@@ -525,7 +521,7 @@ function initializeMethodsCropVariety() {
 export {
     CropVariety,
     getCropVarieties,
-    searchCropVariey,
+    searchCropVariety,
     initializeMethodsCropVariety,
     cropVarieties,
 };
