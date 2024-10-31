@@ -75,8 +75,11 @@ function initializeMaintenanceMenu(option) {
         case "farmer":
             initializeFarmerView();
             break;
-        case "production":
-            initializeProductionView();
+        case "riceProduction":
+            initializeRiceProductionView();
+            break;
+        case "hvcProduction":
+            initializeHVCProductionView();
             break;
         case "price":
             initializePriceMonitoringView();
@@ -473,7 +476,136 @@ function initializeFarmerView() {
 }
 
 // Function to initialize Supply and Market view
-function initializeProductionView() {
+function initializeRiceProductionView() {
+    $("#maintenance-content").html(`
+  <div class="row d-flex justify-content-between align-items-start mt-5">
+    <div class="col-md-4">
+      <form id="recordForm" enctype="multipart/form-data" class="form-spacing">
+        <input type="hidden" class="form-control" id="recordId" name="recordId">
+        <input type="hidden" class="form-control" id="userId" name="userId">
+
+        <div class="mb-3">
+          <div class="input-group" id="seasonPicker" style="width: 100%;">
+            <select id="seasonSelect" class="form-control" required>
+              <option value="" disabled selected>Select Season</option>
+              <option value="dry">Dry</option>
+              <option value="wet">Wet</option>
+            </select>
+            <span class="input-group-append">
+              <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+            </span>
+          </div>
+        </div>
+        
+        <div class="mb-3">
+          <div class="input-group" id="yearPicker" style="width: 100%;">
+            <select id="yearSelect" class="form-control" required>
+              <!-- Options will be added by jQuery -->
+            </select>
+            <span class="input-group-append">
+              <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+            </span>
+          </div>
+        </div>
+        
+        <div class="mb-3">
+          <label id="lblUpload">Upload File:</label>
+          <div class="input-group" style="width: 100%;">
+            <input type="file" class="form-control" id="fileRecord" name="fileRecord" accept=".xls, .xlsx" required>
+            <div class="input-group-append">
+              <label class="input-group-text" for="fileRecord" id="btnUpload">
+                <i class="fas fa-upload"></i>
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <button type="button" class="btn btn-custom" id="submitBtn">Add Record</button>
+        <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
+      </form>
+    </div>
+    
+    <div class="col-md-8 actionBtn">
+      <div class="d-flex justify-content-end align-items-center mb-2">
+        <button id="infoBtn" class="btn btn-info" style="margin-right: 10px;">
+          <i class="fas fa-info-circle"></i>
+        </button>
+        <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
+        <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
+      </div>
+      
+      <div class="table-responsive">
+        <table id="recordTable" class="table table-custom text-center">
+          <thead>
+            <tr style="background-color: #2774E9; color: white;">
+              <th scope="col">File Name</th>
+              <th scope="col">File Size</th>
+              <th scope="col">Action</th>
+            </tr>
+          </thead>
+          <tbody id="recordTableBody">
+            <!-- Table rows will be dynamically added here -->
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="text-right">
+        <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
+        <button id="nextBtn" class="btn btn-green">Next</button>
+      </div>
+    </div>
+  </div>
+`);
+
+    $(document).ready(function () {
+        $("#infoBtn").click(function () {
+            let htmlScript = `
+<p>To upload your records successfully, please follow the instructions below using the provided template:</p>
+
+<ol>
+<li><strong>Download the Template:</strong><br>
+Obtain the file <a href="components/template/Production_Template.xlsx" download>Production_Template.xlsx</a>. This template will guide you in entering the necessary data.</li>
+
+<li><strong>Gather Your Data:</strong><br>
+Retrieve the data from your reports and prepare it for entry into the template. The data should include the following fields:
+  <ul>
+    <li><strong>Barangay:</strong> The local administrative division where the production takes place.</li>
+    <li><strong>Commodity:</strong> The type of crop or product being recorded.</li>
+    <li><strong>Variety:</strong> The specific variety or type of the commodity.</li>
+    <li><strong>Area Planted (ha):</strong> The total area planted with the crop, measured in hectares.</li>
+    <li><strong>Month Planted:</strong> The month when planting of the crop started.</li>
+    <li><strong>Month Harvested:</strong> The month when the crop was harvested.</li>
+    <li><strong>Volume of Production (MT):</strong> The total volume of the commodity produced, measured in metric tons.</li>
+    <li><strong>Cost of Production (per ha):</strong> The cost incurred for producing the crop per hectare.</li>
+    <li><strong>Farm Gate Price (per kg):</strong> The price at which the commodity is sold at the farm gate, per kilogram.</li>
+    <li><strong>Volume Sold (MT):</strong> The total volume of the commodity sold, measured in metric tons.</li>
+  </ul>
+</li>
+
+<li><strong>Enter Data into the Template:</strong><br>
+Open the <a href="components/template/Production_Template.xlsx" download>Production_Template.xlsx</a> and enter your data into the appropriate columns based on the definitions provided above. Ensure accuracy to avoid errors in the data upload process.</li>
+
+<li><strong>Save and Upload:</strong><br>
+After filling out the template, save the file with your updated data. Upload this file to the designated upload area or system.</li>
+
+<li><strong>Verify Submission:</strong><br>
+Confirm that your file was uploaded correctly and check for any validation messages or errors that may require correction.</li>
+</ol>
+
+<p>By adhering to these instructions and utilizing the provided template, you ensure that your data is recorded accurately and efficiently.</p>
+`;
+
+            Dialog.showInfoModal(htmlScript);
+        });
+    });
+    initializeMethodsRecord("production");
+    createDeleteModal();
+    createEditModal();
+    loadMonthYear();
+}
+
+// Function to initialize Supply and Market view
+function initializeHVCProductionView() {
     $("#maintenance-content").html(`
     <div class="row d-flex justify-content-between align-items-start mt-5">
       <div class="col-md-4">

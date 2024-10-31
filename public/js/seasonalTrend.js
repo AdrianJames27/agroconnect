@@ -533,9 +533,48 @@ async function handleCategoryChange() {
     console.log(dataset);
 }
 
+function populateCategoryOptions(type) {
+    const categorySelect = document.getElementById("category");
+    categorySelect.innerHTML = ""; // Clear existing options
+
+    // Define all options
+    const options = {
+        usage_level: "Production Usage Level",
+        production_volume: "Average Production Volume",
+        price_income_per_hectare: "Average Income",
+        profit_per_hectare: "Average Profit",
+        area_planted: "Average Area Planted",
+        price: "Average Price",
+        pest_occurrence: "Pest Occurrence",
+        disease_occurrence: "Disease Occurrence",
+    };
+
+    // Filter options based on type
+    let allowedOptions;
+    if (type === "Rice") {
+        allowedOptions = ["production_volume", "area_planted"];
+    } else {
+        allowedOptions = Object.keys(options); // Include all for vegetables and fruits
+    }
+
+    // Populate the dropdown
+    allowedOptions.forEach((optionKey) => {
+        const optionElement = document.createElement("option");
+        optionElement.value = optionKey;
+        optionElement.textContent = options[optionKey];
+        categorySelect.appendChild(optionElement);
+    });
+}
+
 // Document ready function
 $(document).ready(async function () {
     updateCropOptions().then(() => handleCategoryChange());
+
+    // Attach event listener to #type element
+    $("#type").on("change", function () {
+        const selectedType = $(this).val();
+        populateCategoryOptions(selectedType);
+    });
 
     // Attach event listener to #type element
     $("#type").on("change", function () {
