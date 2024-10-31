@@ -221,9 +221,11 @@ export default function initDashboard() {
                       <p class="h4">We're sorry, but there is no data available at the moment.</p>
                     </div>
                   </div>
-                  <div class="text-center mt-3 ml-4 w-100">
-                    <a id="trendCropsA" href="../seasonal-trends" class="btn btn-primary" target="_blank">View Seasonal Trends</a>
-                  </div>
+               <div class="text-center mt-3">
+                <a id="trendCropsA" href="../seasonal-trends" class="btn cta-btn w-100" target="_blank">
+                  <i class="fas fa-chart-line"></i> View Seasonal Trends
+                </a>
+                </div>
                 </div>
               </div>
             </div>
@@ -251,9 +253,11 @@ export default function initDashboard() {
                 <div class="card-body p-2">
                   <table class="table table-bordered table-striped table-hover table-sm" id="cropsTable">
                     <thead>
-                      <tr id="dashboardTable" class="m-2">
-                        <th colspan="2" class="text-center w-100">
-                          <a id="topCropsA" href="../top-crops" class="btn btn-primary" target="_blank">View Seasonal Top Crops</a>
+                      <tr id="dashboardTable">
+                        <th colspan="2">
+                          <a id="topCropsA" href="../top-crops" class="btn cta-btn w-100" target="_blank">
+                            <i class="fas fa-seedling"></i> View Seasonal Top Crops
+                          </a>
                         </th>
                       </tr>
                       <tr>

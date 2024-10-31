@@ -284,6 +284,17 @@ thead tr {
     color: #000 !important;
 }
 
+.cta-btn {
+    background-color: var(--color-secondary) !important;
+    color: #000 !important;
+}
+
+.cta-btn:hover {
+    background-color: var(--color-primary) !important; /* Change to your preferred color */
+    color: #fff !important; /* Change to your preferred hover text color */
+    transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition */
+}
+
 select option:disabled {
     display: none;
 }
