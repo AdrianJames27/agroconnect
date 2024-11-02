@@ -8,6 +8,7 @@ use App\Models\Production;
 use App\Models\Price;
 use App\Models\Pest;
 use App\Models\Disease;
+use App\Models\RiceProduction;
 use App\Models\SoilHealth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -109,6 +110,9 @@ class RecordController extends Controller
             if ($record->type === 'production') {
                 // Delete associated records from the Production table
                 Production::where('recordId', $id)->delete();
+            } else if ($record->type === 'riceProduction') {
+                // Delete associated records from the Price table
+                RiceProduction::where('recordId', $id)->delete();
             } else if ($record->type === 'price') {
                 // Delete associated records from the Price table
                 Price::where('recordId', $id)->delete();

@@ -180,12 +180,12 @@ function initializeMethodsPrice() {
                 }
                 var price = foundPrices[i];
                 $("#priceTableBody").append(`
-          <tr data-index=${price.priceId}>
-            <td>${price.cropName}</td>
-            <td>₱${price.price}</td>
-            <td>${price.season}</td>
-            <td>${price.monthYear}</td>
-          </tr>
+                    <tr data-index=${price.priceId}>
+                        <td>${price.cropName}</td>
+                        <td>₱${price.price}</td>
+                        <td>${price.season}</td>
+                        <td>${price.monthYear}</td>
+                    </tr>
         `);
             }
         } else {

@@ -487,7 +487,6 @@ function initializeRiceProductionView() {
         <div class="mb-3">
           <div class="input-group" id="seasonPicker" style="width: 100%;">
             <select id="seasonSelect" class="form-control" required>
-              <option value="" disabled selected>Select Season</option>
               <option value="dry">Dry</option>
               <option value="wet">Wet</option>
             </select>
@@ -564,26 +563,22 @@ function initializeRiceProductionView() {
 
 <ol>
 <li><strong>Download the Template:</strong><br>
-Obtain the file <a href="components/template/Production_Template.xlsx" download>Production_Template.xlsx</a>. This template will guide you in entering the necessary data.</li>
+Obtain the file <a href="components/template/RiceProduction_Template.xlsx" download>RiceProduction_Template.xlsx</a>. This template will guide you in entering the necessary data.</li>
 
 <li><strong>Gather Your Data:</strong><br>
 Retrieve the data from your reports and prepare it for entry into the template. The data should include the following fields:
   <ul>
     <li><strong>Barangay:</strong> The local administrative division where the production takes place.</li>
     <li><strong>Commodity:</strong> The type of crop or product being recorded.</li>
-    <li><strong>Variety:</strong> The specific variety or type of the commodity.</li>
     <li><strong>Area Planted (ha):</strong> The total area planted with the crop, measured in hectares.</li>
-    <li><strong>Month Planted:</strong> The month when planting of the crop started.</li>
     <li><strong>Month Harvested:</strong> The month when the crop was harvested.</li>
     <li><strong>Volume of Production (MT):</strong> The total volume of the commodity produced, measured in metric tons.</li>
-    <li><strong>Cost of Production (per ha):</strong> The cost incurred for producing the crop per hectare.</li>
-    <li><strong>Farm Gate Price (per kg):</strong> The price at which the commodity is sold at the farm gate, per kilogram.</li>
-    <li><strong>Volume Sold (MT):</strong> The total volume of the commodity sold, measured in metric tons.</li>
+    <li><strong>Average Yield (MT):</strong> The average yield calculated from area planted and volume of production.</li>
   </ul>
 </li>
 
 <li><strong>Enter Data into the Template:</strong><br>
-Open the <a href="components/template/Production_Template.xlsx" download>Production_Template.xlsx</a> and enter your data into the appropriate columns based on the definitions provided above. Ensure accuracy to avoid errors in the data upload process.</li>
+Open the <a href="components/template/RiceProduction_Template.xlsx" download>RiceProduction_Template.xlsx</a> and enter your data into the appropriate columns based on the definitions provided above. Ensure accuracy to avoid errors in the data upload process.</li>
 
 <li><strong>Save and Upload:</strong><br>
 After filling out the template, save the file with your updated data. Upload this file to the designated upload area or system.</li>
@@ -598,7 +593,7 @@ Confirm that your file was uploaded correctly and check for any validation messa
             Dialog.showInfoModal(htmlScript);
         });
     });
-    initializeMethodsRecord("production");
+    initializeMethodsRecord("riceProduction");
     createDeleteModal();
     createEditModal();
     loadMonthYear();
@@ -639,6 +634,18 @@ function initializeHVCProductionView() {
             <div class="input-group" id="yearPicker" style="width: 100%;">
               <select id="yearSelect" class="form-control" required>
                 <!-- Options will be added by jQuery -->
+              </select>
+              <span class="input-group-append">
+                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+              </span>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <div class="input-group" id="seasonPicker" style="width: 100%;">
+              <select id="seasonSelect" class="form-control" required>
+                <option value="dry">Dry</option>
+                <option value="wet">Wet</option>
               </select>
               <span class="input-group-append">
                 <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
@@ -784,6 +791,18 @@ function initializePriceMonitoringView() {
                   </span>
                 </div>
               </div>
+
+            <div class="mb-3">
+              <div class="input-group" id="seasonPicker" style="width: 100%;">
+                <select id="seasonSelect" class="form-control" required>
+                  <option value="dry">Dry</option>
+                  <option value="wet">Wet</option>
+                </select>
+                <span class="input-group-append">
+                  <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                </span>
+              </div>
+            </div>
               
               <div class="mb-3">
                 <label id="lblUpload">Upload File:</label>
@@ -915,7 +934,19 @@ function initializePestReportsView() {
                 </span>
               </div>
             </div>
-            
+
+            <div class="mb-3">
+              <div class="input-group" id="seasonPicker" style="width: 100%;">
+                <select id="seasonSelect" class="form-control" required>
+                  <option value="dry">Dry</option>
+                  <option value="wet">Wet</option>
+                </select>
+                <span class="input-group-append">
+                  <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                </span>
+              </div>
+            </div>
+              
             <div class="mb-3">
               <label id="lblUpload">Upload File:</label>
               <div class="input-group" style="width: 100%;">
@@ -1021,6 +1052,13 @@ function initializeDamageReportsView() {
         <form id="recordForm" enctype="multipart/form-data" class="form-spacing">
           <input type="hidden" class="form-control" id="recordId" name="recordId">
           <input type="hidden" class="form-control" id="userId" name="userId">
+
+
+        <div class="mb-3">
+          <div class="input-group" id="nameInputGroup" style="width: 100%;">
+            <input type="text" id="nameInput" class="form-control" placeholder="Enter Event Name" required>
+          </div>
+        </div>
           
           <div class="mb-3">
             <div class="input-group" id="monthPicker" style="width: 100%;">
@@ -1043,11 +1081,25 @@ function initializeDamageReportsView() {
               </span>
             </div>
           </div>
-          
+
+
           <div class="mb-3">
-            <div class="input-group" id="yearPicker" style="width: 100%;">
-              <select id="yearSelect" class="form-control" required>
-                <!-- Options will be added by jQuery -->
+              <div class="input-group" id="yearPicker" style="width: 100%;">
+                <select id="yearSelect" class="form-control" required>
+                  <!-- Options will be added by jQuery -->
+                </select>
+                <span class="input-group-append">
+                  <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                </span>
+              </div>
+          </div>
+
+
+          <div class="mb-3">
+            <div class="input-group" id="seasonPicker" style="width: 100%;">
+              <select id="seasonSelect" class="form-control" required>
+                <option value="dry">Dry</option>
+                <option value="wet">Wet</option>
               </select>
               <span class="input-group-append">
                 <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
@@ -1182,6 +1234,18 @@ function initializeSoilHealthView() {
             <div class="input-group" id="yearPicker" style="width: 100%;">
               <select id="yearSelect" class="form-control" required>
                 <!-- Options will be added by jQuery -->
+              </select>
+              <span class="input-group-append">
+                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+              </span>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <div class="input-group" id="seasonPicker" style="width: 100%;">
+              <select id="seasonSelect" class="form-control" required>
+                <option value="dry">Dry</option>
+                <option value="wet">Wet</option>
               </select>
               <span class="input-group-append">
                 <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>

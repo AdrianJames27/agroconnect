@@ -17,6 +17,7 @@ use App\Http\Controllers\WeatherForecastController;
 use App\Http\Controllers\DamageReportController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DownloadController;
+use App\Http\Controllers\RiceProductionController;
 
 // Public routes (no authentication required)
 Route::get('/users', [UserController::class, 'index']);
@@ -28,6 +29,7 @@ Route::get('/crop-varieties', [CropVarietyController::class, 'index']);
 Route::get('/barangays', [BarangayController::class, 'index']);
 Route::get('/farmers', [FarmerController::class, 'index']);
 Route::get('/records', [RecordController::class, 'index']);
+Route::get('/riceProductions', [RiceProductionController::class, 'index']);
 Route::get('/productions', [ProductionController::class, 'index']);
 Route::get('/production/total-area-planted/{cropId}/{variety}', [ProductionController::class, 'getTotalAreaPlanted']);
 Route::get('/prices', [PriceController::class, 'index']);
@@ -84,6 +86,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/records/{id}', [RecordController::class, 'show']);
     Route::put('/records/{id}', [RecordController::class, 'update']);
     Route::delete('/records/{id}', [RecordController::class, 'destroy']);
+
+    // Api for rice productions
+    Route::post('/riceProductions', [RiceProductionController::class, 'store']);
+    Route::get('/riceProductions/{id}', [RiceProductionController::class, 'show']);
+    Route::put('/riceProductions/{id}', [RiceProductionController::class, 'update']);
+    Route::post('/riceProductions-batch', [RiceProductionController::class, 'storeBatch']);
+    Route::delete('/riceProductionsByRecords', [RiceProductionController::class, 'destroyBatch']);
+    Route::post('/riceProductions/update-year', [RiceProductionController::class, 'updateYear']);
 
     // Api for productions
     Route::post('/productions', [ProductionController::class, 'store']);

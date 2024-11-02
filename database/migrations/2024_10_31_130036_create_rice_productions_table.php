@@ -12,7 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('rice_productions', function (Blueprint $table) {
-            $table->id();
+            $table->id('riceProductionId');
+            $table->unsignedBigInteger('recordId');
+            $table->foreign('recordId')->references('recordId')->on('records');
+            $table->string('barangay', 255);
+            $table->string('cropName', 255);
+            $table->double('areaPlanted');
+            $table->string('monthHarvested', 255);
+            $table->double('volumeProduction');
+            $table->double('averageYield');
+            $table->string('season', 255);
+            $table->string('year', 255);
             $table->timestamps();
         });
     }

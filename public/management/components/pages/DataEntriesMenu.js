@@ -1,6 +1,7 @@
 import { initializeMethodsPest } from "../classes/Pest.js";
 import { initializeMethodsDisease } from "../classes/Disease.js";
 import { initializeMethodsProduction } from "../classes/Production.js";
+import { initializeMethodsRiceProduction } from "../classes/RiceProduction.js";
 import { initializeMethodsSoilHealth } from "../classes/SoilHealth.js";
 import { initializeMethodsPrice } from "../classes/Price.js";
 import { initializeMethodsDamage } from "../classes/Damage.js";
@@ -11,6 +12,9 @@ function initializeDataEntriesMenu(option) {
 
     // Switch based on selected option
     switch (option) {
+        case "riceProductions":
+            initializeRiceProductionView();
+            break;
         case "productions":
             initializeProductionView();
             break;
@@ -30,8 +34,56 @@ function initializeDataEntriesMenu(option) {
             initializeSoilHealthsView();
             break;
         default:
-            initializeProductionView();
+            initializeRiceProductionView();
     }
+}
+
+// Function to initialize Barangay Records view
+function initializeRiceProductionView() {
+    $("#entries-content").html(`
+  <div class="row d-flex justify-content-between align-items-center mt-5">
+    <div class="col">
+      <div class="table-responsive">
+        <table id="riceProductionTable" class="table table-custom table-sm text-center tablesorter">
+          <thead>
+            <tr style="background-color: #2774E9; color: white;">
+              <th scope="col">Barangay</th>
+              <th scope="col">Commodity</th>
+              <th scope="col">Area Planted</th>
+              <th scope="col">Month Harvested</th>
+              <th scope="col">Volume of Production</th>
+              <th scope="col">Average Yield</th>
+              <th scope="col">Season</th>
+              <th scope="col">Year</th>
+            </tr>
+          </thead>
+          <tbody id="riceProductionTableBody">
+            <!-- Table rows will be dynamically added here -->
+          </tbody>
+        </table>
+      </div>
+      <div class="text-right">
+        <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
+        <button id="nextBtn" class="btn btn-green">Next</button>
+      </div>
+    </div>
+  </div>
+  <div class="text-center mt-3">
+    <button id="downloadBtn" class="download-btn btn btn-primary">Download Rice Productions</button>
+  </div>
+`);
+
+    initializeMethodsRiceProduction();
+
+    // Initialize tablesorter
+    $("#riceProductionTable").tablesorter({
+        theme: "bootstrap", // or another theme if you're using it
+        widgets: ["zebra"], // Example of adding widgets
+        widgetOptions: {
+            // Add custom classes for the sorting icons
+            cssIcon: "tablesorter-header-icon",
+        },
+    });
 }
 
 // Function to initialize Barangay Records view

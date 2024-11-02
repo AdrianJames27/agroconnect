@@ -1,39 +1,32 @@
 import Dialog from "../helpers/Dialog.js";
 import { addDownload, getYearRange } from "../../../js/fetch.js";
-let productions = [];
+let riceProductions = [];
 
-class Production {
+class RiceProduction {
     constructor(
         recordId,
         barangay,
         cropName,
-        variety,
         areaPlanted,
-        monthPlanted,
         monthHarvested,
         volumeProduction,
-        productionCost,
-        price,
-        volumeSold,
+        averageYield,
         season,
-        monthYear
+        year
     ) {
         this.recordId = recordId;
         this.barangay = barangay;
         this.cropName = cropName;
-        this.variety = variety;
         this.areaPlanted = areaPlanted;
-        this.monthPlanted = monthPlanted;
         this.monthHarvested = monthHarvested;
         this.volumeProduction = volumeProduction;
-        this.productionCost = productionCost;
-        this.volumeSold = volumeSold;
-        this.price = price;
+        this.averageYield = averageYield;
         this.season = season;
-        this.monthYear = monthYear;
+        this.year = year;
     }
 
-    async addProduction(productions) {
+    async addRiceProduction(riceProductions) {
+        console.log(riceProductions);
         function chunkArray(array, size) {
             const result = [];
             for (let i = 0; i < array.length; i += size) {
@@ -42,8 +35,8 @@ class Production {
             return result;
         }
         const batchSize = 20; // Size of each batch
-        const totalRows = productions.length;
-        const productionBatches = chunkArray(productions, batchSize);
+        const totalRows = riceProductions.length;
+        const riceProductionBatches = chunkArray(riceProductions, batchSize);
 
         let processedRows = 0; // Keep track of the number of processed rows
 
@@ -58,17 +51,17 @@ class Production {
         $("#loader").show();
         $("body").addClass("no-scroll"); // Optional: Add a class to disable scrolling
 
-        for (const [index, batch] of productionBatches.entries()) {
+        for (const [index, batch] of riceProductionBatches.entries()) {
             const start = processedRows + 1;
             const end = start + batch.length - 1;
             updateProgressMessage(start, end);
 
             try {
                 await $.ajax({
-                    url: "/api/productions-batch",
+                    url: "/api/riceProductions-batch",
                     method: "POST",
                     data: {
-                        productionData: batch,
+                        riceProductionData: batch,
                         _token: $('meta[name="csrf-token"]').attr("content"),
                     },
                 });
@@ -92,35 +85,39 @@ class Production {
             toastClass: "toast-success-custom",
         });
 
-        getProduction();
+        getRiceProduction();
     }
 
-    updateProduction(updatedProduction) {
-        const existingProduction = productions.find(
-            (u) => u.productionId === updatedProduction.productionId
+    updateRiceProduction(updatedRiceProduction) {
+        const existingRiceProduction = riceProductions.find(
+            (u) => u.riceProductionId === updatedRiceProduction.riceProductionId
         );
 
         if (
-            existingProduction &&
-            existingProduction.productionId !== updatedProduction.productionId
+            existingRiceProduction &&
+            existingRiceProduction.riceProductionId !==
+                updatedRiceProduction.riceProductionId
         ) {
-            alert("Production ID already exists");
+            alert("riceProduction ID already exists");
             return;
         }
 
-        productions = productions.map((production) =>
-            production.recordId === updatedProduction.recordId
-                ? { ...production, ...updatedProduction }
-                : production
+        riceProductions = riceProductions.map((riceProduction) =>
+            riceProduction.recordId === updatedRiceProduction.recordId
+                ? { ...riceProduction, ...updatedRiceProduction }
+                : riceProduction
         );
 
-        fetch(`/api/productions/${updatedProduction.productionId}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(updatedProduction),
-        })
+        fetch(
+            `/api/riceProductions/${updatedRiceProduction.riceProductionId}`,
+            {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(updatedRiceProduction),
+            }
+        )
             .then((response) => response.json())
             .then((data) => {
                 console.log("Success:", data);
@@ -128,15 +125,15 @@ class Production {
             .catch((error) => {
                 console.error("Error:", error);
             });
-        getProduction();
+        getRiceProduction();
     }
 
-    removeProduction(productions) {
+    removeRiceProduction(riceProductions) {
         $.ajax({
-            url: "/api/productionsByRecords",
+            url: "/api/riceProductionsByRecords",
             method: "DELETE",
             data: {
-                productionData: productions, // Custom key for data
+                riceProductionData: riceProductions, // Custom key for data
                 _token: $('meta[name="csrf-token"]').attr("content"),
             },
             success: function (response) {
@@ -146,12 +143,12 @@ class Production {
                 console.error(xhr.responseText);
             },
         });
-        getProduction();
+        getRiceProduction();
     }
 }
 
-async function getProduction() {
-    // Fetch productions from Laravel backend
+async function getRiceProduction() {
+    // Fetch riceProductions from Laravel backend
     $.ajaxSetup({
         headers: {
             "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
@@ -161,75 +158,75 @@ async function getProduction() {
     // Return a promise
     return new Promise((resolve, reject) => {
         $.ajax({
-            url: "/api/productions",
+            url: "/api/riceProductions",
             method: "GET",
             success: function (response) {
-                // Assuming response is an array of productions [{...fields...}, ...]
-                productions = response; // Store the productions globally or return them
-                console.log("ajax get production");
-                console.log(productions);
-                resolve(productions); // Resolve the promise with the productions
+                // Assuming response is an array of riceProductions [{...fields...}, ...]
+                riceProductions = response; // Store the riceProductions globally or return them
+                console.log("ajax get riceProduction");
+                console.log(riceProductions);
+                resolve(riceProductions); // Resolve the promise with the riceProductions
             },
             error: function (xhr, status, error) {
-                console.error("Error fetching productions:", error);
+                console.error("Error fetching riceProductions:", error);
                 reject(error); // Reject the promise on error
             },
         });
     });
 }
 
-function initializeMethodsProduction() {
-    function searchProduction(searchTerm) {
+function initializeMethodsRiceProduction() {
+    function searchRiceProduction(searchTerm) {
         const lowerCaseSearchTerm = searchTerm.toLowerCase(); // Convert search term to lowercase for case-insensitive search
-        const foundProductions = productions.filter((production) => {
-            return Object.values(production).some((value) =>
-                value.toString().toLowerCase().includes(lowerCaseSearchTerm)
-            );
-        });
-        return foundProductions;
+        const foundRiceProductions = riceProductions.filter(
+            (riceProduction) => {
+                return Object.values(riceProduction).some((value) =>
+                    value.toString().toLowerCase().includes(lowerCaseSearchTerm)
+                );
+            }
+        );
+        return foundRiceProductions;
     }
 
     var pageSize = 5;
     var currentPage = 1;
 
-    async function displayProduction(searchTerm = null) {
+    async function displayRiceProduction(searchTerm = null) {
         // Simulate a delay of 1 second
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        $("#productionTableBody").empty();
+        $("#riceProductionTableBody").empty();
+
+        console.log(riceProductions);
 
         var startIndex = (currentPage - 1) * pageSize;
         var endIndex = startIndex + pageSize;
 
-        const foundProductions = searchTerm
-            ? searchProduction(searchTerm)
-            : productions;
+        const foundRiceProductions = searchTerm
+            ? searchRiceProduction(searchTerm)
+            : riceProductions;
 
-        if (foundProductions.length > 0) {
+        if (foundRiceProductions.length > 0) {
             for (var i = startIndex; i < endIndex; i++) {
-                if (i >= foundProductions.length) {
+                if (i >= foundRiceProductions.length) {
                     break;
                 }
-                var production = foundProductions[i];
-                $("#productionTableBody").append(`
-          <tr data-index=${production.productionId}>
-            <td>${production.barangay}</td>
-            <td>${production.cropName}</td>
-            <td>${production.variety}</td>
-            <td>${production.areaPlanted.toFixed(2)}</td>
-            <td>${production.monthPlanted}</td>
-            <td>${production.monthHarvested}</td>
-            <td>${production.volumeProduction.toFixed(2)}</td>
-            <td>₱${production.productionCost.toFixed(2)}</td>
-            <td>₱${production.price}</td>
-            <td>${production.volumeSold.toFixed(2)}</td>
-            <td>${production.season}</td>
-            <td>${production.monthYear}</td>
-          </tr>
+                var riceProduction = foundRiceProductions[i];
+                $("#riceProductionTableBody").append(`
+                    <tr data-index=${riceProduction.riceProductionId}>
+                        <td>${riceProduction.barangay}</td>
+                        <td>${riceProduction.cropName}</td>
+                        <td>${riceProduction.areaPlanted}</td>
+                        <td>${riceProduction.monthHarvested}</td>
+                        <td>${riceProduction.volumeProduction.toFixed(2)}</td>
+                        <td>₱${riceProduction.averageYield.toFixed(2)}</td>
+                        <td>${riceProduction.season}</td>
+                        <td>${riceProduction.year}</td>
+                    </tr>
         `);
             }
         } else {
-            $("#productionTableBody").append(`
+            $("#riceProductionTableBody").append(`
         <tr>
           <td colspan="12">No results found!</td>
         </tr>
@@ -237,30 +234,30 @@ function initializeMethodsProduction() {
         }
 
         // Reinitialize tablesorter after adding rows
-        $("#productionTable").trigger("update");
+        $("#riceProductionTable").trigger("update");
     }
 
     $("#search").on("input", function () {
         let searchTerm = $("#search").val();
-        displayProduction(searchTerm);
+        displayRiceProduction(searchTerm);
     });
 
     // Pagination: Previous button click handler
     $("#prevBtn").click(function () {
         if (currentPage > 1) {
             currentPage--;
-            displayProduction($("#search").val());
+            displayRiceProduction($("#search").val());
         }
     });
 
     // Pagination: Next button click handler
     $("#nextBtn").click(function () {
         var totalPages = Math.ceil(
-            searchProduction($("#search").val()).length / pageSize
+            searchRiceProduction($("#search").val()).length / pageSize
         );
         if (currentPage < totalPages) {
             currentPage++;
-            displayProduction($("#search").val());
+            displayRiceProduction($("#search").val());
         }
     });
 
@@ -270,7 +267,7 @@ function initializeMethodsProduction() {
             Dialog.downloadDialog()
                 .then((format) => {
                     console.log(format);
-                    download(format, productions);
+                    download(format, riceProductions);
                 })
                 .catch((error) => {
                     console.error("Error:", error); // Handle any errors that occur
@@ -291,7 +288,7 @@ function initializeMethodsProduction() {
     // Modified download function that uses the stored yearRange
     function download(format, data) {
         // Construct the filename using the stored yearRange
-        const filename = `Production Data ${yearRange}`;
+        const filename = `riceProduction Data ${yearRange}`;
 
         // Call the appropriate download function based on the format
         if (format === "csv") {
@@ -321,36 +318,28 @@ function initializeMethodsProduction() {
     }
 
     function downloadCSV(filename, data) {
-        // Define the header mapping for production data
+        // Define the header mapping for riceProduction data
         const headerMap = {
             barangay: "Barangay",
             cropName: "Commodity",
-            variety: "Variety",
             areaPlanted: "Area Planted (ha)",
-            monthPlanted: "Month Planted",
             monthHarvested: "Month Harvested",
             volumeProduction: "Volume of Production (ha)",
-            productionCost: "Cost of Production",
-            price: "Farm Gate Price",
-            volumeSold: "Volume Sold (ha)",
+            averageYield: "Average Yield (ha)",
             season: "Season",
-            monthYear: "Month Year",
+            year: "Year",
         };
 
         // Define the order of headers
         const headersToInclude = [
             "barangay",
             "cropName",
-            "variety",
             "areaPlanted",
-            "monthPlanted",
             "monthHarvested",
             "volumeProduction",
-            "productionCost",
-            "price",
-            "volumeSold",
+            "averageYield",
             "season",
-            "monthYear",
+            "year",
         ];
 
         // Map headers to the desired names
@@ -378,12 +367,6 @@ function initializeMethodsProduction() {
                     .map((key) => {
                         let value = row[key] !== undefined ? row[key] : ""; // Ensure non-null values
 
-                        // Format specific columns with peso sign
-                        if (key === "productionCost" || key === "price") {
-                            return value
-                                ? `₱${parseFloat(value).toFixed(2)}`
-                                : "";
-                        }
                         return escapeCSVValue(value);
                     })
                     .join(",")
@@ -406,36 +389,28 @@ function initializeMethodsProduction() {
     }
 
     function downloadExcel(filename, data) {
-        // Define the header mapping for production data
+        // Define the header mapping for riceProduction data
         const headerMap = {
             barangay: "Barangay",
             cropName: "Commodity",
-            variety: "Variety",
             areaPlanted: "Area Planted (ha)",
-            monthPlanted: "Month Planted",
             monthHarvested: "Month Harvested",
             volumeProduction: "Volume of Production (ha)",
-            productionCost: "Cost of Production",
-            price: "Farm Gate Price",
-            volumeSold: "Volume Sold (ha)",
+            averageYield: "Average Yield (ha)",
             season: "Season",
-            monthYear: "Month Year",
+            year: "Year",
         };
 
         // Define the order of headers
         const headersToInclude = [
             "barangay",
             "cropName",
-            "variety",
             "areaPlanted",
-            "monthPlanted",
             "monthHarvested",
-            "volumeProduction",
-            "productionCost",
-            "price",
-            "volumeSold",
+            "volumericeProduction",
+            "averageYield",
             "season",
-            "monthYear",
+            "year",
         ];
 
         // Map headers to the desired names
@@ -461,9 +436,6 @@ function initializeMethodsProduction() {
                 headersToInclude.map((header) => {
                     const value = row[headerMap[header]];
                     // Format specific columns with peso sign
-                    if (header === "productionCost" || header === "price") {
-                        return value ? `₱${parseFloat(value).toFixed(2)}` : "";
-                    }
                     return value;
                 })
             );
@@ -596,104 +568,103 @@ function initializeMethodsProduction() {
             .join(" ");
     }
 
-    async function initializeProductionDisplay() {
+    async function initializeRiceProductionDisplay() {
         try {
-            // Get production data
-            await getProduction(); // Wait for the data to be ready
+            // Get riceProduction data
+            await getRiceProduction(); // Wait for the data to be ready
 
-            // Now call displayProduction with the retrieved data
-            displayProduction();
+            // Now call displayriceProduction with the retrieved data
+            displayRiceProduction();
         } catch (error) {
-            console.error("Failed to initialize production display:", error);
+            console.error(
+                "Failed to initialize riceProduction display:",
+                error
+            );
             // Handle the error (e.g., show an error message to the user)
         }
     }
 
     // Call the initialization function
-    initializeProductionDisplay();
+    initializeRiceProductionDisplay();
 }
 
-// Function to build and return table rows as an array of Production instances
-// Function to build and return table rows as an array of Production instances
-async function processProductionData(
+// Function to build and return table rows as an array of riceProduction instances
+// Function to build and return table rows as an array of riceProduction instances
+async function processRiceProductionData(
     workbook,
     cellMappings,
     id,
     season,
-    monthYear
+    year
 ) {
     // Select the sheet you want to read from
     var sheetName = workbook.SheetNames[0]; // Assuming the first sheet
     var worksheet = workbook.Sheets[sheetName];
 
-    // Find the column index for 'Volume of Production' in cellMappings (or any other key you want to check)
-    var productionVolumeColumn = getKeyBySubstring(
+    // Find the column index for 'Volume of riceProduction' in cellMappings (or any other key you want to check)
+    var riceProductionVolumeColumn = getKeyBySubstring(
         cellMappings,
         "Volume of Production"
     );
-    console.log(productionVolumeColumn);
+    console.log(riceProductionVolumeColumn);
 
     // Decode the range of the worksheet
     var range = XLSX.utils.decode_range(worksheet["!ref"]);
-    let productionDatas = [];
+    let riceProductionDatas = [];
 
     // Loop through rows starting from the first row after the header
     for (var rowNum = range.s.r + 1; rowNum <= range.e.r; rowNum++) {
-        // Check if the corresponding row in column 'Volume of Production' has a numeric value or valid range
-        var cellAddressProduction =
-            productionVolumeColumn.charAt(0) + (rowNum + 1); // Dynamically construct column 'Volume of Production' cell address
-        var cellValueProduction = worksheet[cellAddressProduction]
-            ? worksheet[cellAddressProduction].v
+        // Check if the corresponding row in column 'Volume of riceProduction' has a numeric value or valid range
+        var cellAddressRiceProduction =
+            riceProductionVolumeColumn.charAt(0) + (rowNum + 1); // Dynamically construct column 'Volume of riceProduction' cell address
+        var cellValueRiceProduction = worksheet[cellAddressRiceProduction]
+            ? worksheet[cellAddressRiceProduction].v
             : "";
 
         // Check if the value is numeric or a valid range
-        if (!isNumeric(cellValueProduction)) {
+        if (!isNumeric(cellValueRiceProduction)) {
             continue; // Skip this row if it doesn't meet the filter criteria
         }
 
         // Read values based on the defined cell mappings
-        var productionData = {};
+        var riceProductionData = {};
         Object.keys(cellMappings).forEach(function (key) {
             var cellAddress = cellMappings[key].charAt(0) + (rowNum + 1); // Dynamically construct cell address based on key
             var cellValue = worksheet[cellAddress]
                 ? worksheet[cellAddress].v
                 : "";
-            productionData[key] = cellValue; // Store value for the current key in productionData
+            riceProductionData[key] = cellValue; // Store value for the current key in riceProductionData
         });
 
-        // Create a new Production instance
-        var production = new Production(
+        // Create a new riceProduction instance
+        var riceProduction = new RiceProduction(
             id,
-            getKeyBySubstring(productionData, "Barangay"),
-            getKeyBySubstring(productionData, "Commodity"),
-            getKeyBySubstring(productionData, "Variety"),
-            getKeyBySubstring(productionData, "Area Planted"),
-            getKeyBySubstring(productionData, "Month Planted"),
-            getKeyBySubstring(productionData, "Month Harvested"),
-            getKeyBySubstring(productionData, "Volume of Production"),
-            getKeyBySubstring(productionData, "Cost of Production"),
-            String(getKeyBySubstring(productionData, "Farm Gate Price")),
-            getKeyBySubstring(productionData, "Volume Sold"),
+            getKeyBySubstring(riceProductionData, "Barangay"),
+            getKeyBySubstring(riceProductionData, "Commodity"),
+            getKeyBySubstring(riceProductionData, "Area Planted"),
+            getKeyBySubstring(riceProductionData, "Month Harvested"),
+            getKeyBySubstring(riceProductionData, "Volume of Production"),
+            getKeyBySubstring(riceProductionData, "Average Yield"),
             season,
-            monthYear
+            year
         );
 
-        // Add the new production instance to productionDatas array
-        productionDatas.push(production);
+        // Add the new riceProduction instance to riceProductionDatas array
+        riceProductionDatas.push(riceProduction);
     }
 
-    // Check if the record ID already exists in the productionDatas array
-    var existingProduction = productions.find(
-        (p) => p.recordId === productionDatas[0].recordId
+    // Check if the record ID already exists in the riceProductionDatas array
+    var existingRiceProduction = riceProductions.find(
+        (p) => p.recordId === riceProductionDatas[0].recordId
     );
 
-    if (existingProduction) {
-        // Remove existing production before adding the new one
-        await productionDatas[0].removeProduction(productionDatas);
+    if (existingRiceProduction) {
+        // Remove existing riceProduction before adding the new one
+        await riceProductionDatas[0].removeRiceProduction(riceProductionDatas);
     }
 
-    productionDatas[0].addProduction(productionDatas);
-    return productions;
+    riceProductionDatas[0].addRiceProduction(riceProductionDatas);
+    return riceProductions;
 }
 
 // Helper function to check if a value is numeric
@@ -717,9 +688,9 @@ function getKeyBySubstring(obj, substr) {
 }
 
 export {
-    Production,
-    getProduction,
-    productions,
-    initializeMethodsProduction,
-    processProductionData,
+    RiceProduction,
+    getRiceProduction,
+    riceProductions,
+    initializeMethodsRiceProduction,
+    processRiceProductionData,
 };

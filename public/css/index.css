@@ -373,3 +373,7 @@ html, body {
 body.scrolled-down .header-container {
     top: -100px; /* Moves the header off-screen */
 }
+
+.view-btn:hover {
+    background-color: var(--color-secondary) !important;
+}

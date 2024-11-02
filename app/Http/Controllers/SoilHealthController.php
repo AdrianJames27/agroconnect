@@ -148,6 +148,7 @@ class SoilHealthController extends Controller
         $request->validate([
             'recordId' => 'required|integer',
             'monthYear' => 'required|string',  // The new value for monthYear
+            'season' => 'required|string',
         ]);
 
         // Find all records with the given recordId
@@ -161,6 +162,7 @@ class SoilHealthController extends Controller
         // Update the monthYear for all matching records
         foreach ($records as $record) {
             $record->monthYear = $request->input('monthYear');
+            $record->season = $request->input('season');
             $record->save();
         }
 

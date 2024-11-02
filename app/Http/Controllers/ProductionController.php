@@ -153,7 +153,8 @@ class ProductionController extends Controller
         // Validate request data
         $request->validate([
             'recordId' => 'required|integer',
-            'monthYear' => 'required|string',  // The new value for monthYear
+            'monthYear' => 'required|string',
+            'season' => 'required|string',
         ]);
 
         // Find all records with the given recordId
@@ -164,15 +165,17 @@ class ProductionController extends Controller
             return response()->json(['message' => 'No records found with the provided recordId'], 404);
         }
 
-        // Update the monthYear for all matching records
+        // Update the monthYear and season for all matching records
         foreach ($records as $record) {
             $record->monthYear = $request->input('monthYear');
+            $record->season = $request->input('season'); // Update the season field
             $record->save();
         }
 
         // Return a success response
-        return response()->json(['message' => 'MonthYear updated successfully'], 200);
+        return response()->json(['message' => 'MonthYear and season updated successfully'], 200);
     }
+
 
     public function getTotalAreaPlanted($cropId, $variety)
     {

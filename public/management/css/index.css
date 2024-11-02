@@ -463,6 +463,9 @@ select option:disabled {
     background-color: #d7d9e0; /* Light blue background on hover */
 }
 
+.btn-custom:hover, .btn-green:hover {
+    background-color: var(--color-secondary) !important;
+}
 
 /* Default for all screens */
 .form-spacing {

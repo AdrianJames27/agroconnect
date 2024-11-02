@@ -585,6 +585,7 @@ async function processDiseaseData(
             ? worksheet[totalAffectedColumn].v
             : 0;
 
+        console.log(getKeyBySubstring(diseaseData, "Disease Observed"));
         // Create a new Disease instance
         var disease = new Disease(
             id,
@@ -612,7 +613,7 @@ async function processDiseaseData(
             await diseaseDatas[0].removeDisease(diseaseDatas);
         }
 
-        diseaseDatas[0].addDisease(diseaseDatas.slice(2));
+        diseaseDatas[0].addDisease(diseaseDatas);
     }
     return diseases;
 }

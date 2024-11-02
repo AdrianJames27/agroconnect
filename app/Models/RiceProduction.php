@@ -5,19 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Production extends Model
+class RiceProduction extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'productionId'; // Specify the primary key field name
+    protected $primaryKey = 'riceProductionId'; // Specify the primary key field name
     protected $fillable = [
         'recordId',
         'barangay',
         'cropName',
         'areaPlanted',
+        'monthHarvested',
         'volumeProduction',
         'averageYield',
-        'monthHarvested',
         'season',
         'year'
     ];

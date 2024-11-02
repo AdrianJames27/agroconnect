@@ -1,4 +1,5 @@
 import { processDiseaseData } from "../classes/Disease.js";
+import { processRiceProductionData } from "../classes/RiceProduction.js";
 import { processPestData } from "../classes/Pest.js";
 import { processPriceData } from "../classes/Price.js";
 import { processProductionData } from "../classes/Production.js";
@@ -30,11 +31,9 @@ class Record {
     }
 
     async createRecord(record) {
-        const existingRecord = records.find(
-            (b) => b.monthYear === record.monthYear && b.type === record.type
-        );
+        const existingRecord = records.find((b) => b.name === record.name);
         if (existingRecord) {
-            alert("Record with the same type already exists");
+            alert("Record with the same name already exists");
             return;
         }
 
@@ -394,6 +393,9 @@ function initializeMethodsRecord(dataType) {
         let urls = [];
 
         switch (dataType) {
+            case "riceProduction":
+                urls = ["/api/riceProductions/update-year"];
+                break;
             case "production":
                 urls = ["/api/productions/update-month-year"];
                 break;
@@ -442,14 +444,32 @@ function initializeMethodsRecord(dataType) {
         event.preventDefault();
         var recordId = Number($("#recordId").val());
         var userId = user.userId;
-        var month = $("#monthPicker select").val(); // input is inside #monthPicker
-        var year = $("#yearPicker select").val(); // input is inside #yearPicker
-        var season = getSeason(month);
+        var season = $("#seasonPicker select").val();
         var type = dataType;
-        var monthYear = `${month} ${year}`;
+        var nameInput = $("#nameInput").val();
+        if (dataType === "riceProduction") {
+            var year = $("#yearPicker select").val();
+            var monthYear = `${year}`;
+        } else {
+            var month = $("#monthPicker select").val();
+            var year = $("#yearPicker select").val();
+            var monthYear = `${month} ${year}`;
+        }
+
         var name = `${dataType
             .replace(/([a-z])([A-Z])/g, "$1 $2")
-            .replace(/^./, (str) => str.toUpperCase())} ${monthYear}`;
+            .replace(/^./, (str) => str.toUpperCase())}`;
+
+        if (dataType === "damage") {
+            name = `${nameInput} ${name}`; // Prepend nameInput to the name
+        }
+
+        // Check if dataType is 'riceProduction' and prepend the season before monthYear if true
+        if (dataType === "riceProduction") {
+            name += ` ${season.replace(/^./, (str) => str.toUpperCase())}`; // Capitalize the first letter of season
+        }
+
+        name += ` ${monthYear}`; // Append monthYear at the end
 
         var fileInput = document.getElementById("fileRecord");
         var file = fileInput.files[0];
@@ -566,6 +586,7 @@ function initializeMethodsRecord(dataType) {
                             const requestData = {
                                 recordId: recordId,
                                 monthYear: monthYear,
+                                season: season,
                             };
                             updateMonthYear(dataType, requestData);
                             displayRecords();
@@ -606,6 +627,18 @@ function initializeMethodsRecord(dataType) {
         let methodName;
         let methodName2;
         switch (dataType) {
+            case "riceProduction":
+                checkFormat = "RICE PRODUCTION MONITORING REPORT";
+                terms = [
+                    "Barangay",
+                    "Commodity",
+                    "Area Planted",
+                    "Month Harvested",
+                    "Volume of Production",
+                    "Average Yield",
+                ];
+                methodName = processRiceProductionData;
+                break;
             case "production":
                 checkFormat = "PRODUCTION MONITORING REPORT";
                 terms = [
@@ -914,10 +947,17 @@ function initializeMethodsRecord(dataType) {
             var parts = monthYear.split(" ");
             var month = parts[0]; // 'July'
             var year = parts[1]; // '2024'
+            var season = record.season; // 'July'
 
             // Set the values in the input fields
+            $("#seasonPicker select").val(season);
             $("#monthPicker select").val(month);
             $("#yearPicker select").val(year);
+
+            if (dataType === "riceProduction") {
+                var year = record.monthYear; // '2024'
+                $("#yearPicker select").val(year);
+            }
             $("#fileRecord").removeAttr("required");
             $("#lblUpload").text("Insert New File (optional):");
             $("#submitBtn").text("Update Record");

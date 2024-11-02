@@ -1,19 +1,20 @@
-import { initializeDataEntriesMenu } from './DataEntriesMenu.js';
-import { getProduction } from '../classes/Production.js';
+import { initializeDataEntriesMenu } from "./DataEntriesMenu.js";
+import { getProduction } from "../classes/Production.js";
 
 export default function initDashboard() {
-    $(document).ready(function() {
-    // Function to initialize the data entries view
-    function initializeDataEntriesView() {
-        $('#main-content').html(`
+    $(document).ready(function () {
+        // Function to initialize the data entries view
+        function initializeDataEntriesView() {
+            $("#main-content").html(`
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
             <div>
                 <select id="entries-option" class="form-select" name="role" required>
-                    <option value="productions">Productions</option>
-                    <option value="prices">Prices</option>
-                    <option value="pests">Pests</option>
-                    <option value="diseases">Diseases</option>
-                     <option value="damages">Damages</option>
+                 <option value="riceProductions">Rice Productions</option>
+                    <option value="productions">HVC Productions</option>
+                    <option value="prices">HVC Prices</option>
+                    <option value="pests">HVC Pests</option>
+                    <option value="diseases">HVC Diseases</option>
+                     <option value="damages">HVC Damages</option>
                     <option value="soil_healths">Soil Healths</option>
                 </select>
             </div>
@@ -28,17 +29,17 @@ export default function initDashboard() {
             <!-- Content for the selected entries option will be dynamically loaded here -->
         </div>
     `);
-        // Handle change in entries option select
-        $('#entries-option').change(function() {
-            var selectedOption = $(this).val();
-            initializeDataEntriesMenu(selectedOption);
-        });
+            // Handle change in entries option select
+            $("#entries-option").change(function () {
+                var selectedOption = $(this).val();
+                initializeDataEntriesMenu(selectedOption);
+            });
 
-        // Initialize default maintenance option view
-        var defaultOption = $('#entries-option').val();
-        initializeDataEntriesMenu(defaultOption);
-    }
+            // Initialize default maintenance option view
+            var defaultOption = $("#entries-option").val();
+            initializeDataEntriesMenu(defaultOption);
+        }
 
-    initializeDataEntriesView();
+        initializeDataEntriesView();
     });
 }

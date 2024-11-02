@@ -517,7 +517,6 @@ function populateCategoryOptions(type) {
 
     // Define all options
     const options = {
-        usage_level: "Production Usage Level",
         production_volume: "Average Production Volume",
         price_income_per_hectare: "Average Income",
         profit_per_hectare: "Average Profit",
