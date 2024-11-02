@@ -8,6 +8,8 @@ import {
     getYearRange,
     addDownload,
     getUniqueCropNames,
+    getDamages,
+    getRiceProduction,
 } from "./fetch.js";
 import * as stats from "./statistics.js";
 import Dialog from "../management/components/helpers/Dialog.js";
@@ -108,6 +110,8 @@ class MapTrends {
         $("title").empty();
         $("#title").html(`<p>${label}</p>`); // Update title
         $(".label-box").empty();
+
+        console.log(data);
 
         // Initialize missing barangay data
         barangays.forEach((barangay) => {
@@ -411,9 +415,12 @@ async function updateCropOptions() {
     let options = "";
 
     try {
-        const uniqueCropNames = await getUniqueCropNames(season, type);
+        // Check if the selected type is rice
+        if (type === "rice") {
+            options = '<option value="rice">Rice</option>'; // Only option for rice
+        } else {
+            const uniqueCropNames = await getUniqueCropNames(season, type);
 
-        if (uniqueCropNames.length > 0) {
             options =
                 uniqueCropNames.length > 0
                     ? uniqueCropNames
@@ -426,8 +433,6 @@ async function updateCropOptions() {
                           )
                           .join("")
                     : '<option value="">No crops available</option>';
-        } else {
-            options = '<option value="">No crops available</option>';
         }
     } catch (error) {
         console.error("Failed to update crop options:", error);
@@ -444,6 +449,19 @@ async function handleCategoryChange() {
     const crop = $("#crop").val();
     const category = $("#category").val();
 
+    console.log(crop);
+
+    // Check if any crop is selected
+    if (!crop) {
+        console.log(true);
+        $(".available").hide();
+        $("#unavailable").show();
+        $("#interpretation").hide();
+        return; // Exit the function if no crop is selected
+    } else {
+        console.log(false);
+    }
+
     let categoryText,
         dataset = [],
         data = [],
@@ -455,14 +473,25 @@ async function handleCategoryChange() {
     switch (category) {
         case "area_planted":
             key = "areaPlanted";
-            data = await getProduction(crop, season);
+            if (crop === "rice") {
+                data = await getRiceProduction(crop, season);
+                console.log(data);
+            } else {
+                data = await getProduction(crop, season);
+            }
+
             categoryText = `Area Planted Per Barangay (${yearRange})`;
             dataset = stats.countAverageAreaPlantedBarangay(data);
             text = "area planted";
             break;
         case "production_volume":
             key = "volumeProductionPerHectare";
-            data = await getProduction(crop, season);
+            if (crop === "rice") {
+                data = await getRiceProduction(crop, season);
+                console.log(data);
+            } else {
+                data = await getProduction(crop, season);
+            }
             categoryText = `Production Volume per Hectare Per Barangay (${yearRange})`;
             dataset = stats.averageVolumeProductionBarangay(data);
             text = "production volume per hectare";
@@ -495,6 +524,14 @@ async function handleCategoryChange() {
             dataset = stats.profitPerHectareBarangay(data);
             text = "profit per hectare";
             break;
+        case "damages":
+            categoryText = `Damages Report (${yearRange})`;
+            key = "damagePercentage";
+            data = await getDamages(crop, season);
+            dataset = stats.calculateDamagePerBarangay(data);
+            text = "damage percentage";
+            console.log(dataset);
+            break;
         default:
             categoryText = "Category not recognized";
     }
@@ -502,11 +539,13 @@ async function handleCategoryChange() {
     if (dataset.length !== 0 && crop !== null) {
         $("#unavailable").hide();
         $(".available").show();
+        $("#interpretation").show();
         const mt = new MapTrends(season, type, crop, categoryText);
         mt.displayMapTrends(barangays, dataset, key, categoryText, text);
         currentType = key;
     } else {
         $(".available").hide();
+        $("#interpretation").hide();
         $("#unavailable").show();
     }
 }
@@ -524,6 +563,7 @@ function populateCategoryOptions(type) {
         price: "Average Price",
         pest_occurrence: "Pest Occurrence",
         disease_occurrence: "Disease Occurrence",
+        damages: "Damages Report",
     };
 
     // Filter options based on type
@@ -545,12 +585,6 @@ function populateCategoryOptions(type) {
 
 // Initialize with default crop options and attach event listeners
 $(document).ready(async function () {
-    // Attach event listener to #type element
-    $("#type").on("change", function () {
-        const selectedType = $(this).val();
-        populateCategoryOptions(selectedType);
-    });
-
     await initializeGlobalMap();
     await initializeBarangays();
     await updateCropOptions();
@@ -558,6 +592,8 @@ $(document).ready(async function () {
 
     // Attach event listener to #type element
     $("#type").on("change", function () {
+        const selectedType = $(this).val();
+        populateCategoryOptions(selectedType);
         updateCropOptions().then(() => handleCategoryChange());
     });
 
@@ -565,7 +601,8 @@ $(document).ready(async function () {
     $("#season").on("change", function () {
         updateCropOptions().then(() => handleCategoryChange());
     });
-    $("#type, #category, #crop, #season").on("change", handleCategoryChange);
+
+    $("#category, #crop").on("change", handleCategoryChange);
 
     $(document).ready(function () {
         $(".download-btn").click(function () {

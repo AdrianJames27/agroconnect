@@ -7,6 +7,8 @@ import {
     getProductions,
     addDownload,
     getUniqueCropNames,
+    getRiceProduction,
+    getDamages,
 } from "./fetch.js";
 import * as stats from "./statistics.js";
 import Dialog from "../management/components/helpers/Dialog.js";
@@ -134,7 +136,10 @@ class SeasonalTrends {
                     pointRadius: 5, // Size of the points
                 })),
         };
-        const chartType = keys[0] === "totalOccurrence" ? "scatter" : "line";
+        const chartType =
+            keys[0] === "totalOccurrence" || keys[0] === "averageYieldLoss"
+                ? "scatter"
+                : "line";
 
         const lineChartConfig = {
             type: chartType,
@@ -400,9 +405,12 @@ async function updateCropOptions() {
     let options = "";
 
     try {
-        const uniqueCropNames = await getUniqueCropNames(season, type);
+        // Check if the selected type is rice
+        if (type === "rice") {
+            options = '<option value="rice">Rice</option>'; // Only option for rice
+        } else {
+            const uniqueCropNames = await getUniqueCropNames(season, type);
 
-        if (uniqueCropNames.length > 0) {
             options =
                 uniqueCropNames.length > 0
                     ? uniqueCropNames
@@ -415,8 +423,6 @@ async function updateCropOptions() {
                           )
                           .join("")
                     : '<option value="">No crops available</option>';
-        } else {
-            options = '<option value="">No crops available</option>';
         }
     } catch (error) {
         console.error("Failed to update crop options:", error);
@@ -437,7 +443,9 @@ async function handleCategoryChange() {
     if (!crop) {
         $("#available").hide();
         $("#unavailable").hide();
+        $("#interpretation").hide();
         $("#selectFirst").show();
+        $("#downloadBtn").hide();
         return; // Exit the function if no crop is selected
     }
 
@@ -456,13 +464,24 @@ async function handleCategoryChange() {
         case "area_planted":
             categoryText = "Area Planted (Hectare)";
             key = ["areaPlanted"];
-            data = await getProduction(crop, season);
+            if (crop === "rice") {
+                data = await getRiceProduction(crop, season);
+                console.log(data);
+            } else {
+                data = await getProduction(crop, season);
+            }
+
             dataset = stats.countAverageAreaPlanted(data);
             break;
         case "production_volume":
             categoryText = "Production Volume Per Hectare";
             key = ["volumeProductionPerHectare", "totalVolume", "totalArea"];
-            data = await getProduction(crop, season);
+            if (crop === "rice") {
+                data = await getRiceProduction(crop, season);
+                console.log(data);
+            } else {
+                data = await getProduction(crop, season);
+            }
             dataset = stats.averageVolumeProduction(data);
             console.log(dataset);
             break;
@@ -474,7 +493,13 @@ async function handleCategoryChange() {
             break;
         case "pest_occurrence":
             categoryText = "Pest Occurrence";
-            key = ["totalOccurrence", "pestOccurrences"];
+            key = [
+                "totalOccurrence",
+                "pestOccurrences",
+                "totalAffected",
+                "totalPlanted",
+                "percentage",
+            ];
             data = await getPest(crop, season);
             dataset = stats.countPestOccurrence(data);
             console.log(dataset);
@@ -503,6 +528,17 @@ async function handleCategoryChange() {
             data = await getProduction(crop, season);
             dataset = stats.profitPerHectare(data);
             break;
+        case "damages":
+            categoryText = "Damages Report";
+            key = [
+                "averageYieldLoss",
+                "totalFarmers",
+                "totalAreaAffected",
+                "totalGrandValue",
+            ];
+            data = await getDamages(crop, season);
+            dataset = stats.calculateDamages(data);
+            break;
         default:
             categoryText = "Category not recognized";
     }
@@ -510,6 +546,7 @@ async function handleCategoryChange() {
     if (dataset.length !== 0) {
         $("#unavailable").hide();
         $("#selectFirst").hide();
+        $("#interpretation").show();
         $("#available").show();
         $("#downloadBtn").show();
         const st = new SeasonalTrends(season, type, crop, categoryText);
@@ -525,6 +562,7 @@ async function handleCategoryChange() {
         currentType = key[0];
     } else {
         $("#available").hide();
+        $("#interpretation").hide();
         $("#selectFirst").hide();
         $("#unavailable").show();
         $("#downloadBtn").hide();
@@ -547,6 +585,7 @@ function populateCategoryOptions(type) {
         price: "Average Price",
         pest_occurrence: "Pest Occurrence",
         disease_occurrence: "Disease Occurrence",
+        damages: "Damages Reports",
     };
 
     // Filter options based on type
@@ -722,11 +761,11 @@ function interpretData(data) {
             growthRateOverall: overallGrowthRates[field],
             growthRateLatestMonth: latestGrowthRate,
             performance:
-                latestGrowthRate > 0
+                overallGrowthRates[field] > 0
                     ? "Increase"
-                    : latestGrowthRate < 0
+                    : overallGrowthRates[field] < 0
                     ? "Decrease"
-                    : "Stable", // Performance based on latest growth rate
+                    : "Stable", // Performance based on overall growth rate
         };
     });
 
@@ -748,18 +787,33 @@ function interpretData(data) {
     const highlightedField = numericFields[numericFields.length - 1]; // Get the last item
 
     // Add explanation for highlighted field performance
-    const highlightedPerformance = results[highlightedField].performance;
+    const overallGrowthRate = overallGrowthRates[highlightedField];
     const formattedHighlightedFieldName = highlightedField
         .replace(/([A-Z])/g, " $1")
         .toLowerCase(); // Format the highlighted field name
     let performanceExplanation;
 
-    if (highlightedPerformance === "Increase") {
-        performanceExplanation = `The crop's <strong>${formattedHighlightedFieldName}</strong> has shown a positive trend, indicating growth in performance compared to the previous period.`;
-    } else if (highlightedPerformance === "Decrease") {
-        performanceExplanation = `The crop's <strong>${formattedHighlightedFieldName}</strong> has experienced a decline in performance, suggesting potential issues that may need addressing.`;
+    // Determine performance category based on overall growth rate
+    if (overallGrowthRate > 20) {
+        performanceExplanation = `The crop's <strong>${formattedHighlightedFieldName}</strong> has shown a performance categorized as <strong>Excellent</strong> with a growth rate of <strong>${overallGrowthRate.toFixed(
+            2
+        )}%</strong>, indicating significant growth compared to the previous season.`;
+    } else if (overallGrowthRate > 5) {
+        performanceExplanation = `The crop's <strong>${formattedHighlightedFieldName}</strong> has shown a performance categorized as <strong>Good</strong> with a growth rate of <strong>${overallGrowthRate.toFixed(
+            2
+        )}%</strong>, reflecting a positive trend in production levels.`;
+    } else if (overallGrowthRate >= -5) {
+        performanceExplanation = `The crop's <strong>${formattedHighlightedFieldName}</strong> performance has remained <strong>Stable</strong> with a growth rate of <strong>${overallGrowthRate.toFixed(
+            2
+        )}%</strong>, indicating consistency in production levels.`;
+    } else if (overallGrowthRate >= -20) {
+        performanceExplanation = `The crop's <strong>${formattedHighlightedFieldName}</strong> has experienced a performance categorized as <strong>Poor</strong> with a growth rate of <strong>${overallGrowthRate.toFixed(
+            2
+        )}%</strong>, suggesting potential issues that may need addressing.`;
     } else {
-        performanceExplanation = `The crop's <strong>${formattedHighlightedFieldName}</strong> performance has remained stable, indicating consistency in production levels.`;
+        performanceExplanation = `The crop's <strong>${formattedHighlightedFieldName}</strong> has shown a performance categorized as <strong>Very Poor</strong> with a growth rate of <strong>${overallGrowthRate.toFixed(
+            2
+        )}%</strong>, indicating significant decline and requiring immediate attention.`;
     }
 
     // Add performance explanation above the cards

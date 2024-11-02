@@ -222,6 +222,43 @@ async function getDataEntries() {
     }
 }
 
+async function getRiceProduction(cropName = "", season = "") {
+    try {
+        const response = await $.ajax({
+            url: "api/riceProductions", // Update this path to the location of your production.json
+            type: "GET",
+            dataType: "json",
+        });
+
+        const lowerCaseCropName = cropName ? cropName.toLowerCase() : "";
+        const lowerCaseSeason = season ? season.toLowerCase() : "";
+
+        const formattedResponse = response
+            .filter(
+                (item) =>
+                    (lowerCaseCropName === "" ||
+                        item.cropName.toLowerCase() === lowerCaseCropName) &&
+                    (lowerCaseSeason === "" ||
+                        item.season.toLowerCase() === lowerCaseSeason)
+            )
+            .map((item) => {
+                // Transform barangay to have the first letter uppercase
+                const formattedBarangay =
+                    item.barangay.charAt(0).toUpperCase() +
+                    item.barangay.slice(1).toLowerCase();
+                return { ...item, barangay: formattedBarangay };
+            });
+
+        return formattedResponse;
+    } catch (error) {
+        console.error(
+            "An error occurred while fetching the rice production data:",
+            error
+        );
+        throw error;
+    }
+}
+
 async function getProduction(cropName = "", season = "") {
     try {
         const response = await $.ajax({
@@ -241,6 +278,31 @@ async function getProduction(cropName = "", season = "") {
     } catch (error) {
         console.error(
             "An error occurred while fetching the production data:",
+            error
+        );
+        throw error;
+    }
+}
+
+async function getDamages(cropName = "", season = "") {
+    try {
+        const response = await $.ajax({
+            url: "api/damages",
+            type: "GET",
+            dataType: "json",
+        });
+        const lowerCaseCropName = cropName ? cropName.toLowerCase() : "";
+        const lowerCaseSeason = season ? season.toLowerCase() : "";
+        return response.filter(
+            (item) =>
+                (lowerCaseCropName === "" ||
+                    item.cropName.toLowerCase() === lowerCaseCropName) &&
+                (lowerCaseSeason === "" ||
+                    item.season.toLowerCase() === lowerCaseSeason)
+        );
+    } catch (error) {
+        console.error(
+            "An error occurred while fetching the damages data:",
             error
         );
         throw error;
@@ -397,6 +459,7 @@ export {
     getCrop,
     getBarangay,
     getProduction,
+    getRiceProduction,
     getProductions,
     getPrice,
     getPest,
@@ -413,4 +476,5 @@ export {
     getCropVarieties,
     getCropName,
     getTotalAreaPlanted,
+    getDamages,
 };

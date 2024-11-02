@@ -9,6 +9,7 @@ import {
     getPest,
     getDisease,
     addDownload,
+    getRiceProduction,
 } from "./fetch.js";
 import * as stats from "./statistics.js";
 let crops = [];
@@ -116,55 +117,71 @@ class TopCrops {
 
         // Process each crop entry
         const processedCrops = cropData.map((item) => {
-            // Calculate per-hectare values where applicable
             const volumeProductionPerHectare =
                 item.totalArea > 0 ? item.totalVolume / item.totalArea : 0;
-
-            // Calculate composite score based only on total values
-            const compositeScore = item.totalVolume + item.totalArea;
-
-            return {
-                cropName: item.cropName,
-                type: item.cropType,
-                compositeScore: compositeScore,
-                // Updated remarks with inline function usage
-                remarks:
-                    `The total area is <strong>${item.totalArea.toFixed(
-                        2
-                    )} hectares</strong>. ` +
-                    `Average volume per hectare is <strong>${volumeProductionPerHectare.toFixed(
-                        2
-                    )}</strong>. ` +
-                    `The current price stands at <strong>₱${item.price.toFixed(
-                        2
-                    )}</strong>. ` +
-                    `Pest occurrences total <strong>${
-                        item.pestOccurrence
-                    }</strong>, which is <strong>${calculateOccurrencePercentage(
-                        item.pestOccurrence,
-                        item.totalPlanted
-                    ).toFixed(2)}%</strong> of the total planted area. ` +
-                    `Disease occurrences are <strong>${
-                        item.diseaseOccurrence
-                    }</strong>, representing <strong>${calculateOccurrencePercentage(
-                        item.diseaseOccurrence,
-                        item.totalPlanted
-                    ).toFixed(2)}%</strong> of the total planted area. ` +
-                    `Additionally, the average income per hectare is <strong>₱${(
-                        item.totalIncome / item.totalArea
-                    ).toFixed(2)}</strong>, ` +
-                    `while the average profit per hectare amounts to <strong>₱${(
-                        item.totalProfit / item.totalArea
-                    ).toFixed(2)}</strong>.`,
-
-                volumeProductionPerHectare:
-                    volumeProductionPerHectare.toFixed(2),
-                price: item.price.toFixed(2),
-                pestOccurrence: item.pestOccurrence,
-                diseaseOccurrence: item.diseaseOccurrence,
-                totalArea: item.totalArea,
-                totalVolume: item.totalVolume,
-            };
+            const compositeScore = volumeProductionPerHectare; // This focuses on efficiency.
+            if (item.cropType === "Rice") {
+                // Handle rice-specific calculations
+                return {
+                    cropName: item.cropName,
+                    type: item.cropType,
+                    compositeScore: compositeScore,
+                    remarks:
+                        `Rice: The total area is <strong>${item.totalArea.toFixed(
+                            2
+                        )} hectares</strong>. ` +
+                        `The total volume is <strong>${item.totalVolume.toFixed(
+                            2
+                        )}</strong>. ` +
+                        `The average yield is <strong>${item.averageYield.toFixed(
+                            2
+                        )}</strong>.`,
+                    totalArea: item.totalArea,
+                    totalVolume: item.totalVolume,
+                    averageYield: item.averageYield, // Assuming averageYield is provided in the data
+                };
+            } else {
+                return {
+                    cropName: item.cropName,
+                    type: item.cropType,
+                    compositeScore: compositeScore,
+                    remarks:
+                        `The total area is <strong>${item.totalArea.toFixed(
+                            2
+                        )} hectares</strong>. ` +
+                        `Average volume per hectare is <strong>${volumeProductionPerHectare.toFixed(
+                            2
+                        )}</strong>. ` +
+                        `The current price stands at <strong>₱${item.price.toFixed(
+                            2
+                        )}</strong>. ` +
+                        `Pest occurrences total <strong>${
+                            item.pestOccurrence
+                        }</strong>, which is <strong>${calculateOccurrencePercentage(
+                            item.pestOccurrence,
+                            item.totalPlanted
+                        ).toFixed(2)}%</strong> of the total planted area. ` +
+                        `Disease occurrences are <strong>${
+                            item.diseaseOccurrence
+                        }</strong>, representing <strong>${calculateOccurrencePercentage(
+                            item.diseaseOccurrence,
+                            item.totalPlanted
+                        ).toFixed(2)}%</strong> of the total planted area. ` +
+                        `Additionally, the average income per hectare is <strong>₱${(
+                            item.totalIncome / item.totalArea
+                        ).toFixed(2)}</strong>, ` +
+                        `while the average profit per hectare amounts to <strong>₱${(
+                            item.totalProfit / item.totalArea
+                        ).toFixed(2)}</strong>.`,
+                    volumeProductionPerHectare:
+                        volumeProductionPerHectare.toFixed(2),
+                    price: item.price.toFixed(2),
+                    pestOccurrence: item.pestOccurrence,
+                    diseaseOccurrence: item.diseaseOccurrence,
+                    totalArea: item.totalArea,
+                    totalVolume: item.totalVolume,
+                };
+            }
         });
 
         // Sort crops by composite score in descending order
@@ -183,7 +200,17 @@ class TopCrops {
         let promises = data.map((crop) => {
             // Find matching crop details
             const cropDetails = crops.find((c) => c.cropName === crop.cropName);
-            if (!cropDetails) return Promise.resolve(null); // Skip if no crop details found
+
+            // Check if crop details exist
+            if (!cropDetails) {
+                // If no crop details found, return a row indicating this
+                return Promise.resolve(`<tr class="text-center">
+                    <td>${crop.cropName}</td>
+                    <td>${crop.type}</td>
+                    <td>${crop.remarks}</td>
+                    <td>No details available</td>
+                </tr>`);
+            }
 
             const varietyDetails = varieties.filter(
                 (v) => v.cropId === cropDetails.cropId
@@ -208,7 +235,6 @@ class TopCrops {
                             pestDiseaseResistance:
                                 variety.pestDiseaseResistance,
                             recommendedPractices: variety.recommendedPractices,
-                            // Include any other specific fields you want from the variety
                         }; // Return only the specific fields needed from variety
                     });
                 });
@@ -218,79 +244,99 @@ class TopCrops {
                     (updatedVarietyDetails) => {
                         const cropImg = cropDetails.cropImg || "";
                         const description = `
-                    <div class='card m-3 shadow-sm'>
-                        <div class='card-header bg-success text-white'>
-                            <h5 class='mb-0'>Crop Details</h5>
+                        <div class='card m-3 shadow-sm'>
+                            <div class='card-header bg-success text-white'>
+                                <h5 class='mb-0'>Crop Details</h5>
+                            </div>
+                            <div class='card-body'>
+                                <p class='card-text'><strong>Scientific Name:</strong> <span class='text-primary'>${
+                                    cropDetails.scientificName || "N/A"
+                                }</span></p>
+                                <p class='card-text'><strong>Unit:</strong> <span class='text-primary'>${
+                                    cropDetails.unit || "N/A"
+                                }</span></p>
+                                <p class='card-text'><strong>Weight:</strong> <span class='text-primary'>${
+                                    cropDetails.weight || "N/A"
+                                }</span></p>
+                                <p class='card-text'><strong>Planting Season:</strong> <span class='text-primary'>${
+                                    cropDetails.plantingSeason || "N/A"
+                                }</span></p>
+                                <p class='card-text'><strong>Growth Duration:</strong> <span class='text-primary'>${
+                                    cropDetails.growthDuration || "N/A"
+                                }</span></p>
+                            </div>
                         </div>
-                        <div class='card-body'>
-                            <p class='card-text'><strong>Scientific Name:</strong> <span class='text-primary'>${cropDetails.scientificName}</span></p>
-                            <p class='card-text'><strong>Unit:</strong> <span class='text-primary'>${cropDetails.unit}</span></p>
-                            <p class='card-text'><strong>Weight:</strong> <span class='text-primary'>${cropDetails.weight}</span></p>
-                            <p class='card-text'><strong>Planting Season:</strong> <span class='text-primary'>${cropDetails.plantingSeason}</span></p>
-                            <p class='card-text'><strong>Growth Duration:</strong> <span class='text-primary'>${cropDetails.growthDuration}</span></p>
-                        </div>
-                    </div>
-                `;
+                    `;
 
                         const cropTitle = cropDetails.cropName;
 
                         // Create table row with View button
                         const row = `<tr class="text-center">
-                    <td>${crop.cropName}</td>
-                    <td>${crop.type}</td>
-                    <td>${crop.remarks}</td>
-                   <td>
-                        <button class="btn btn-green view-btn" 
-                            data-img="${cropImg}" 
-                            data-description="${description}" 
-                            data-crop="${cropTitle}" 
-                            data-variety='${JSON.stringify(
-                                updatedVarietyDetails
-                            )}'> <!-- Updated to use specific variety details -->
-                            View Information
-                        </button>
-                    </td>
+                        <td>${crop.cropName}</td>
+                        <td>${crop.type}</td>
+                        <td>${crop.remarks}</td>
+                        <td>
+                            <button class="btn btn-green view-btn" 
+                                data-img="${cropImg}" 
+                                data-description="${description}" 
+                                data-crop="${cropTitle}" 
+                                data-variety='${JSON.stringify(
+                                    updatedVarietyDetails
+                                )}'>
+                                View Information
+                            </button>
+                        </td>
                     </tr>`;
 
                         return row; // Return the row to append later
                     }
                 );
             } else {
-                // If no varieties, return a row with an empty variety array
+                // If no varieties, return a row indicating this
                 const cropImg = cropDetails.cropImg || "";
                 const description = `
-                <div class='card m-3 shadow-sm'>
-                    <div class='card-header bg-success text-white'>
-                        <h5 class='mb-0'>Crop Details</h5>
+                    <div class='card m-3 shadow-sm'>
+                        <div class='card-header bg-success text-white'>
+                            <h5 class='mb-0'>Crop Details</h5>
+                        </div>
+                        <div class='card-body'>
+                            <p class='card-text'><strong>Scientific Name:</strong> <span class='text-primary'>${
+                                cropDetails.scientificName || "N/A"
+                            }</span></p>
+                            <p class='card-text'><strong>Unit:</strong> <span class='text-primary'>${
+                                cropDetails.unit || "N/A"
+                            }</span></p>
+                            <p class='card-text'><strong>Weight:</strong> <span class='text-primary'>${
+                                cropDetails.weight || "N/A"
+                            }</span></p>
+                            <p class='card-text'><strong>Planting Season:</strong> <span class='text-primary'>${
+                                cropDetails.plantingSeason || "N/A"
+                            }</span></p>
+                            <p class='card-text'><strong>Growth Duration:</strong> <span class='text-primary'>${
+                                cropDetails.growthDuration || "N/A"
+                            }</span></p>
+                        </div>
                     </div>
-                    <div class='card-body'>
-                        <p class='card-text'><strong>Scientific Name:</strong> <span class='text-primary'>${cropDetails.scientificName}</span></p>
-                        <p class='card-text'><strong>Unit:</strong> <span class='text-primary'>${cropDetails.unit}</span></p>
-                        <p class='card-text'><strong>Weight:</strong> <span class='text-primary'>${cropDetails.weight}</span></p>
-                        <p class='card-text'><strong>Planting Season:</strong> <span class='text-primary'>${cropDetails.plantingSeason}</span></p>
-                        <p class='card-text'><strong>Growth Duration:</strong> <span class='text-primary'>${cropDetails.growthDuration}</span></p>
-                    </div>
-                </div>
-            `;
+                `;
 
                 const cropTitle = cropDetails.cropName;
 
                 // Create table row with empty variety details
                 const row = `<tr class="text-center">
-                <td>${crop.cropName}</td>
-                <td>${crop.type}</td>
-                <td>${crop.remarks}</td>
-               <td>
-                    <button class="btn btn-green view-btn" 
-                        data-img="${cropImg}" 
-                        data-description="${description}" 
-                        data-crop="${cropTitle}" 
-                        data-variety='${JSON.stringify(
-                            []
-                        )}'> <!-- Empty array for varieties -->
-                        View Information
-                    </button>
-                </td>
+                    <td>${crop.cropName}</td>
+                    <td>${crop.type}</td>
+                    <td>${crop.remarks}</td>
+                    <td>
+                        <button class="btn btn-green view-btn" 
+                            data-img="${cropImg}" 
+                            data-description="${description}" 
+                            data-crop="${cropTitle}" 
+                            data-variety='${JSON.stringify(
+                                []
+                            )}'> <!-- Empty array for varieties -->
+                            View Information
+                        </button>
+                    </td>
                 </tr>`;
 
                 return row; // Return the row to append later
@@ -342,6 +388,12 @@ $(document).ready(async function () {
     $("#seasonSelect, #typeSelect").on("change", function () {
         const season = $("#seasonSelect").val();
         const type = $("#typeSelect").val();
+        if (type === "Rice") {
+            console.log(true);
+            $("#riceDisplay").show();
+        } else {
+            $("#riceDisplay").hide();
+        }
         new TopCrops(season, type);
     });
 
@@ -380,6 +432,7 @@ async function main(season, type) {
     try {
         let production = await getProduction("", season);
         let price = await getPrice("", season);
+        let riceProduction = await getRiceProduction("", season);
         let pest = await getPest("", season);
         let disease = await getDisease("", season);
 
@@ -388,14 +441,20 @@ async function main(season, type) {
         pest = pest.map((entry) => ({ ...entry, type }));
         disease = disease.map((entry) => ({ ...entry, type }));
 
-        return await stats.getCropData(
-            production,
-            price,
-            pest,
-            disease,
-            crops,
-            type
-        );
+        console.log(type);
+
+        if (type === "Rice") {
+            return await stats.getRiceCropData(riceProduction);
+        } else {
+            return await stats.getCropData(
+                production,
+                price,
+                pest,
+                disease,
+                crops,
+                type
+            );
+        }
     } catch (error) {
         console.error("An error occurred in the main function:", error);
     }
