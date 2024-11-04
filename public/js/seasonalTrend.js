@@ -568,7 +568,33 @@ async function handleCategoryChange() {
         $("#downloadBtn").hide();
     }
 
-    console.log(dataset);
+    downloadData = dataset;
+    // Loop through each object in the downloadData array
+    downloadData.forEach((data) => {
+        // Check if diseaseOccurrences exists and is an array
+        if (Array.isArray(data.diseaseOccurrences)) {
+            data.diseaseOccurrences.forEach((disease) => {
+                // Extract diseaseName and occurrence and add them to the main object
+                data.diseaseName = disease.diseaseName;
+                data.occurrence = disease.occurrence;
+            });
+            // Remove the diseaseOccurrences array from the current object
+            delete data.diseaseOccurrences;
+        }
+
+        // Check if pestOccurrences exists and is an array
+        if (Array.isArray(data.pestOccurrences)) {
+            data.pestOccurrences.forEach((pest) => {
+                // Extract pestName and occurrence and add them to the main object
+                data.pestName = pest.pestName;
+                data.pestOccurrence = pest.occurrence;
+            });
+            // Remove the pestOccurrences array from the current object
+            delete data.pestOccurrences;
+        }
+    });
+
+    console.log(downloadData);
 }
 
 function populateCategoryOptions(type) {
@@ -1273,26 +1299,19 @@ function downloadPDF(filename) {
 async function main() {
     try {
         let production = await getProduction();
-        // let price = await getPrice("", season);
-        // let pest = await getPest("", season);
-        // let disease = await getDisease("", season);
+        let price = await getPrice();
+        let pest = await getPest();
+        let disease = await getDisease();
+        let damage = await getDamages();
 
-        production = production.map((entry) => ({ ...entry }));
-        // price = price.map(entry => ({ ...entry, type }));
-        // pest = pest.map(entry => ({ ...entry, type }));
-        // disease = disease.map(entry => ({ ...entry, type }));
-
-        return await stats.aggregateData(production);
+        return await stats.aggregateData(
+            production,
+            price,
+            pest,
+            disease,
+            damage
+        );
     } catch (error) {
         console.error("An error occurred in the main function:", error);
     }
 }
-
-main()
-    .then((result) => {
-        console.log(result);
-        downloadData = result;
-    })
-    .catch((error) => {
-        console.error("Error occurred:", error);
-    });

@@ -548,6 +548,18 @@ async function handleCategoryChange() {
         $("#interpretation").hide();
         $("#unavailable").show();
     }
+
+    downloadData = dataset;
+    // Dynamically get the required fields from the first index of downloadData
+    const requiredFields = downloadData[0] ? Object.keys(downloadData[0]) : [];
+
+    // Function to check if a data object is complete
+    function isDataComplete(data) {
+        return requiredFields.every((field) => data.hasOwnProperty(field));
+    }
+
+    // Filter out incomplete data from downloadData
+    downloadData = downloadData.filter(isDataComplete);
 }
 
 function populateCategoryOptions(type) {
@@ -840,12 +852,3 @@ async function main() {
         console.error("An error occurred in the main function:", error);
     }
 }
-
-main()
-    .then((result) => {
-        console.log(result);
-        downloadData = result;
-    })
-    .catch((error) => {
-        console.error("Error occurred:", error);
-    });
